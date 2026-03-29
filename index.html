@@ -182,25 +182,30 @@ body::after {
 
 /* ── MAIN BODY ── */
 .main-body {
-  display: flex; min-height: calc(100vh - var(--nav-h));
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ── SIDEBAR ── */
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
-  position: sticky; top: var(--nav-h);
-  height: calc(100vh - var(--nav-h));
+  position: sticky; top: 0;
+  height: 100vh;
   overflow-y: auto; overflow-x: hidden;
-  border-right: 1px solid var(--border);
-  background: rgba(8,12,24,0.97);
-  backdrop-filter: blur(20px);
-  padding: 12px 10px 24px;
-  display: flex; flex-direction: column; gap: 2px;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  background: #080c18;
+  padding: 0 0 24px;
+  display: flex; flex-direction: column; gap: 0;
   transition: width 0.25s cubic-bezier(.4,0,.2,1);
-  z-index: 200;
+  z-index: 300;
+  align-self: flex-start;
 }
 .sidebar.collapsed {
-  width: 60px;
+  width: 56px;
 }
 .sidebar.collapsed .sidebar-label,
 .sidebar.collapsed .sidebar-section-label,
@@ -214,6 +219,40 @@ body::after {
 .sidebar.collapsed .sidebar-icon { margin: 0 auto; }
 .sidebar.collapsed .sb-top { justify-content: center; padding: 0 0 10px; }
 .sidebar.collapsed .sb-logo-text { display: none; }
+
+/* Topo da sidebar alinhado com a topbar */
+.sb-top {
+  height: var(--nav-h);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.sidebar.collapsed .sb-top {
+  justify-content: center;
+  padding: 0;
+}
+/* Itens com hover tooltip quando colapsado */
+.sidebar.collapsed .sidebar-item {
+  position: relative;
+}
+.sidebar.collapsed .sidebar-item:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%; transform: translateY(-50%);
+  background: #1a2235;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--text-1);
+  white-space: nowrap;
+  z-index: 999;
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
 
 .sidebar-section-label {
   font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
@@ -886,17 +925,27 @@ body::after {
 .setup-step a { color:var(--blue); text-decoration:none; }
 
 /* App wrapper */
-#app { 
-  display:block; 
+#app {
+  display:flex;
+  flex-direction:row;
   min-height:100vh;
+  position:relative;
 }
 
 /* Header */
-header {
-  position:sticky; top:0; z-index:500; height:var(--nav-h);
-  background:rgba(5,8,16,0.88); backdrop-filter:blur(32px) saturate(1.6);
+.app-topbar {
+  position:sticky; top:0; z-index:400; height:var(--nav-h);
+  background:rgba(5,8,16,0.92); backdrop-filter:blur(32px) saturate(1.6);
   border-bottom:1px solid var(--border);
-  display:flex; align-items:center; padding:0 24px; gap:12px;
+  display:flex; align-items:center; padding:0 20px; gap:12px;
+  flex-shrink:0;
+}
+header {
+  position:sticky; top:0; z-index:400; height:var(--nav-h);
+  background:rgba(5,8,16,0.92); backdrop-filter:blur(32px) saturate(1.6);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; gap:12px;
+  flex-shrink:0;
 }
 .logo { display:flex; align-items:center; gap:10px; flex-shrink:0; margin-right:28px; }
 .logo-mark {
@@ -2006,8 +2055,64 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
      MAIN APP
 ════════════════════════════════ -->
 <div id="app">
+<aside class="sidebar" id="main-sidebar">
 
-<!-- HEADER -->
+  <!-- Topo: logo + botão colapso -->
+  <div class="sb-top" onclick="toggleSidebarCollapse()" title="Ocultar / mostrar menu"
+    style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:0 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px;user-select:none;transition:background 0.15s;border-radius:0;"
+    onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+    onmouseout="this.style.background='transparent'">
+    <div id="sb-logo-mark" style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#050810;flex-shrink:0;transition:box-shadow 0.2s;">Ax</div>
+    <span class="sb-logo-text" style="font-size:14px;font-weight:900;letter-spacing:0.06em;background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;overflow:hidden;transition:opacity 0.2s,width 0.25s;">TRADER OS</span>
+  </div>
+
+  <!-- TRADING -->
+  <div class="sidebar-section-label">Trading</div>
+  <div class="sidebar-item active" data-page="dashboard" data-tooltip="Dashboard" onclick="showPage('dashboard',null)">
+    <div class="sidebar-icon">📊</div><div class="sidebar-label">Dashboard</div>
+  </div>
+  <div class="sidebar-item" data-page="journal" data-tooltip="Trade Journal" onclick="showPage('journal',null)">
+    <div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div>
+  </div>
+  <div class="sidebar-item" data-page="import" data-tooltip="Importar CSV" onclick="showPage('import',null)">
+    <div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div>
+  </div>
+  <div class="sidebar-item" data-page="calendar" data-tooltip="Calendário" onclick="showPage('calendar',null)">
+    <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
+  </div>
+  <div class="sidebar-item" data-page="reports" data-tooltip="Relatórios" onclick="showPage('reports',null)">
+    <div class="sidebar-icon">📈</div><div class="sidebar-label">Relatórios</div>
+  </div>
+
+  <!-- PLANEJAMENTO -->
+  <div class="sidebar-section-label" style="margin-top:6px">Planejamento</div>
+  <div class="sidebar-item" data-page="metas" data-tooltip="Metas" onclick="showPage('metas',null)">
+    <div class="sidebar-icon">🎯</div><div class="sidebar-label">Metas</div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="sidebar-section-label" style="margin-top:6px">Insights</div>
+  <div class="sidebar-item" data-page="analytics" data-tooltip="Análises" onclick="showPage('analytics',null)">
+    <div class="sidebar-icon">🔬</div><div class="sidebar-label">Análises</div>
+  </div>
+
+  <!-- CONTA -->
+  <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
+  <div class="sidebar-item" data-page="settings" data-tooltip="Configurações" onclick="showPage('settings',null)">
+    <div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div>
+  </div>
+
+  <!-- Card conta ativa -->
+  <div class="sidebar-acct-card" id="sidebar-acct-card" style="margin-top:auto">
+    <div class="sac-label">Conta Ativa</div>
+    <div class="sac-name" id="sac-name">—</div>
+    <div class="sac-bal" id="sac-bal">—</div>
+    <div class="sac-change" id="sac-change">—</div>
+    <div class="sac-bar"><div class="sac-bar-fill" id="sac-bar-fill" style="width:0%"></div></div>
+  </div>
+
+</aside>
+<div class="main-body">
 <header>
   <div class="logo">
     <div class="logo-mark">Ax</div>
@@ -2089,81 +2194,6 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </div>
   </div>
 </header>
-
-<!-- MOBILE NAV -->
-<nav class="mobile-nav">
-  <div class="mobile-nav-inner">
-    <button class="mob-nav-btn active" id="mnav-dashboard" onclick="showPage('dashboard',this,true)"><span class="ico">📊</span><span class="lbl">Dashboard</span></button>
-    <button class="mob-nav-btn" id="mnav-calendar" onclick="showPage('calendar',this,true)"><span class="ico">📅</span><span class="lbl">Calendário</span></button>
-    <button class="mob-nav-btn" id="mnav-journal" onclick="showPage('journal',this,true)"><span class="ico">📓</span><span class="lbl">Journal</span></button>
-    <button class="mob-nav-btn" id="mnav-metas" onclick="showPage('metas',this,true)"><span class="ico">🎯</span><span class="lbl">Metas</span></button>
-    <button class="mob-nav-btn" id="mnav-reports" onclick="showPage('reports',this,true)"><span class="ico">📈</span><span class="lbl">Relatórios</span></button>
-  </div>
-</nav>
-
-<div class="main-body">
-<aside class="sidebar" id="main-sidebar">
-
-  <!-- Topo: logo + botão colapso -->
-  <div class="sb-top" style="display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
-    <div class="sb-logo" style="display:flex;align-items:center;gap:9px;overflow:hidden;">
-      <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#050810;flex-shrink:0;">Ax</div>
-      <span class="sb-logo-text" style="font-size:14px;font-weight:900;letter-spacing:0.06em;background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;">TRADER OS</span>
-    </div>
-    <button onclick="toggleSidebarCollapse()" id="sb-collapse-btn" title="Ocultar menu"
-      style="width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;flex-shrink:0;"
-      onmouseover="this.style.background='rgba(255,255,255,0.09)';this.style.color='#fff'"
-      onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.color='var(--text-3)'">
-      ◀
-    </button>
-  </div>
-
-  <!-- TRADING -->
-  <div class="sidebar-section-label">Trading</div>
-  <div class="sidebar-item active" data-page="dashboard" onclick="showPage('dashboard',null)">
-    <div class="sidebar-icon">📊</div><div class="sidebar-label">Dashboard</div>
-  </div>
-  <div class="sidebar-item" data-page="journal" onclick="showPage('journal',null)">
-    <div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div>
-  </div>
-  <div class="sidebar-item" data-page="import" onclick="showPage('import',null)">
-    <div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div>
-  </div>
-  <div class="sidebar-item" data-page="calendar" onclick="showPage('calendar',null)">
-    <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
-  </div>
-  <div class="sidebar-item" data-page="reports" onclick="showPage('reports',null)">
-    <div class="sidebar-icon">📈</div><div class="sidebar-label">Relatórios</div>
-  </div>
-
-  <!-- PLANEJAMENTO -->
-  <div class="sidebar-section-label" style="margin-top:6px">Planejamento</div>
-  <div class="sidebar-item" data-page="metas" onclick="showPage('metas',null)">
-    <div class="sidebar-icon">🎯</div><div class="sidebar-label">Metas</div>
-  </div>
-
-  <!-- INSIGHTS -->
-  <div class="sidebar-section-label" style="margin-top:6px">Insights</div>
-  <div class="sidebar-item" data-page="analytics" onclick="showPage('analytics',null)">
-    <div class="sidebar-icon">🔬</div><div class="sidebar-label">Análises</div>
-  </div>
-
-  <!-- CONTA -->
-  <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
-  <div class="sidebar-item" data-page="settings" onclick="showPage('settings',null)">
-    <div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div>
-  </div>
-
-  <!-- Card conta ativa -->
-  <div class="sidebar-acct-card" id="sidebar-acct-card" style="margin-top:auto">
-    <div class="sac-label">Conta Ativa</div>
-    <div class="sac-name" id="sac-name">—</div>
-    <div class="sac-bal" id="sac-bal">—</div>
-    <div class="sac-change" id="sac-change">—</div>
-    <div class="sac-bar"><div class="sac-bar-fill" id="sac-bar-fill" style="width:0%"></div></div>
-  </div>
-
-</aside>
 <main>
 
 <!-- ═══ DASHBOARD ═══ -->
@@ -2627,6 +2657,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 </div>
 
 </main>
+</div>
+
 </div><!-- /.main-body -->
 </div><!-- #app -->
 
