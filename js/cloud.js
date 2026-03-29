@@ -56,7 +56,13 @@ export async function register(email, password) {
   if (!_sbClient) throw new Error('Supabase não configurado');
   if (password.length < 8) throw new Error('Senha deve ter pelo menos 8 caracteres');
 
-  const { data, error } = await _sbClient.auth.signUp({ email, password });
+  const { data, error } = await _sbClient.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: window.location.origin + '/auth.html',
+    },
+  });
   if (error) throw new Error(translateAuthError(error.message));
 
   return data;
@@ -82,7 +88,7 @@ export async function recoverSession() {
 export async function resetPassword(email) {
   if (!_sbClient) throw new Error('Supabase não configurado');
   const { error } = await _sbClient.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/?reset=true',
+    redirectTo: window.location.origin + '/auth.html?type=recovery',
   });
   if (error) throw new Error(translateAuthError(error.message));
 }

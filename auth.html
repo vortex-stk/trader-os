@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trader OS — Autenticando...</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:   #050810;
+      --bg-card:   #0C1220;
+      --green:     #00F5A0;
+      --green-glow:rgba(0,245,160,0.18);
+      --red:       #FF3D6B;
+      --text-1:    #F0F6FF;
+      --text-2:    #8A96B0;
+      --border:    rgba(255,255,255,0.06);
+    }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-1);
+      font-family: 'Outfit', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 32px;
+    }
+    .logo span { color: var(--green); }
+
+    /* Spinner */
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(0,245,160,0.15);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 24px;
+      padding: 12px 28px;
+      background: var(--green);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      display: none;
+    }
+    .btn:hover { opacity: 0.85; }
+
+    .state-loading .spinner  { display: block; }
+    .state-loading h2        { opacity: 0.7; }
+
+    .state-success .spinner  { display: none; }
+    .state-success .status-icon { display: block; }
+    .state-success .btn      { display: inline-block; }
+
+    .state-error .spinner    { display: none; }
+    .state-error .status-icon { display: block; }
+    .state-error h2          { color: var(--red); }
+    .state-error .btn        { display: inline-block; background: rgba(255,61,107,0.15); color: var(--red); border: 1px solid var(--red); }
+  </style>
+</head>
+<body>
+  <div class="card state-loading" id="card">
+    <div class="logo">TRADER <span>OS</span></div>
+    <div class="spinner" id="spinner"></div>
+    <div class="status-icon" id="icon">✅</div>
+    <h2 id="title">Verificando sua conta...</h2>
+    <p id="msg">Aguarde um momento, estamos confirmando seu acesso.</p>
+    <a href="/" class="btn" id="btn">Abrir Trader OS</a>
+  </div>
+
+  <script>
+    const card  = document.getElementById('card');
+    const icon  = document.getElementById('icon');
+    const title = document.getElementById('title');
+    const msg   = document.getElementById('msg');
+    const btn   = document.getElementById('btn');
+
+    function setState(state, iconTxt, titleTxt, msgTxt, btnTxt, btnHref) {
+      card.className = 'card state-' + state;
+      icon.textContent = iconTxt;
+      title.textContent = titleTxt;
+      msg.textContent = msgTxt;
+      if (btnTxt) { btn.textContent = btnTxt; btn.href = btnHref || '/'; }
+    }
+
+    async function handleAuthCallback() {
+      // Lê credenciais salvas pelo usuário
+      const sbUrl = localStorage.getItem('tros_sb_url');
+      const sbKey = localStorage.getItem('tros_sb_key');
+
+      if (!sbUrl || !sbKey) {
+        setState('error', '⚠️',
+          'Supabase não configurado',
+          'Configure sua URL e chave do Supabase no Trader OS antes de continuar.',
+          'Ir para configuração', '/');
+        return;
+      }
+
+      let client;
+      try {
+        client = supabase.createClient(sbUrl, sbKey, {
+          auth: { persistSession: true, autoRefreshToken: true }
+        });
+      } catch (e) {
+        setState('error', '❌', 'Erro de configuração', e.message, 'Voltar', '/');
+        return;
+      }
+
+      // Extrai parâmetros da URL (hash ou query string)
+      const hash   = window.location.hash.substring(1);
+      const params = new URLSearchParams(
+        hash.includes('access_token') ? hash : window.location.search
+      );
+
+      const type       = params.get('type');
+      const tokenHash  = params.get('token_hash');
+      const accessToken  = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      const errorCode    = params.get('error');
+      const errorDesc    = params.get('error_description');
+
+      // Erro vindo do Supabase na URL
+      if (errorCode) {
+        setState('error', '❌',
+          'Link inválido ou expirado',
+          errorDesc || 'O link que você usou não é mais válido. Solicite um novo.',
+          'Tentar novamente', '/');
+        return;
+      }
+
+      try {
+        let session = null;
+
+        // ── Caso 1: token_hash (confirmação de email, novo fluxo Supabase PKCE)
+        if (tokenHash) {
+          const { data, error } = await client.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: type || 'email',
+          });
+          if (error) throw error;
+          session = data.session;
+        }
+
+        // ── Caso 2: access_token + refresh_token no hash (fluxo implícito legado)
+        else if (accessToken && refreshToken) {
+          const { data, error } = await client.auth.setSession({
+            access_token:  accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) throw error;
+          session = data.session;
+        }
+
+        // ── Caso 3: sem token → tenta recuperar sessão existente
+        else {
+          const { data } = await client.auth.getSession();
+          session = data?.session;
+        }
+
+        // ── Sucesso
+        if (session) {
+          const isReset    = type === 'recovery';
+          const isSignup   = type === 'signup' || type === 'email';
+
+          if (isReset) {
+            setState('success', '🔐',
+              'Redefinição de senha',
+              'Sua identidade foi confirmada. Clique abaixo para criar uma nova senha no Trader OS.',
+              'Definir nova senha', '/?reset=true');
+          } else if (isSignup) {
+            setState('success', '🎉',
+              'Conta confirmada com sucesso!',
+              'Seu email foi verificado. Clique abaixo para acessar o Trader OS.',
+              'Entrar no Trader OS', '/');
+          } else {
+            setState('success', '✅',
+              'Login realizado!',
+              'Você já está autenticado. Redirecionando...',
+              'Abrir Trader OS', '/');
+          }
+
+          // Auto-redireciona em 2s (exceto redefinição de senha)
+          if (!isReset) {
+            setTimeout(() => { window.location.href = '/'; }, 2000);
+          }
+
+        } else {
+          setState('error', '❌',
+            'Não foi possível autenticar',
+            'O link pode ter expirado ou já foi usado. Tente fazer login normalmente.',
+            'Ir para login', '/');
+        }
+
+      } catch (err) {
+        console.error('[auth.html] erro:', err);
+        setState('error', '❌',
+          'Erro na autenticação',
+          err.message || 'Ocorreu um erro inesperado. Tente novamente.',
+          'Voltar para o app', '/');
+      }
+    }
+
+    handleAuthCallback();
+  </script>
+</body>
+</html>
