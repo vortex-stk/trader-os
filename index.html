@@ -1129,15 +1129,8 @@ header {
 .sidebar-overlay.visible { display:block; }
 
 /* ── SIDEBAR — hidden by default, slides in ── */
-.sidebar {
-  width:var(--sidebar-w); flex-shrink:0; position:fixed;
-  top:var(--nav-h); left:0; z-index:495;
-  height:calc(100vh - var(--nav-h)); overflow-y:auto; overflow-x:hidden;
-  border-right:1px solid var(--border); background:rgba(18,20,24,0.97); backdrop-filter:blur(24px);
-  padding:24px 16px; display:flex; flex-direction:column; gap:6px;
-  transform:translateX(-100%); transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
-}
-.sidebar.open { transform:translateX(0); }
+/* sidebar css consolidado acima */
+/* sidebar.open removido */
 .sidebar-section-label { font-size:9px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-4); padding:6px 10px 4px; font-weight:700; }
 .sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--r-sm); font-size:13px; font-weight:500; color:var(--text-2); cursor:pointer; transition:all 0.18s; border:1px solid transparent; }
 .sidebar-item:hover { color:var(--text-1); background:rgba(255,255,255,0.04); }
@@ -1438,7 +1431,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* Responsive */
 @media(max-width:1280px){:root{--sidebar-w:200px}.kpi-grid{grid-template-columns:repeat(3,1fr)}.dash-grid{grid-template-columns:1fr}}
-@media(max-width:1024px){.sidebar{display:none}main{padding:20px 22px}}
+@media(max-width:1024px){.sidebar{width:56px}main{padding:20px 22px}}
 @media(max-width:768px){:root{--nav-h:56px}header{padding:0 14px}main{padding:14px 14px 80px}.desk-nav{display:none}.mobile-nav{display:block}.hdr-clock,.sync-badge{display:none}.kpi-grid{grid-template-columns:1fr 1fr;gap:9px}.risk-row{grid-template-columns:1fr;gap:9px}.goals-grid{grid-template-columns:1fr;gap:9px}.dash-grid{grid-template-columns:1fr}.weekly-strip{grid-template-columns:repeat(2,1fr)}.jcard{grid-template-columns:60px 1fr}.jcard>div:last-child{grid-column:2}.modal{padding:20px}.f2{grid-template-columns:1fr}.f3{grid-template-columns:1fr 1fr}.settings-grid{grid-template-columns:1fr}.page-title{font-size:20px}}
 @media(max-width:480px){.kpi-num{font-size:16px}.cal-cell{min-height:52px;padding:5px 6px}}
 
