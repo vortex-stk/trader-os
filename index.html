@@ -1797,6 +1797,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <div class="sync-dot" id="sync-dot"></div>
       <span id="sync-text">local</span>
     </div>
+    <span id="user-email-display" style="display:none;font-size:11px;color:var(--text-2)"></span>
     <div class="hdr-bal-pill" id="hdr-bal-pill" style="display:none">
       <span style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;font-weight:700">Saldo</span>
       <span id="hdr-bal-live" style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
@@ -2545,7 +2546,13 @@ async function doRegister() {
   if (btn) { btn.disabled = true; btn.textContent = 'Criando conta...'; }
   try {
     if (!sbClient) throw new Error('Serviço indisponível. Tente novamente.');
-    const { data, error } = await sbClient.auth.signUp({ email, password: pass });
+    const { data, error } = await sbClient.auth.signUp({
+      email,
+      password: pass,
+      options: {
+        emailRedirectTo: window.location.origin + '/auth.html',
+      },
+    });
     if (error) throw error;
     const successEl = document.getElementById('auth-success');
     if (successEl) { successEl.textContent = '✅ Conta criada! Verifique seu email para confirmar.'; successEl.style.display = 'block'; }
@@ -2562,7 +2569,7 @@ async function doForgotPassword() {
   try {
     if (!sbClient) throw new Error('Serviço indisponível.');
     const { error } = await sbClient.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin
+      redirectTo: window.location.origin + '/auth.html?type=recovery',
     });
     if (error) throw error;
     showAuthError('');
@@ -2645,11 +2652,11 @@ async function launchApp() {
     updateSyncBadge('syncing');
     await loadFromCloud();
     updateSyncBadge('synced');
-    document.getElementById('user-email-display').textContent = currentUser?.email || 'Cloud';
+    const _ued1 = document.getElementById('user-email-display'); if (_ued1) _ued1.textContent = currentUser?.email || 'Cloud';
   } else {
     loadLocal();
     updateSyncBadge('local');
-    document.getElementById('user-email-display').textContent = 'Modo Local';
+    const _ued2 = document.getElementById('user-email-display'); if (_ued2) _ued2.textContent = 'Modo Local';
   }
 
   if (db.accounts.length === 0) seedAccount();
@@ -4412,6 +4419,35 @@ function showLoginPanel() {
 //  BOOT
 // ════════════════════════════════════════
 (function boot() {
+  // ── Trata retorno de link de email (confirmação / reset) ──
+  // O Supabase às vezes entrega o token no hash mesmo com auth.html configurado
+  const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+  const accessToken  = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  const tokenType    = hashParams.get('type');
+  if (accessToken && refreshToken) {
+    // Inicializa Supabase imediatamente para setar a sessão
+    const { url, key } = getSupabaseConfig();
+    if (url && key) {
+      try {
+        const tempClient = window.supabase.createClient(url, key);
+        tempClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+          .then(({ data, error }) => {
+            if (!error && data?.session) {
+              // Limpa o hash feio da URL
+              history.replaceState(null, '', window.location.pathname);
+              // Retoma boot normal com sessão já definida
+              sbClient = tempClient;
+              currentUser = data.session.user;
+              isCloudMode = true;
+              launchApp();
+            }
+          });
+        return; // boot normal vai rodar depois do setSession
+      } catch(e) { /* continua boot normal */ }
+    }
+  }
+
   const { url, key } = getSupabaseConfig();
   const notConfigured = !url || url.includes('COLE_AQUI') || !key || key.includes('COLE_AQUI');
 
