@@ -2040,7 +2040,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
         <div><span class="eq-stat-val" id="eq-bal">—</span><span class="eq-stat-lbl">Saldo</span></div>
         <div><span class="eq-stat-val" id="eq-ret">—</span><span class="eq-stat-lbl">Retorno</span></div>
       </div>
-      <div style="position:relative;height:220px;width:100%"><canvas id="eqChart" style="position:absolute;top:0;left:0;width:100%;height:100%"></canvas></div>
+      <div style="position:relative;width:100%;height:240px"><canvas id="eqChart" style="display:block;width:100%!important;height:100%!important"></canvas></div>
     </div>
 
     <!-- Right: performance summary -->
@@ -3562,7 +3562,7 @@ function renderEquity(trades, cap) {
     type:'line',
     data:{labels,datasets:[{data,borderColor:color,backgroundColor:grad,borderWidth:2.5,fill:true,tension:0.4,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:color}]},
     options:{
-      responsive:true, maintainAspectRatio:true, aspectRatio:3.2,
+      responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{backgroundColor:'#0c1220',borderColor:'rgba(255,255,255,0.06)',borderWidth:1,padding:10,callbacks:{label:c=>'  R$'+c.raw.toFixed(2)}}},
       scales:{
         x:{ticks:{color:'#3A4155',font:{size:9},maxTicksLimit:12},grid:{color:'rgba(255,255,255,0.06)'}},
