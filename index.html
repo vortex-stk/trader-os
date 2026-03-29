@@ -210,7 +210,8 @@ body::after {
 .sidebar.collapsed .sidebar-label,
 .sidebar.collapsed .sidebar-section-label,
 .sidebar.collapsed .sidebar-acct-card,
-.sidebar.collapsed .sb-collapse-label {
+.sidebar.collapsed .sb-collapse-label,
+.sidebar.collapsed .sb-logo-text {
   opacity: 0; pointer-events: none; width: 0; overflow: hidden; white-space: nowrap;
 }
 .sidebar.collapsed .sidebar-item {
@@ -4276,11 +4277,8 @@ function toggleSidebar() {
 
 function toggleSidebarCollapse() {
   const sidebar = document.getElementById('main-sidebar');
-  const btn = document.getElementById('sb-collapse-btn');
+  if (!sidebar) return;
   const isCollapsed = sidebar.classList.toggle('collapsed');
-  btn.textContent = isCollapsed ? '▶' : '◀';
-  btn.title = isCollapsed ? 'Mostrar menu' : 'Ocultar menu';
-  // Persiste preferência
   try { localStorage.setItem('tros_sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
 }
 
@@ -4289,9 +4287,7 @@ function toggleSidebarCollapse() {
   try {
     if (localStorage.getItem('tros_sidebar_collapsed') === '1') {
       const sidebar = document.getElementById('main-sidebar');
-      const btn = document.getElementById('sb-collapse-btn');
       if (sidebar) sidebar.classList.add('collapsed');
-      if (btn) { btn.textContent = '▶'; btn.title = 'Mostrar menu'; }
     }
   } catch(e) {}
 })();
