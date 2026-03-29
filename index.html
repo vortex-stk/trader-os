@@ -192,16 +192,33 @@ body::after {
   height: calc(100vh - var(--nav-h));
   overflow-y: auto; overflow-x: hidden;
   border-right: 1px solid var(--border);
-  background: rgba(8,12,24,0.6);
+  background: rgba(8,12,24,0.97);
   backdrop-filter: blur(20px);
-  padding: 24px 16px;
-  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 10px 24px;
+  display: flex; flex-direction: column; gap: 2px;
+  transition: width 0.25s cubic-bezier(.4,0,.2,1);
+  z-index: 200;
 }
+.sidebar.collapsed {
+  width: 60px;
+}
+.sidebar.collapsed .sidebar-label,
+.sidebar.collapsed .sidebar-section-label,
+.sidebar.collapsed .sidebar-acct-card,
+.sidebar.collapsed .sb-collapse-label {
+  opacity: 0; pointer-events: none; width: 0; overflow: hidden; white-space: nowrap;
+}
+.sidebar.collapsed .sidebar-item {
+  justify-content: center; padding: 11px 0;
+}
+.sidebar.collapsed .sidebar-icon { margin: 0 auto; }
+.sidebar.collapsed .sb-top { justify-content: center; padding: 0 0 10px; }
+.sidebar.collapsed .sb-logo-text { display: none; }
 
 .sidebar-section-label {
   font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--text-4); padding: 6px 10px 4px;
-  font-weight: 700;
+  color: var(--text-4); padding: 10px 10px 4px;
+  font-weight: 700; transition: opacity 0.2s, width 0.2s;
 }
 
 .sidebar-item {
@@ -889,7 +906,7 @@ header {
   font-size:15px; font-weight:900; color:#050810; box-shadow:var(--glow-green);
 }
 .logo-text { font-size:15px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(90deg,var(--green),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.desk-nav { display:flex; gap:3px; flex:1; }
+.desk-nav { display:none; }
 .nav-btn {
   padding:8px 14px; border-radius:var(--r-sm); font-size:13px; font-weight:500;
   color:var(--text-2); cursor:pointer; border:none; background:none; font-family:var(--font-ui);
@@ -1080,7 +1097,7 @@ header {
 .sidebar-item.active { color:var(--green); background:var(--green-bg); border-color:rgba(0,245,160,0.12); }
 .sidebar-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
 .sidebar-label { flex:1; }
-.sidebar-acct-card { margin-top:auto; padding:16px; background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(59,158,255,0.08)); border:1px solid rgba(124,92,252,0.2); border-radius:var(--r-md); }
+.sidebar-acct-card { margin-top:auto; padding:16px; background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(59,158,255,0.08)); border:1px solid rgba(124,92,252,0.2); border-radius:var(--r-md); transition: opacity 0.2s; }
 .sac-label { font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-3); margin-bottom:4px; font-weight:700; }
 .sac-name  { font-size:13px; font-weight:700; margin-bottom:10px; }
 .sac-bal   { font-family:var(--font-mono); font-size:20px; font-weight:700; background:linear-gradient(90deg,var(--green),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:2px; }
@@ -1992,9 +2009,6 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 <!-- HEADER -->
 <header>
-  <button class="hamburger-btn" onclick="toggleSidebar()" id="hamburger-btn" title="Menu">
-    <span></span><span></span><span></span>
-  </button>
   <div class="logo">
     <div class="logo-mark">Ax</div>
     <span class="logo-text">TRADER OS</span>
@@ -2088,26 +2102,67 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 </nav>
 
 <div class="main-body">
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <aside class="sidebar" id="main-sidebar">
-  <div class="sidebar-section-label">Visão Geral</div>
-  <div class="sidebar-item active" onclick="showPage('dashboard',null)"><div class="sidebar-icon">📊</div><div class="sidebar-label">Dashboard</div></div>
-  <div class="sidebar-item" onclick="showPage('metas',null)"><div class="sidebar-icon">🎯</div><div class="sidebar-label">Metas</div></div>
-  <div class="sidebar-item" onclick="showPage('calendar',null)"><div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div></div>
-  <div class="sidebar-section-label" style="margin-top:10px">Trading</div>
-  <div class="sidebar-item" onclick="showPage('journal',null)"><div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div></div>
-  <div class="sidebar-item" onclick="showPage('import',null)"><div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div></div>
-  <div class="sidebar-item" onclick="showPage('reports',null)"><div class="sidebar-icon">📈</div><div class="sidebar-label">Relatórios</div></div>
-  <div class="sidebar-item" onclick="showPage('analytics',null)"><div class="sidebar-icon">🔬</div><div class="sidebar-label">Análises</div></div>
-  <div class="sidebar-section-label" style="margin-top:10px">Conta</div>
-  <div class="sidebar-item" onclick="showPage('settings',null)"><div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div></div>
-  <div class="sidebar-acct-card" id="sidebar-acct-card">
+
+  <!-- Topo: logo + botão colapso -->
+  <div class="sb-top" style="display:flex;align-items:center;justify-content:space-between;padding:4px 4px 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px;">
+    <div class="sb-logo" style="display:flex;align-items:center;gap:9px;overflow:hidden;">
+      <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#050810;flex-shrink:0;">Ax</div>
+      <span class="sb-logo-text" style="font-size:14px;font-weight:900;letter-spacing:0.06em;background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;">TRADER OS</span>
+    </div>
+    <button onclick="toggleSidebarCollapse()" id="sb-collapse-btn" title="Ocultar menu"
+      style="width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--text-3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s;flex-shrink:0;"
+      onmouseover="this.style.background='rgba(255,255,255,0.09)';this.style.color='#fff'"
+      onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.color='var(--text-3)'">
+      ◀
+    </button>
+  </div>
+
+  <!-- TRADING -->
+  <div class="sidebar-section-label">Trading</div>
+  <div class="sidebar-item active" data-page="dashboard" onclick="showPage('dashboard',null)">
+    <div class="sidebar-icon">📊</div><div class="sidebar-label">Dashboard</div>
+  </div>
+  <div class="sidebar-item" data-page="journal" onclick="showPage('journal',null)">
+    <div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div>
+  </div>
+  <div class="sidebar-item" data-page="import" onclick="showPage('import',null)">
+    <div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div>
+  </div>
+  <div class="sidebar-item" data-page="calendar" onclick="showPage('calendar',null)">
+    <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
+  </div>
+  <div class="sidebar-item" data-page="reports" onclick="showPage('reports',null)">
+    <div class="sidebar-icon">📈</div><div class="sidebar-label">Relatórios</div>
+  </div>
+
+  <!-- PLANEJAMENTO -->
+  <div class="sidebar-section-label" style="margin-top:6px">Planejamento</div>
+  <div class="sidebar-item" data-page="metas" onclick="showPage('metas',null)">
+    <div class="sidebar-icon">🎯</div><div class="sidebar-label">Metas</div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="sidebar-section-label" style="margin-top:6px">Insights</div>
+  <div class="sidebar-item" data-page="analytics" onclick="showPage('analytics',null)">
+    <div class="sidebar-icon">🔬</div><div class="sidebar-label">Análises</div>
+  </div>
+
+  <!-- CONTA -->
+  <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
+  <div class="sidebar-item" data-page="settings" onclick="showPage('settings',null)">
+    <div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div>
+  </div>
+
+  <!-- Card conta ativa -->
+  <div class="sidebar-acct-card" id="sidebar-acct-card" style="margin-top:auto">
     <div class="sac-label">Conta Ativa</div>
     <div class="sac-name" id="sac-name">—</div>
     <div class="sac-bal" id="sac-bal">—</div>
     <div class="sac-change" id="sac-change">—</div>
     <div class="sac-bar"><div class="sac-bar-fill" id="sac-bar-fill" style="width:0%"></div></div>
   </div>
+
 </aside>
 <main>
 
@@ -3218,6 +3273,10 @@ function showPage(name, btn, isMobile=false) {
   document.getElementById('page-'+name).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
+  // Sidebar active
+  document.querySelectorAll('.sidebar-item[data-page]').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === name);
+  });
   if (btn) btn.classList.add('active');
   // sync both navs
   const deskBtns = document.querySelectorAll('.nav-btn');
@@ -4178,14 +4237,32 @@ function renderAnalytics() {
 }
 
 function toggleSidebar() {
+  // mantido para compatibilidade com mobile
   const sidebar = document.getElementById('main-sidebar');
-  const overlay = document.getElementById('sidebar-overlay');
-  const btn = document.getElementById('hamburger-btn');
-  const isOpen = sidebar.classList.contains('open');
-  sidebar.classList.toggle('open', !isOpen);
-  overlay.classList.toggle('visible', !isOpen);
-  btn.classList.toggle('open', !isOpen);
+  sidebar.classList.toggle('open');
 }
+
+function toggleSidebarCollapse() {
+  const sidebar = document.getElementById('main-sidebar');
+  const btn = document.getElementById('sb-collapse-btn');
+  const isCollapsed = sidebar.classList.toggle('collapsed');
+  btn.textContent = isCollapsed ? '▶' : '◀';
+  btn.title = isCollapsed ? 'Mostrar menu' : 'Ocultar menu';
+  // Persiste preferência
+  try { localStorage.setItem('tros_sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
+}
+
+// Restaura estado do sidebar ao carregar
+(function restoreSidebarState() {
+  try {
+    if (localStorage.getItem('tros_sidebar_collapsed') === '1') {
+      const sidebar = document.getElementById('main-sidebar');
+      const btn = document.getElementById('sb-collapse-btn');
+      if (sidebar) sidebar.classList.add('collapsed');
+      if (btn) { btn.textContent = '▶'; btn.title = 'Mostrar menu'; }
+    }
+  } catch(e) {}
+})();
 
 function toggleRjMenu(ev, id, date) {
   ev.stopPropagation();
