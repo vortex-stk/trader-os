@@ -96,20 +96,22 @@ O app funciona sem Supabase usando localStorage.
 
 ## Deploy
 
-### Opção 1: Netlify (recomendado, gratuito)
+### Opção 1: Vercel (recomendado, gratuito)
 ```bash
-# Arraste a pasta trader-os para app.netlify.com
-# Ou conecte seu repositório GitHub
-```
-
-### Opção 2: Vercel
-```bash
+# Via CLI:
 npm i -g vercel
 cd trader-os
 vercel deploy
+
+# Ou via interface:
+# 1. Acesse vercel.com e faça login
+# 2. Clique em "Add New Project"
+# 3. Importe seu repositório GitHub (ou faça upload da pasta)
+# 4. Clique em "Deploy" — sem configuração extra!
+# O arquivo vercel.json já está configurado corretamente.
 ```
 
-### Opção 3: Servidor próprio
+### Opção 2: Servidor próprio
 Qualquer servidor HTTP serve arquivos estáticos.  
 O app não precisa de backend próprio (usa Supabase).
 

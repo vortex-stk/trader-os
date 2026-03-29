@@ -2,11 +2,13 @@
 //  supabase/functions/create-checkout/index.ts
 //  Edge Function: cria sessão de checkout Stripe
 //
-//  Deploy: supabase functions deploy create-checkout
+//  Deploy via Supabase CLI:
+//    supabase functions deploy create-checkout
+//
 //  Variáveis necessárias (supabase secrets set):
 //    STRIPE_SECRET_KEY=sk_live_...
 //    STRIPE_WEBHOOK_SECRET=whsec_...
-//    SITE_URL=https://seu-dominio.com
+//    SITE_URL=https://seu-projeto.vercel.app
 // ═══════════════════════════════════════
 
 import Stripe from 'https://esm.sh/stripe@14?target=deno';

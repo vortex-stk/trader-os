@@ -4,6 +4,7 @@
 //  
 //  Configure no Stripe Dashboard:
 //  Endpoint: https://[project].supabase.co/functions/v1/stripe-webhook
+//  (O frontend está no Vercel, mas as Edge Functions ficam no Supabase)
 //  Eventos: checkout.session.completed,
 //           customer.subscription.updated,
 //           customer.subscription.deleted,
