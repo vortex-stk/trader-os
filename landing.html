@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trader OS — Diário de Trading Profissional para Prop Traders</title>
+<meta name="description" content="O único trading journal em português feito para prop traders. Rastreie operações, monitore regras FTMO/Topstep, analise performance com IA. Grátis para começar.">
+<meta name="keywords" content="trading journal, diário de trading, prop trading, FTMO, Topstep, forex journal, trader OS">
+<meta property="og:title" content="Trader OS — Diário Profissional para Prop Traders">
+<meta property="og:description" content="Monitore suas operações, rastreie regras de prop firms e melhore sua performance com análise de IA.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://traderos.app">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://traderos.app">
+<link rel="icon" href="/assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Trader OS",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "description": "Diário de trading profissional para prop traders",
+  "offers": [
+    { "@type": "Offer", "price": "0", "priceCurrency": "BRL", "name": "Gratuito" },
+    { "@type": "Offer", "price": "97", "priceCurrency": "BRL", "name": "Pro", "billingDuration": "P1M" }
+  ],
+  "inLanguage": "pt-BR"
+}
+</script>
+
+<style>
+:root {
+  --bg:     #050810;
+  --card:   #0C1220;
+  --border: rgba(255,255,255,0.08);
+  --green:  #00F5A0;
+  --cyan:   #22D3EE;
+  --purple: #7C5CFC;
+  --blue:   #3B9EFF;
+  --red:    #FF3D6B;
+  --t1: #F0F6FF;
+  --t2: #8A96B0;
+  --t3: #4A5470;
+  --sans: 'Outfit', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:var(--sans); background:var(--bg); color:var(--t1); overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 100% 0%,  rgba(124,92,252,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 0%  100%, rgba(0,245,160,0.08)  0%, transparent 55%);
+}
+
+a { color:inherit; text-decoration:none; }
+.container { max-width:1100px; margin:0 auto; padding:0 24px; }
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(5,8,16,0.88); backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border); padding:16px 0;
+}
+.nav-inner { display:flex; align-items:center; justify-content:space-between; }
+.nav-logo {
+  display:flex; align-items:center; gap:10px;
+  font-size:16px; font-weight:900; letter-spacing:.06em;
+}
+.nav-logo-mark {
+  width:32px; height:32px; border-radius:9px;
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:900; color:#050810;
+}
+.nav-logo span {
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.nav-links { display:flex; gap:28px; }
+.nav-links a { font-size:14px; color:var(--t2); transition:color .15s; }
+.nav-links a:hover { color:var(--t1); }
+.nav-cta { display:flex; gap:10px; align-items:center; }
+.btn-nav-ghost {
+  padding:8px 18px; border-radius:8px; font-size:13px; font-weight:600;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border);
+  color:var(--t2); cursor:pointer; transition:all .15s; font-family:var(--sans);
+}
+.btn-nav-ghost:hover { color:var(--t1); border-color:rgba(255,255,255,0.15); }
+.btn-nav-primary {
+  padding:8px 20px; border-radius:8px; font-size:13px; font-weight:700;
+  background:linear-gradient(135deg,var(--green),#00C880);
+  color:#050810; border:none; cursor:pointer; transition:filter .15s; font-family:var(--sans);
+}
+.btn-nav-primary:hover { filter:brightness(1.08); }
+
+/* ── HERO ── */
+.hero { padding:100px 0 80px; text-align:center; position:relative; z-index:1; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:7px;
+  background:rgba(0,245,160,0.08); border:1px solid rgba(0,245,160,0.2);
+  border-radius:20px; padding:5px 14px; font-size:12px; font-weight:600;
+  color:var(--green); margin-bottom:28px;
+}
+.hero-title {
+  font-size:clamp(36px,6vw,68px); font-weight:900;
+  letter-spacing:-.03em; line-height:1.08; margin-bottom:22px;
+}
+.hero-title .hl {
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hero-sub {
+  font-size:18px; color:var(--t2); max-width:600px; margin:0 auto 36px;
+  line-height:1.65;
+}
+.hero-cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.btn-hero {
+  padding:14px 32px; border-radius:10px; font-size:15px; font-weight:700;
+  cursor:pointer; font-family:var(--sans); transition:all .2s;
+}
+.btn-hero-primary {
+  background:linear-gradient(135deg,var(--green),#00C880);
+  color:#050810; border:none; box-shadow:0 0 32px rgba(0,245,160,0.2);
+}
+.btn-hero-primary:hover { filter:brightness(1.08); transform:translateY(-2px); }
+.btn-hero-ghost {
+  background:rgba(255,255,255,0.05); color:var(--t1);
+  border:1px solid rgba(255,255,255,0.12);
+}
+.btn-hero-ghost:hover { background:rgba(255,255,255,0.09); }
+.hero-social {
+  margin-top:28px; font-size:12px; color:var(--t3);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.hero-avatars { display:flex; }
+.hero-avatars span {
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  border:2px solid var(--bg); margin-left:-8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700;
+}
+
+/* ── PREVIEW (mockup) ── */
+.preview { position:relative; z-index:1; margin:0 auto 100px; max-width:960px; }
+.preview-wrap {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+}
+.preview-bar {
+  background:rgba(0,0,0,0.4); padding:12px 18px;
+  display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.preview-dot { width:10px; height:10px; border-radius:50%; }
+.preview-inner { padding:28px; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.preview-kpi {
+  background:rgba(0,0,0,0.25); border:1px solid var(--border);
+  border-radius:12px; padding:16px;
+}
+.preview-kpi-label { font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--t3); margin-bottom:8px; font-weight:700; }
+.preview-kpi-val   { font-family:var(--mono); font-size:22px; font-weight:700; }
+
+/* ── FEATURES ── */
+.features { padding:80px 0; position:relative; z-index:1; }
+.section-label {
+  font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--t3); text-align:center; margin-bottom:12px; font-weight:700;
+}
+.section-title {
+  font-size:clamp(28px,4vw,42px); font-weight:900;
+  text-align:center; letter-spacing:-.02em; margin-bottom:14px;
+}
+.section-sub { font-size:16px; color:var(--t2); text-align:center; max-width:540px; margin:0 auto 56px; line-height:1.6; }
+
+.features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.feature-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:28px 24px;
+  transition:border-color .2s, transform .2s;
+}
+.feature-card:hover { border-color:rgba(255,255,255,0.12); transform:translateY(-4px); }
+.feature-icon { font-size:32px; margin-bottom:16px; }
+.feature-title { font-size:17px; font-weight:800; margin-bottom:8px; }
+.feature-desc  { font-size:14px; color:var(--t2); line-height:1.6; }
+
+/* ── PROP FIRMS ── */
+.propfirms { padding:60px 0; }
+.firms-grid { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:36px; }
+.firm-pill {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:12px 20px; font-size:14px; font-weight:600;
+  display:flex; align-items:center; gap:8px;
+}
+.firm-check { color:var(--green); font-size:14px; }
+
+/* ── TESTIMONIALS ── */
+.testimonials { padding:80px 0; }
+.testi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:48px; }
+.testi-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:24px;
+}
+.testi-stars { color:#FFB547; font-size:14px; margin-bottom:14px; }
+.testi-text  { font-size:14px; color:var(--t2); line-height:1.7; margin-bottom:18px; font-style:italic; }
+.testi-author { display:flex; align-items:center; gap:10px; }
+.testi-avatar {
+  width:38px; height:38px; border-radius:50%;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; flex-shrink:0;
+}
+.testi-name { font-size:13px; font-weight:700; }
+.testi-role { font-size:11px; color:var(--t3); }
+
+/* ── PRICING ── */
+.pricing { padding:80px 0; }
+.pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:48px; }
+.pricing-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; padding:32px 28px;
+  display:flex; flex-direction:column; position:relative;
+  transition:transform .2s;
+}
+.pricing-card:hover { transform:translateY(-6px); }
+.pricing-card.popular {
+  border-color:rgba(0,245,160,0.35);
+  box-shadow:0 0 0 1px rgba(0,245,160,0.15),0 0 40px rgba(0,245,160,0.08);
+}
+.popular-badge {
+  position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  color:#050810; font-size:10px; font-weight:800;
+  padding:4px 16px; border-radius:20px; white-space:nowrap;
+}
+.plan-name  { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--t3); margin-bottom:12px; }
+.plan-price { font-size:40px; font-weight:900; font-family:var(--mono); margin-bottom:6px; }
+.plan-price small { font-size:14px; color:var(--t3); font-weight:400; font-family:var(--sans); }
+.plan-desc { font-size:13px; color:var(--t3); margin-bottom:24px; }
+.plan-features { list-style:none; flex:1; display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+.plan-features li { display:flex; gap:9px; font-size:14px; color:var(--t2); }
+.plan-features .check { color:var(--green); flex-shrink:0; }
+.btn-plan {
+  width:100%; padding:13px; border-radius:10px; font-size:14px;
+  font-weight:700; cursor:pointer; font-family:var(--sans); transition:all .2s;
+  border:none;
+}
+.btn-plan-primary {
+  background:linear-gradient(135deg,var(--green),#00C880);
+  color:#050810; box-shadow:0 0 20px rgba(0,245,160,0.2);
+}
+.btn-plan-primary:hover { filter:brightness(1.08); }
+.btn-plan-ghost {
+  background:rgba(255,255,255,0.05); color:var(--t1);
+  border:1px solid rgba(255,255,255,0.1);
+}
+.btn-plan-ghost:hover { background:rgba(255,255,255,0.09); }
+
+/* ── FAQ ── */
+.faq { padding:60px 0; max-width:720px; margin:0 auto; }
+.faq-item { border-bottom:1px solid var(--border); padding:18px 0; cursor:pointer; }
+.faq-q { font-size:15px; font-weight:700; display:flex; justify-content:space-between; gap:16px; }
+.faq-a { font-size:14px; color:var(--t2); line-height:1.7; margin-top:10px; display:none; }
+.faq-item.open .faq-a { display:block; }
+.faq-item.open .faq-chevron { transform:rotate(180deg); }
+.faq-chevron { transition:transform .2s; color:var(--t3); flex-shrink:0; }
+
+/* ── CTA FINAL ── */
+.cta-final {
+  padding:80px 0; text-align:center; position:relative; z-index:1;
+}
+.cta-box {
+  background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(0,245,160,0.06));
+  border:1px solid rgba(124,92,252,0.2); border-radius:24px;
+  padding:64px 40px; max-width:680px; margin:0 auto;
+}
+.cta-box h2 { font-size:36px; font-weight:900; margin-bottom:12px; }
+.cta-box p  { font-size:16px; color:var(--t2); margin-bottom:32px; }
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--border);
+  padding:40px 0; position:relative; z-index:1;
+}
+.footer-inner { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+.footer-logo { font-size:14px; font-weight:800; color:var(--t3); }
+.footer-links { display:flex; gap:24px; }
+.footer-links a { font-size:13px; color:var(--t3); transition:color .15s; }
+.footer-links a:hover { color:var(--t1); }
+.footer-copy { font-size:12px; color:var(--t3); }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px) {
+  .nav-links { display:none; }
+  .features-grid { grid-template-columns:1fr; }
+  .testi-grid    { grid-template-columns:1fr; }
+  .pricing-grid  { grid-template-columns:1fr; }
+  .preview-inner { grid-template-columns:1fr 1fr; }
+  .footer-inner  { flex-direction:column; text-align:center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">
+        <div class="nav-logo-mark">Ax</div>
+        <span>TRADER OS</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Funcionalidades</a>
+        <a href="#propfirms">Prop Firms</a>
+        <a href="#pricing">Preços</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="nav-cta">
+        <a href="/app" class="btn-nav-ghost">Entrar</a>
+        <a href="/app?signup=1" class="btn-nav-primary">Começar grátis</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      ✦ O único journal de trading 100% em português
+    </div>
+    <h1 class="hero-title">
+      Pare de operar no escuro.<br>
+      <span class="hl">Domine sua performance.</span>
+    </h1>
+    <p class="hero-sub">
+      O Trader OS é o diário de trading profissional feito para traders de forex e prop firms.
+      Rastreie operações, monitore regras FTMO e Topstep, e melhore com análise de IA.
+    </p>
+    <div class="hero-cta">
+      <a href="/app?signup=1" class="btn-hero btn-hero-primary">Começar grátis agora</a>
+      <a href="#features" class="btn-hero btn-hero-ghost">Ver funcionalidades</a>
+    </div>
+    <div class="hero-social">
+      <div class="hero-avatars">
+        <span>JR</span><span>MS</span><span>PL</span><span>+</span>
+      </div>
+      <span>Mais de 500 traders já usam o Trader OS</span>
+    </div>
+  </div>
+</section>
+
+<!-- PREVIEW -->
+<div class="container">
+  <div class="preview">
+    <div class="preview-wrap">
+      <div class="preview-bar">
+        <div class="preview-dot" style="background:#FF5F57"></div>
+        <div class="preview-dot" style="background:#FFBD2E"></div>
+        <div class="preview-dot" style="background:#28C840"></div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--t3);margin-left:8px">traderos.app</span>
+      </div>
+      <div class="preview-inner">
+        <div class="preview-kpi">
+          <div class="preview-kpi-label">P&L do Mês</div>
+          <div class="preview-kpi-val" style="color:#00F5A0">+R$4.280</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi-label">Win Rate</div>
+          <div class="preview-kpi-val" style="color:#3B9EFF">67.4%</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi-label">Profit Factor</div>
+          <div class="preview-kpi-val" style="color:#00F5A0">2.18</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi-label">R:R Médio</div>
+          <div class="preview-kpi-val" style="color:#FFB547">2.4R</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi-label">Max Drawdown</div>
+          <div class="preview-kpi-val" style="color:#FF3D6B">-3.2%</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="preview-kpi-label">Dias Ativos</div>
+          <div class="preview-kpi-val">18</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">Funcionalidades</div>
+    <h2 class="section-title">Tudo que um trader profissional precisa</h2>
+    <p class="section-sub">Construído por traders, para traders. Sem complexidade desnecessária.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Dashboard em tempo real</div>
+        <div class="feature-desc">Curva de equity, win rate, profit factor, drawdown e expectância. Tudo atualizado ao registrar um trade.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <div class="feature-title">Monitor Prop Firm</div>
+        <div class="feature-desc">Regras FTMO, Topstep, The5%ers e mais. Alertas automáticos quando você se aproxima dos limites diários e totais.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📥</div>
+        <div class="feature-title">Importação automática</div>
+        <div class="feature-desc">Importe seu histórico do MT4, MT5, cTrader e NinjaTrader em segundos. Sem digitar dado por dado.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">Análise com IA</div>
+        <div class="feature-desc">Detecta seus padrões de comportamento: em quais dias você performa melhor, quais setups funcionam, onde está o problema.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title">Calendário visual</div>
+        <div class="feature-desc">Veja sua performance mês a mês em um calendário colorido. Dias verdes e vermelhos que mostram padrões rapidamente.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <div class="feature-title">Relatório PDF mensal</div>
+        <div class="feature-desc">Relatório completo gerado automaticamente com estatísticas, gráficos e análise de performance por setup e par.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROP FIRMS -->
+<section class="propfirms" id="propfirms">
+  <div class="container">
+    <div class="section-label">Prop Firms Suportadas</div>
+    <h2 class="section-title">Feito para prop traders</h2>
+    <p class="section-sub">Configure as regras da sua prop firm e receba alertas antes de violar qualquer limite.</p>
+    <div class="firms-grid">
+      <div class="firm-pill"><span class="firm-check">✓</span> FTMO</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> Topstep</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> The5%ers</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> My Forex Funds</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> Funded Next</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> E8 Funding</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> True Forex Funds</div>
+      <div class="firm-pill"><span class="firm-check">✓</span> Qualquer firma customizada</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="container">
+    <div class="section-label">Depoimentos</div>
+    <h2 class="section-title">O que traders dizem</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Finalmente um journal que fala português e entende as regras da FTMO. Passei no desafio de 100K usando o monitor de drawdown do Trader OS."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">JP</div>
+          <div>
+            <div class="testi-name">João Pedro M.</div>
+            <div class="testi-role">Prop trader · FTMO 100K</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"A análise de IA identificou que eu perco consistentemente às sextas. Mudei minha regra e meu drawdown caiu 40%. Impressionante."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">RC</div>
+          <div>
+            <div class="testi-name">Rafael C.</div>
+            <div class="testi-role">Day trader · Forex</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Importei 6 meses de histórico do MT5 em 30 segundos. O relatório PDF é profissional demais, uso para revisar com meu mentor toda semana."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">MA</div>
+          <div>
+            <div class="testi-name">Mariana A.</div>
+            <div class="testi-role">Scalper · Topstep</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-label">Preços</div>
+    <h2 class="section-title">Simples e transparente</h2>
+    <p class="section-sub">Comece grátis. Faça upgrade quando precisar de mais.</p>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Gratuito</div>
+        <div class="plan-price">R$0<small>/mês</small></div>
+        <div class="plan-desc">Para começar a trackear</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> 1 conta de trading</li>
+          <li><span class="check">✓</span> Últimos 30 dias</li>
+          <li><span class="check">✓</span> Dashboard básico</li>
+          <li><span class="check">✓</span> Calendário</li>
+        </ul>
+        <a href="/app?signup=1" class="btn-plan btn-plan-ghost">Começar grátis</a>
+      </div>
+
+      <div class="pricing-card popular">
+        <div class="popular-badge">Mais popular</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">R$97<small>/mês</small></div>
+        <div class="plan-desc">Para traders sérios</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Contas ilimitadas</li>
+          <li><span class="check">✓</span> Histórico completo</li>
+          <li><span class="check">✓</span> Importação MT4/MT5/cTrader</li>
+          <li><span class="check">✓</span> Monitor Prop Firm completo</li>
+          <li><span class="check">✓</span> Relatório PDF mensal</li>
+          <li><span class="check">✓</span> Analytics completos</li>
+          <li><span class="check">✓</span> PWA mobile</li>
+        </ul>
+        <a href="/app?signup=1&plan=pro" class="btn-plan btn-plan-primary">Assinar Pro</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">R$197<small>/mês</small></div>
+        <div class="plan-desc">Para quem quer o máximo</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Tudo do Pro</li>
+          <li><span class="check">✓</span> Análise com IA (Claude)</li>
+          <li><span class="check">✓</span> Integração MT4/MT5 automática</li>
+          <li><span class="check">✓</span> Alertas WhatsApp/Telegram</li>
+          <li><span class="check">✓</span> Perfil público verificado</li>
+          <li><span class="check">✓</span> Suporte prioritário</li>
+        </ul>
+        <a href="/app?signup=1&plan=premium" class="btn-plan btn-plan-ghost">Assinar Premium</a>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--t3);margin-top:20px">
+      Pagamento seguro via Stripe · Cancele a qualquer momento · Sem multa
+    </p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="faq container">
+    <div class="section-label" style="text-align:left">FAQ</div>
+    <h2 class="section-title" style="text-align:left;font-size:32px;margin-bottom:32px">Perguntas frequentes</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">O Trader OS funciona com qualquer prop firm?<span class="faq-chevron">▾</span></div>
+      <div class="faq-a">Sim. As principais (FTMO, Topstep, The5%ers, etc.) já vêm pré-configuradas com as regras corretas. Para qualquer outra firma, você pode configurar os limites manualmente.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Meus dados ficam seguros?<span class="faq-chevron">▾</span></div>
+      <div class="faq-a">Sim. Usamos Supabase com Row Level Security — cada usuário só acessa os próprios dados. Screenshots ficam no Supabase Storage com URLs privadas. Nunca compartilhamos dados de trading com terceiros.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Posso importar meu histórico do MT4/MT5?<span class="faq-chevron">▾</span></div>
+      <div class="faq-a">Sim, no plano Pro. Basta exportar o relatório de Account History do MetaTrader como CSV e fazer upload no Trader OS. O sistema detecta o formato automaticamente.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">A análise de IA é realmente útil?<span class="faq-chevron">▾</span></div>
+      <div class="faq-a">Sim. Com pelo menos 10 dias de dados, a IA (Claude) identifica em quais dias da semana você performa melhor, quais setups têm melhor RR, padrões emocionais e recomendações específicas para os próximos 7 dias.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Funciona no celular?<span class="faq-chevron">▾</span></div>
+      <div class="faq-a">Sim. O Trader OS é um PWA — pode ser instalado no iPhone e Android como um app. O layout é totalmente responsivo para registro rápido de trades mobile.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Posso cancelar a qualquer momento?<span class="faq-chevron">▾</span></div>
+      <div class="faq-a">Sim, sem taxa de cancelamento ou período mínimo. Cancele pelo portal do cliente Stripe em qualquer momento. Seus dados ficam preservados por 30 dias após o cancelamento.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-final">
+  <div class="container">
+    <div class="cta-box">
+      <h2>Comece hoje, de graça.</h2>
+      <p>Junte-se a centenas de traders que já usam o Trader OS para melhorar sua performance.</p>
+      <a href="/app?signup=1" class="btn-hero btn-hero-primary" style="display:inline-flex">
+        Criar conta gratuita agora
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-logo">TRADER OS</div>
+      <div class="footer-links">
+        <a href="/privacidade">Privacidade</a>
+        <a href="/termos">Termos</a>
+        <a href="mailto:suporte@traderos.app">Suporte</a>
+      </div>
+      <div class="footer-copy">© 2025 Trader OS · Feito no Brasil 🇧🇷</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// FAQ accordion
+document.querySelectorAll('.faq-item').forEach(item => {
+  item.querySelector('.faq-q').addEventListener('click', () => {
+    item.classList.toggle('open');
+  });
+});
+</script>
+</body>
+</html>
