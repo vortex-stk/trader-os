@@ -204,54 +204,51 @@ body::after {
   z-index: 300;
   align-self: flex-start;
 }
-.sidebar.collapsed {
-  width: 56px;
-}
-.sidebar.collapsed .sidebar-label,
-.sidebar.collapsed .sidebar-section-label,
-.sidebar.collapsed .sidebar-acct-card,
-.sidebar.collapsed .sb-collapse-label,
-.sidebar.collapsed .sb-logo-text {
-  opacity: 0; pointer-events: none; width: 0; overflow: hidden; white-space: nowrap;
-}
-.sidebar.collapsed .sidebar-item {
-  justify-content: center; padding: 11px 0;
-}
-.sidebar.collapsed .sidebar-icon { margin: 0 auto; }
-.sidebar.collapsed .sb-top { justify-content: center; padding: 0 0 10px; }
-.sidebar.collapsed .sb-logo-text { display: none; }
-
-/* Topo da sidebar alinhado com a topbar */
+/* ── Sidebar top ── */
 .sb-top {
   height: var(--nav-h);
-  display: flex; align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  cursor: pointer;
+  user-select: none;
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
+  overflow: hidden;
+  transition: background 0.15s;
 }
-.sidebar.collapsed .sb-top {
-  justify-content: center;
-  padding: 0;
+.sb-top:hover { background: rgba(255,255,255,0.04); }
+.sb-logo-text {
+  font-size: 14px; font-weight: 900; letter-spacing: 0.06em;
+  background: linear-gradient(90deg,var(--green),var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+  transition: opacity 0.2s, max-width 0.25s;
+  max-width: 200px;
+  overflow: hidden;
 }
-/* Itens com hover tooltip quando colapsado */
-.sidebar.collapsed .sidebar-item {
-  position: relative;
-}
+
+/* ── Collapsed state ── */
+.sidebar.collapsed { width: 56px; }
+.sidebar.collapsed .sb-logo-text { opacity: 0; max-width: 0; }
+.sidebar.collapsed .sb-top { padding: 0; justify-content: center; }
+.sidebar.collapsed .sidebar-label { opacity: 0; max-width: 0; overflow: hidden; transition: opacity 0.2s, max-width 0.25s; }
+.sidebar.collapsed .sidebar-section-label { opacity: 0; height: 0; padding: 0; overflow: hidden; }
+.sidebar.collapsed .sidebar-acct-card { opacity: 0; height: 0; overflow: hidden; padding: 0; }
+.sidebar.collapsed .sidebar-item { justify-content: center; padding: 11px 0; }
+.sidebar.collapsed .sidebar-icon { margin: 0 auto; }
+
+/* tooltip quando colapsado */
+.sidebar.collapsed .sidebar-item { position: relative; }
 .sidebar.collapsed .sidebar-item:hover::after {
   content: attr(data-tooltip);
   position: absolute;
-  left: calc(100% + 10px);
-  top: 50%; transform: translateY(-50%);
-  background: #1a2235;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px;
-  padding: 5px 10px;
-  font-size: 12px;
-  color: var(--text-1);
-  white-space: nowrap;
-  z-index: 999;
-  pointer-events: none;
+  left: calc(100% + 10px); top: 50%; transform: translateY(-50%);
+  background: #1a2235; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px; padding: 5px 10px;
+  font-size: 12px; color: var(--text-1);
+  white-space: nowrap; z-index: 999; pointer-events: none;
   box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
 
@@ -2059,12 +2056,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 <aside class="sidebar" id="main-sidebar">
 
   <!-- Topo: logo + botão colapso -->
-  <div class="sb-top" onclick="toggleSidebarCollapse()" title="Ocultar / mostrar menu"
-    style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:0 14px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:8px;user-select:none;transition:background 0.15s;border-radius:0;"
-    onmouseover="this.style.background='rgba(255,255,255,0.03)'"
-    onmouseout="this.style.background='transparent'">
-    <div id="sb-logo-mark" style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#050810;flex-shrink:0;transition:box-shadow 0.2s;">Ax</div>
-    <span class="sb-logo-text" style="font-size:14px;font-weight:900;letter-spacing:0.06em;background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;overflow:hidden;transition:opacity 0.2s,width 0.25s;">TRADER OS</span>
+  <div class="sb-top" onclick="toggleSidebarCollapse()">
+    <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#050810;flex-shrink:0;">Ax</div>
+    <span class="sb-logo-text">TRADER OS</span>
   </div>
 
   <!-- TRADING -->
