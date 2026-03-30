@@ -2102,37 +2102,49 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <span class="sb-logo-text">TRADER OS</span>
   </div>
 
-  <!-- TRADING -->
-  <div class="sidebar-section-label">Trading</div>
-  <div class="sidebar-item active" data-page="dashboard" data-tooltip="Dashboard" onclick="showPage('dashboard',null)">
-    <div class="sidebar-icon">📊</div><div class="sidebar-label">Dashboard</div>
+  <!-- 📊 NEGOCIAÇÃO -->
+  <div class="sidebar-section-label">Negociação</div>
+  <div class="sidebar-item active" data-page="dashboard" data-tooltip="Painel" onclick="showPage('dashboard',null)">
+    <div class="sidebar-icon">📊</div><div class="sidebar-label">Painel</div>
   </div>
-  <div class="sidebar-item" data-page="journal" data-tooltip="Trade Journal" onclick="showPage('journal',null)">
-    <div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div>
+  <div class="sidebar-item" data-page="trades" data-tooltip="Registro de Negociações" onclick="showPage('trades',null)">
+    <div class="sidebar-icon">📋</div><div class="sidebar-label">Negociações</div>
   </div>
-  <div class="sidebar-item" data-page="import" data-tooltip="Importar CSV" onclick="showPage('import',null)">
-    <div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div>
+  <div class="sidebar-item" data-page="journal" data-tooltip="Diário de Trades" onclick="showPage('journal',null)">
+    <div class="sidebar-icon">📓</div><div class="sidebar-label">Diário</div>
   </div>
   <div class="sidebar-item" data-page="calendar" data-tooltip="Calendário" onclick="showPage('calendar',null)">
     <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
   </div>
-  <div class="sidebar-item" data-page="reports" data-tooltip="Relatórios" onclick="showPage('reports',null)">
-    <div class="sidebar-icon">📈</div><div class="sidebar-label">Relatórios</div>
+  <div class="sidebar-item" data-page="reports" data-tooltip="Resumo Mensal" onclick="showPage('reports',null)">
+    <div class="sidebar-icon">📈</div><div class="sidebar-label">Resumo Mensal</div>
+  </div>
+  <div class="sidebar-item" data-page="import" data-tooltip="Importar CSV" onclick="showPage('import',null)">
+    <div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div>
   </div>
 
-  <!-- PLANEJAMENTO -->
+  <!-- 🎯 PLANEJAMENTO -->
   <div class="sidebar-section-label" style="margin-top:6px">Planejamento</div>
-  <div class="sidebar-item" data-page="metas" data-tooltip="Metas" onclick="showPage('metas',null)">
-    <div class="sidebar-icon">🎯</div><div class="sidebar-label">Metas</div>
+  <div class="sidebar-item" data-page="metas" data-tooltip="Alvos e Metas" onclick="showPage('metas',null)">
+    <div class="sidebar-icon">🎯</div><div class="sidebar-label">Alvos</div>
+  </div>
+  <div class="sidebar-item" data-page="risk" data-tooltip="Alertas de Risco" onclick="showPage('risk',null)">
+    <div class="sidebar-icon">🚨</div><div class="sidebar-label">Alertas de Risco</div>
+  </div>
+  <div class="sidebar-item" data-page="calculator" data-tooltip="Calculadora de Margem" onclick="showPage('calculator',null)">
+    <div class="sidebar-icon">🧮</div><div class="sidebar-label">Calculadora</div>
   </div>
 
-  <!-- INSIGHTS -->
-  <div class="sidebar-section-label" style="margin-top:6px">Insights</div>
+  <!-- 📈 PERCEPÇÕES -->
+  <div class="sidebar-section-label" style="margin-top:6px">Percepções</div>
   <div class="sidebar-item" data-page="analytics" data-tooltip="Análises" onclick="showPage('analytics',null)">
     <div class="sidebar-icon">🔬</div><div class="sidebar-label">Análises</div>
   </div>
+  <div class="sidebar-item" data-page="instruments" data-tooltip="Instrumentos Topo" onclick="showPage('instruments',null)">
+    <div class="sidebar-icon">🏆</div><div class="sidebar-label">Instrumentos</div>
+  </div>
 
-  <!-- CONTA -->
+  <!-- ⚙️ CONTA -->
   <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
   <div class="sidebar-item" data-page="settings" data-tooltip="Configurações" onclick="showPage('settings',null)">
     <div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div>
@@ -2780,6 +2792,73 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   </div>
 </div>
 
+
+<!-- ═══ REGISTRO DE NEGOCIAÇÕES ═══ -->
+<div class="page" id="page-trades">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Registro de Negociações</h1>
+      <p class="db-sub">Histórico completo de operações · <span id="trades-count">0</span> registros</p>
+    </div>
+    <div style="display:flex;gap:9px;align-items:center">
+      <button class="btn-export" onclick="exportCSV()">⬇ Exportar CSV</button>
+      <button class="btn-add" onclick="openTradeModal()">＋ Nova Operação</button>
+    </div>
+  </div>
+  <!-- Filtros -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <select id="trades-filter-month" onchange="renderTradesPage()" style="background:var(--bg-card);border:1px solid var(--border-md);border-radius:8px;padding:8px 12px;color:var(--text-1);font-size:12px;cursor:pointer">
+      <option value="">Todos os meses</option>
+    </select>
+    <select id="trades-filter-pair" onchange="renderTradesPage()" style="background:var(--bg-card);border:1px solid var(--border-md);border-radius:8px;padding:8px 12px;color:var(--text-1);font-size:12px;cursor:pointer">
+      <option value="">Todos os pares</option>
+    </select>
+    <select id="trades-filter-result" onchange="renderTradesPage()" style="background:var(--bg-card);border:1px solid var(--border-md);border-radius:8px;padding:8px 12px;color:var(--text-1);font-size:12px;cursor:pointer">
+      <option value="">Ganhos e Perdas</option>
+      <option value="win">Somente Ganhos</option>
+      <option value="loss">Somente Perdas</option>
+    </select>
+  </div>
+  <!-- KPIs rápidos -->
+  <div id="trades-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+  <!-- Tabela -->
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <div id="trades-table-body"></div>
+  </div>
+</div>
+
+<!-- ═══ ALERTAS DE RISCO ═══ -->
+<div class="page" id="page-risk">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Alertas de Risco</h1>
+      <p class="db-sub">Monitore drawdown, limites diários e alertas automáticos</p>
+    </div>
+  </div>
+  <div id="risk-alerts-content"></div>
+</div>
+
+<!-- ═══ CALCULADORA DE MARGEM ═══ -->
+<div class="page" id="page-calculator">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Calculadora de Margem</h1>
+      <p class="db-sub">Dimensione sua posição e gerencie o risco antes de operar</p>
+    </div>
+  </div>
+  <div id="calc-content"></div>
+</div>
+
+<!-- ═══ INSTRUMENTOS TOPO ═══ -->
+<div class="page" id="page-instruments">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Instrumentos de Topo</h1>
+      <p class="db-sub">Desempenho por ativo · quais pares geram mais resultado</p>
+    </div>
+  </div>
+  <div id="instruments-content"></div>
+</div>
 </main>
 </div>
 
@@ -3528,13 +3607,17 @@ function showPage(name, btn, isMobile=false) {
   if (mBtn) mBtn.classList.add('active');
   closeDropdowns();
   if (name==='calendar')  { setTimeout(renderCalendar,  20); }
-  if (name==='journal')   { renderJournal(); }
-  if (name==='reports')   { renderReports(); }
-  if (name==='settings')  { loadSettings(); }
-  if (name==='dashboard') { setTimeout(renderDashboard, 20); }
-  if (name==='metas')     { setTimeout(renderMetas, 20); }
-  if (name==='analytics') { setTimeout(renderAnalytics, 50); }
-  if (name==='profile')   { loadProfile(); }
+  if (name==='journal')     { renderJournal(); }
+  if (name==='reports')     { renderReports(); }
+  if (name==='settings')    { loadSettings(); }
+  if (name==='dashboard')   { setTimeout(renderDashboard, 20); }
+  if (name==='metas')       { setTimeout(renderMetas, 20); }
+  if (name==='analytics')   { setTimeout(renderAnalytics, 50); }
+  if (name==='profile')     { loadProfile(); }
+  if (name==='trades')      { setTimeout(renderTradesPage, 20); }
+  if (name==='risk')        { setTimeout(renderRiskPage, 20); }
+  if (name==='calculator')  { setTimeout(renderCalculatorPage, 20); }
+  if (name==='instruments') { setTimeout(renderInstrumentsPage, 20); }
 }
 
 function toggleDropdown(id) {
@@ -5214,6 +5297,340 @@ function showLoginPanel() {
     }
   }
 })();
+
+
+// ════════════════════════════════════════
+//  REGISTRO DE NEGOCIAÇÕES
+// ════════════════════════════════════════
+function renderTradesPage() {
+  const all = getTrades();
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  // Popula filtros
+  const monthSel = document.getElementById('trades-filter-month');
+  const pairSel  = document.getElementById('trades-filter-pair');
+  if (monthSel && monthSel.options.length <= 1) {
+    const months = [...new Set(all.map(t => t.date.slice(0,7)))].sort().reverse();
+    months.forEach(m => {
+      const [y, mo] = m.split('-');
+      const opt = document.createElement('option');
+      opt.value = m; opt.textContent = MONTHS[parseInt(mo)-1] + ' ' + y;
+      monthSel.appendChild(opt);
+    });
+  }
+  if (pairSel && pairSel.options.length <= 1) {
+    const pairs = [...new Set(all.map(t => t.pair).filter(Boolean))].sort();
+    pairs.forEach(p => {
+      const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
+      pairSel.appendChild(opt);
+    });
+  }
+
+  const filterMonth  = monthSel?.value || '';
+  const filterPair   = pairSel?.value  || '';
+  const filterResult = document.getElementById('trades-filter-result')?.value || '';
+
+  let trades = [...all].sort((a,b) => b.date < a.date ? -1 : 1);
+  if (filterMonth)  trades = trades.filter(t => t.date.startsWith(filterMonth));
+  if (filterPair)   trades = trades.filter(t => t.pair === filterPair);
+  if (filterResult === 'win')  trades = trades.filter(t => t.pnl > 0);
+  if (filterResult === 'loss') trades = trades.filter(t => t.pnl < 0);
+
+  const countEl = document.getElementById('trades-count');
+  if (countEl) countEl.textContent = trades.length;
+
+  // KPIs
+  const wins   = trades.filter(t => t.pnl > 0);
+  const losses = trades.filter(t => t.pnl < 0);
+  const total  = trades.reduce((a,t) => a + t.pnl, 0);
+  const wr     = trades.length ? (wins.length/trades.length*100).toFixed(1) : '—';
+  const kpisEl = document.getElementById('trades-kpis');
+  if (kpisEl) kpisEl.innerHTML = [
+    ['P&L Total',   (total>=0?'+R$':'-R$')+Math.abs(total).toFixed(2), total>=0?'#00F5A0':'#FF5B70'],
+    ['Operações',   trades.length, '#5BB4FF'],
+    ['Taxa Vitória',wr+'%', '#A78BFA'],
+    ['Melhor',      wins.length ? '+R$'+Math.max(...wins.map(t=>t.pnl)).toFixed(2) : '—', '#00F5A0'],
+  ].map(([k,v,c]) => `
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-3);margin-bottom:6px">${k}</div>
+      <div style="font-size:20px;font-weight:800;color:${c};font-family:var(--font-mono)">${v}</div>
+    </div>`).join('');
+
+  // Tabela
+  const tbody = document.getElementById('trades-table-body');
+  if (!tbody) return;
+  if (trades.length === 0) {
+    tbody.innerHTML = '<div style="padding:48px;text-align:center;color:var(--text-3)">Nenhuma operação encontrada</div>';
+    return;
+  }
+  tbody.innerHTML = `
+    <div style="display:grid;grid-template-columns:100px 80px 70px 70px 80px 80px 1fr;gap:0;border-bottom:1px solid var(--border);padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-4);font-weight:700">
+      <span>Data</span><span>Par</span><span>Trades</span><span>R:R</span><span>Sessão</span><span>P&L</span><span>Setup / Notas</span>
+    </div>
+    ${trades.map(t => `
+    <div style="display:grid;grid-template-columns:100px 80px 70px 70px 80px 80px 1fr;gap:0;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="openDayDetail('${t.date}')">
+      <span style="color:var(--text-2);font-family:var(--font-mono)">${t.date.slice(5)}</span>
+      <span style="font-weight:600">${t.pair||'—'}</span>
+      <span style="color:var(--text-3)">${t.trades||1}</span>
+      <span style="color:var(--text-3)">${t.rr ? t.rr+'R' : '—'}</span>
+      <span style="color:var(--text-3);font-size:11px">${t.session||'—'}</span>
+      <span style="font-family:var(--font-mono);font-weight:800;color:${t.pnl>=0?'#00F5A0':'#FF5B70'}">${t.pnl>=0?'+':'-'}R$${Math.abs(t.pnl).toFixed(2)}</span>
+      <span style="color:var(--text-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.setup||''} ${t.notes?'· '+t.notes.slice(0,40):''}</span>
+    </div>`).join('')}`;
+}
+
+// ════════════════════════════════════════
+//  ALERTAS DE RISCO
+// ════════════════════════════════════════
+function renderRiskPage() {
+  const all  = getTrades();
+  const acct = getAcct();
+  const cfg  = getCfg();
+  const cap  = acct.capital || 10000;
+  const now  = new Date();
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const month  = all.filter(t => { const d = new Date(t.date+'T12:00:00'); return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth(); });
+  const today  = all.find(t => t.date === todayStr());
+
+  const totalPnL  = all.reduce((a,t)=>a+t.pnl,0);
+  const monthPnL  = month.reduce((a,t)=>a+t.pnl,0);
+  const todayPnL  = today ? today.pnl : 0;
+  const maxDD     = calcMaxDD(month);
+  const ddPct     = cap > 0 ? maxDD/cap*100 : 0;
+  const dailyLim  = cfg.daily  || cap*0.05;
+  const totalLim  = cfg.maxloss|| cap*0.10;
+  const dailyPct  = dailyLim  > 0 ? Math.abs(Math.min(0,todayPnL))/dailyLim*100 : 0;
+  const totalPct  = totalLim  > 0 ? Math.abs(Math.min(0,totalPnL))/totalLim*100 : 0;
+
+  const alerts = [];
+  if (dailyPct >= 90) alerts.push({ level:'danger', icon:'⛔', title:'Limite Diário Crítico!', msg:`Você usou ${dailyPct.toFixed(0)}% do seu limite diário` });
+  else if (dailyPct >= 70) alerts.push({ level:'warning', icon:'⚠️', title:'Atenção: Limite Diário', msg:`${dailyPct.toFixed(0)}% do limite diário utilizado — tome cuidado` });
+  if (totalPct >= 90) alerts.push({ level:'danger', icon:'🚨', title:'Max Loss Quase Atingido!', msg:`${totalPct.toFixed(0)}% do limite total consumido` });
+  else if (totalPct >= 70) alerts.push({ level:'warning', icon:'⚠️', title:'Drawdown Elevado', msg:`${totalPct.toFixed(0)}% do limite total consumido` });
+  if (alerts.length === 0) alerts.push({ level:'ok', icon:'✅', title:'Tudo sob controle', msg:'Nenhum alerta ativo no momento. Continue operando com disciplina.' });
+
+  const el = document.getElementById('risk-alerts-content');
+  if (!el) return;
+
+  const bar = (pct, color) => `<div style="height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;margin-top:8px"><div style="height:100%;width:${Math.min(100,pct)}%;background:${color};border-radius:99px;transition:width 0.8s ease"></div></div>`;
+  const alertColors = { danger:'rgba(255,61,107,0.08)', warning:'rgba(255,181,71,0.08)', ok:'rgba(0,245,160,0.06)' };
+  const alertBorders = { danger:'rgba(255,61,107,0.3)', warning:'rgba(255,181,71,0.3)', ok:'rgba(0,245,160,0.2)' };
+  const alertText = { danger:'#FF5B70', warning:'#FFB547', ok:'#00F5A0' };
+
+  el.innerHTML = `
+    <!-- Alertas ativos -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+      ${alerts.map(a => `
+      <div style="background:${alertColors[a.level]};border:1px solid ${alertBorders[a.level]};border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:12px">
+        <span style="font-size:22px">${a.icon}</span>
+        <div>
+          <div style="font-weight:700;color:${alertText[a.level]};font-size:14px">${a.title}</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:3px">${a.msg}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Gauges de risco -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:24px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-3);margin-bottom:8px">Perda Hoje</div>
+        <div style="font-size:22px;font-weight:800;font-family:var(--font-mono);color:${todayPnL<0?'#FF5B70':'#00F5A0'}">${todayPnL>=0?'+':'-'}R$${Math.abs(todayPnL).toFixed(2)}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px">Limite: R$${dailyLim.toFixed(0)}</div>
+        ${bar(dailyPct, dailyPct>=90?'#FF3D6B':dailyPct>=70?'#FFB547':'#00F5A0')}
+        <div style="font-size:10px;color:var(--text-3);margin-top:5px;text-align:right">${dailyPct.toFixed(0)}% usado</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-3);margin-bottom:8px">Drawdown Total</div>
+        <div style="font-size:22px;font-weight:800;font-family:var(--font-mono);color:${totalPnL<0?'#FF5B70':'#00F5A0'}">${totalPnL>=0?'+':'-'}R$${Math.abs(totalPnL).toFixed(2)}</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px">Limite: R$${totalLim.toFixed(0)}</div>
+        ${bar(totalPct, totalPct>=90?'#FF3D6B':totalPct>=70?'#FFB547':'#00F5A0')}
+        <div style="font-size:10px;color:var(--text-3);margin-top:5px;text-align:right">${totalPct.toFixed(0)}% usado</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-3);margin-bottom:8px">Max Drawdown Mês</div>
+        <div style="font-size:22px;font-weight:800;font-family:var(--font-mono);color:${ddPct>5?'#FF5B70':'#00F5A0'}">${ddPct.toFixed(2)}%</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:4px">Ref: ${cap>0?(cfg.maxloss||cap*0.10)/cap*100:10}% máximo</div>
+        ${bar(ddPct/(cfg.maxloss?cfg.maxloss/cap*100:10)*100, ddPct>=8?'#FF3D6B':ddPct>=5?'#FFB547':'#00F5A0')}
+        <div style="font-size:10px;color:var(--text-3);margin-top:5px;text-align:right">${month.length} dias no mês</div>
+      </div>
+    </div>
+
+    <!-- Regras configuradas -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:14px">Regras de Risco Configuradas</div>
+      ${[
+        ['Limite de Perda Diária', 'R$'+dailyLim.toFixed(0)],
+        ['Limite de Perda Total', 'R$'+totalLim.toFixed(0)],
+        ['Capital da Conta', 'R$'+cap.toLocaleString('pt-BR')],
+        ['Max DD Permitido (%)', ((cfg.maxloss||cap*0.10)/cap*100).toFixed(1)+'%'],
+      ].map(([k,v]) => `
+        <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px">
+          <span style="color:var(--text-2)">${k}</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--text-1)">${v}</span>
+        </div>`).join('')}
+      <div style="margin-top:14px">
+        <button onclick="closeDropdowns();showPage('settings',null)" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;padding:9px 16px;color:var(--purple);font-size:13px;font-weight:600;cursor:pointer">⚙️ Alterar limites nas Configurações</button>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════
+//  CALCULADORA DE MARGEM
+// ════════════════════════════════════════
+function renderCalculatorPage() {
+  const el = document.getElementById('calc-content');
+  if (!el || el.dataset.rendered) return;
+  el.dataset.rendered = '1';
+  const acct = getAcct();
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px">
+        <div style="font-size:15px;font-weight:800;margin-bottom:20px">📐 Tamanho de Posição</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          ${[
+            ['Capital da Conta (R$)', 'calc-capital', acct.capital||10000, 'number'],
+            ['Risco por Trade (%)', 'calc-risk-pct', '1', 'number'],
+            ['Stop Loss (pips / pontos)', 'calc-stop', '20', 'number'],
+            ['Valor por Pip/Ponto (R$)', 'calc-pip-val', '10', 'number'],
+          ].map(([lbl, id, val, type]) => `
+            <div>
+              <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);display:block;margin-bottom:5px">${lbl}</label>
+              <input id="${id}" type="${type}" value="${val}" oninput="calcPosition()"
+                style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border-md);border-radius:8px;padding:10px 13px;color:var(--text-1);font-family:var(--font-mono);font-size:14px;outline:none">
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:20px;padding:16px;background:rgba(0,245,160,0.06);border:1px solid rgba(0,245,160,0.2);border-radius:10px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:8px">Resultado</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:13px;color:var(--text-2)">Risco em R$</span>
+            <span id="calc-risk-brl" style="font-size:18px;font-weight:800;color:#00F5A0;font-family:var(--font-mono)">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:6px">
+            <span style="font-size:13px;color:var(--text-2)">Lotes / Contratos</span>
+            <span id="calc-lots" style="font-size:24px;font-weight:900;color:#fff;font-family:var(--font-mono)">—</span>
+          </div>
+        </div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px">
+        <div style="font-size:15px;font-weight:800;margin-bottom:20px">🎯 Relação Risco/Retorno</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          ${[
+            ['Entrada', 'calc-entry', '', 'number'],
+            ['Stop Loss', 'calc-sl', '', 'number'],
+            ['Take Profit', 'calc-tp', '', 'number'],
+          ].map(([lbl, id, val, type]) => `
+            <div>
+              <label style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);display:block;margin-bottom:5px">${lbl}</label>
+              <input id="${id}" type="${type}" value="${val}" placeholder="ex: 1850.00" oninput="calcRR()"
+                style="width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border-md);border-radius:8px;padding:10px 13px;color:var(--text-1);font-family:var(--font-mono);font-size:14px;outline:none">
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:20px;padding:16px;background:rgba(124,92,252,0.07);border:1px solid rgba(124,92,252,0.2);border-radius:10px">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:8px">R:R da Operação</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:13px;color:var(--text-2)">Relação R:R</span>
+            <span id="calc-rr-result" style="font-size:28px;font-weight:900;color:var(--purple);font-family:var(--font-mono)">—</span>
+          </div>
+          <div id="calc-rr-qual" style="font-size:12px;color:var(--text-3);margin-top:6px">Informe entrada, stop e alvo</div>
+        </div>
+      </div>
+    </div>`;
+  calcPosition();
+}
+
+function calcPosition() {
+  const cap    = parseFloat(document.getElementById('calc-capital')?.value) || 0;
+  const riskPct= parseFloat(document.getElementById('calc-risk-pct')?.value)|| 0;
+  const stop   = parseFloat(document.getElementById('calc-stop')?.value)    || 0;
+  const pipVal = parseFloat(document.getElementById('calc-pip-val')?.value) || 0;
+  const riskBRL= cap * (riskPct/100);
+  const lots   = (stop > 0 && pipVal > 0) ? riskBRL / (stop * pipVal) : 0;
+  const riskEl = document.getElementById('calc-risk-brl');
+  const lotsEl = document.getElementById('calc-lots');
+  if (riskEl) riskEl.textContent = 'R$' + riskBRL.toFixed(2);
+  if (lotsEl) lotsEl.textContent = lots > 0 ? lots.toFixed(2) + ' lotes' : '—';
+}
+
+function calcRR() {
+  const entry = parseFloat(document.getElementById('calc-entry')?.value) || 0;
+  const sl    = parseFloat(document.getElementById('calc-sl')?.value)    || 0;
+  const tp    = parseFloat(document.getElementById('calc-tp')?.value)    || 0;
+  if (!entry || !sl || !tp) return;
+  const risk   = Math.abs(entry - sl);
+  const reward = Math.abs(tp - entry);
+  const rr     = risk > 0 ? reward/risk : 0;
+  const rrEl   = document.getElementById('calc-rr-result');
+  const qualEl = document.getElementById('calc-rr-qual');
+  if (rrEl)   rrEl.textContent   = rr.toFixed(2) + 'R';
+  if (qualEl) qualEl.textContent = rr >= 3 ? '✅ Excelente relação' : rr >= 2 ? '🟡 Boa relação' : rr >= 1 ? '⚠️ Aceitável' : '❌ Risco elevado';
+  if (rrEl)   rrEl.style.color   = rr >= 2 ? '#00F5A0' : rr >= 1 ? '#FFB547' : '#FF5B70';
+}
+
+// ════════════════════════════════════════
+//  INSTRUMENTOS DE TOPO
+// ════════════════════════════════════════
+function renderInstrumentsPage() {
+  const all = getTrades();
+  const el  = document.getElementById('instruments-content');
+  if (!el) return;
+
+  // Agrupa por par
+  const byPair = {};
+  all.forEach(t => {
+    const pair = t.pair || 'Sem par';
+    if (!byPair[pair]) byPair[pair] = { trades:[], pnl:0, wins:0, ops:0 };
+    byPair[pair].trades.push(t);
+    byPair[pair].pnl  += t.pnl;
+    byPair[pair].ops  += (t.trades || 1);
+    if (t.pnl > 0) byPair[pair].wins++;
+  });
+
+  const sorted = Object.entries(byPair)
+    .map(([pair, d]) => ({ pair, ...d, wr: d.trades.length ? d.wins/d.trades.length*100 : 0 }))
+    .sort((a,b) => b.pnl - a.pnl);
+
+  if (sorted.length === 0) {
+    el.innerHTML = '<div style="padding:60px;text-align:center;color:var(--text-3)">Sem dados. Registre operações com par definido.</div>';
+    return;
+  }
+
+  const maxPnL = Math.max(...sorted.map(s => Math.abs(s.pnl)), 1);
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="font-size:14px;font-weight:800;margin-bottom:16px">🏆 Ranking por P&L</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${sorted.map((s, i) => `
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="font-size:18px;width:28px;text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</span>
+              <div style="flex:1">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-weight:700;font-size:13px">${s.pair}</span>
+                  <span style="font-family:var(--font-mono);font-weight:800;font-size:13px;color:${s.pnl>=0?'#00F5A0':'#FF5B70'}">${s.pnl>=0?'+':'-'}R$${Math.abs(s.pnl).toFixed(2)}</span>
+                </div>
+                <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden">
+                  <div style="height:100%;width:${Math.abs(s.pnl)/maxPnL*100}%;background:${s.pnl>=0?'linear-gradient(90deg,#00F5A0,#00C8FF)':'linear-gradient(90deg,#FF5B70,#FF3D6B)'};border-radius:99px"></div>
+                </div>
+                <div style="font-size:10px;color:var(--text-3);margin-top:3px">${s.trades.length} dias · ${s.ops} ops · WR ${s.wr.toFixed(0)}%</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <div style="font-size:14px;font-weight:800;margin-bottom:16px">📊 Estatísticas por Ativo</div>
+        <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:0;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:8px">
+          ${['Ativo','P&L','Dias','WR'].map(h=>`<span style="font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-4);font-weight:700">${h}</span>`).join('')}
+        </div>
+        ${sorted.map(s => `
+          <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:0;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+            <span style="font-weight:600;font-size:13px">${s.pair}</span>
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:${s.pnl>=0?'#00F5A0':'#FF5B70'}">${s.pnl>=0?'+':'-'}${Math.abs(s.pnl).toFixed(0)}</span>
+            <span style="font-size:12px;color:var(--text-3)">${s.trades.length}</span>
+            <span style="font-size:12px;color:${s.wr>=50?'#00F5A0':'#FF5B70'}">${s.wr.toFixed(0)}%</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
 </script>
 </body>
 </html>
