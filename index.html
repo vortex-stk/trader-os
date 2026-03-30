@@ -1520,7 +1520,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* ── 5 KPI CARDS ── */
 .db-kpi-row {
-  display:grid; grid-template-columns:repeat(5,1fr);
+  display:grid; grid-template-columns:repeat(6,1fr);
   gap:12px; margin-bottom:12px;
 }
 .db-kpi-card {
@@ -1581,7 +1581,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .eq-stat-val.r { color:#FF5B70; }
 .eq-stat-lbl { display:block; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(255,255,255,0.28); margin-top:4px; font-weight:700; }
 
-/* Performance card */
+/* Desempenho card */
 .db-perf-card {
   background:#0c1220; border:1px solid rgba(255,255,255,0.07); isolation:isolate; position:relative; z-index:1;
   border-radius:12px; padding:22px 20px;
@@ -1632,7 +1632,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* Responsive */
 @media(max-width:1400px) { .db-main-grid { grid-template-columns:1fr 270px; } }
-@media(max-width:1200px) { .db-kpi-row { grid-template-columns:repeat(3,1fr); } .db-main-grid { grid-template-columns:1fr; } .db-bottom-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:1400px) { .db-kpi-row { grid-template-columns:repeat(3,1fr); } .db-main-grid { grid-template-columns:1fr; } .db-bottom-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:1200px) { .db-kpi-row { grid-template-columns:repeat(3,1fr); } .db-bottom-grid { grid-template-columns:1fr 1fr; } }
 @media(max-width:900px)  { .db-kpi-row { grid-template-columns:1fr 1fr; } .db-bottom-grid { grid-template-columns:1fr; } }
 @media(max-width:600px)  { .db-kpi-val { font-size:19px; } }
 
@@ -2226,7 +2227,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
     <!-- Right: performance summary -->
     <div class="db-perf-card">
-      <div class="db-perf-title">Performance</div>
+      <div class="db-perf-title">Desempenho</div>
       <!-- Donut -->
       <div class="db-donut-wrap">
         <div style="position:relative;width:90px;height:90px;flex-shrink:0">
@@ -2244,8 +2245,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </div>
   </div>
 
-  <!-- BOTTOM 3 PANELS -->
-  <div class="db-bottom-grid">
+  <!-- BOTTOM 4 PANELS -->
+  <div class="db-bottom-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
     <!-- Monthly P&L bar chart -->
     <div class="db-bottom-card">
       <div class="db-bottom-title">P&amp;L Mensal</div>
@@ -2264,6 +2265,12 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <div class="db-bottom-title">Por Sessão</div>
       <div class="db-bottom-sub">P&amp;L por sessão de mercado</div>
       <div class="db-session-bars" id="db-session-bars"></div>
+    </div>
+    <!-- Divisão de Direção -->
+    <div class="db-bottom-card">
+      <div class="db-bottom-title">Divisão de Direção</div>
+      <div class="db-bottom-sub">Compra vs Venda</div>
+      <div id="db-direction-bars" style="display:flex;flex-direction:column;gap:16px;margin-top:8px"></div>
     </div>
   </div>
 
@@ -2292,7 +2299,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <div class="metas-goals-grid" id="metas-goals-grid"></div>
 
   <!-- KPI row de metas -->
-  <div class="section-lbl">Indicadores de Performance</div>
+  <div class="section-lbl">Indicadores de Desempenho</div>
   <div class="metas-kpi-row" id="metas-kpi-row"></div>
 
   <!-- Gráficos de metas -->
@@ -2501,9 +2508,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <div class="an-card-sub">Por tamanho de balde de P&amp;L</div>
       <canvas id="an-dist-chart" height="180"></canvas>
     </div>
-    <!-- Top-right: Pair Performance -->
+    <!-- Top-right: Pair Desempenho -->
     <div class="an-card">
-      <div class="an-card-title">Performance por Par</div>
+      <div class="an-card-title">Desempenho por Par</div>
       <div class="an-card-sub">Lucro e prejuízo acumulados por instrumento</div>
       <canvas id="an-pair-chart" height="180"></canvas>
     </div>
@@ -3642,36 +3649,44 @@ function renderDashboard() {
   const pnlDiff=prevPnL!==0?((monthPnL-prevPnL)/Math.abs(prevPnL)*100):0;
   const retPct=acct.capital>0?(totalPnL/acct.capital*100):0;
 
-  // ── 5 KPI CARDS ──
+  // ── 6 KPI CARDS ──
+  const todayPnL = today ? today.pnl : 0;
+  const todayTrades = today ? (today.trades||0) : 0;
   const ddPct=acct.capital>0?(calcMaxDD(month)/acct.capital*100):0;
   const limitPct=cfg.maxloss>0?(cfg.maxloss/(acct.capital||10000)*100):10;
   const kpis=[
+    { tag:'Hoje',
+      val:(todayPnL>=0?'+R$':'-R$')+Math.abs(todayPnL).toFixed(2),
+      cls:todayPnL>0?'g':todayPnL<0?'r':'',
+      sub:today?`${todayTrades} trade${todayTrades!==1?'s':''} registrado${todayTrades!==1?'s':''}`:'Nenhum trade hoje',
+      arrow:todayPnL>=0?'up':'down',
+      line:'linear-gradient(90deg,#22D3EE,#3B9EFF)' },
     { tag:'P&L do Mês',
       val:(monthPnL>=0?'+R$':'-R$')+Math.abs(monthPnL).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.'),
       cls:monthPnL>=0?'g':'r',
-      sub: pnlDiff!==0?`${pnlDiff>=0?'▲':'▼'} ${Math.abs(pnlDiff).toFixed(1)}% em comparação com o mês passado`:'Primeiro mês',
+      sub: pnlDiff!==0?`${pnlDiff>=0?'▲':'▼'} ${Math.abs(pnlDiff).toFixed(1)}% vs mês passado`:'Primeiro mês',
       arrow:pnlDiff>=0?'up':'down',
       line:'linear-gradient(90deg,#00F5A0,#00C8FF)' },
-    { tag:'Win Rate',
+    { tag:'Taxa de Vitórias',
       val:wr.toFixed(1)+'%', cls:'b',
       sub:wr>=50?`▲ ${(wr-50).toFixed(1)}pts acima de 50%`:`▼ ${(50-wr).toFixed(1)}pts abaixo de 50%`,
-      arrow:'up',
+      arrow:wr>=50?'up':'down',
       line:'linear-gradient(90deg,#3B9EFF,#7C5CFC)' },
-    { tag:'Profit Factor',
+    { tag:'Fator de Lucro',
       val:pf===null?(wins.length>0?'N/A':'—'):pf.toFixed(2), cls:'',
       sub:rr>0?`R:R atual: ${rr.toFixed(2)}R`:'Sem dados suficientes',
       arrow:'up',
       line:'linear-gradient(90deg,#00C8FF,#3B9EFF)' },
-    { tag:'Max Drawdown',
+    { tag:'Redução Máxima',
       val:ddPct>0?'-'+ddPct.toFixed(2)+'%':'+0,00%', cls:'r',
       sub:`Limite: ${limitPct.toFixed(0)}% · ${ddPct<limitPct*0.5?'Seguro':'Atenção'}`,
       arrow:'down',
       line:'linear-gradient(90deg,#FF3D6B,#FF8C69)' },
-    { tag:'R:R Médio',
-      val:rr>0?rr.toFixed(2)+'R':'—', cls:'o',
-      sub:`▲ Total de ${totalTrades} transações`,
+    { tag:'Consistência',
+      val:month.length?Math.min(99,Math.max(0,Math.round(wins.length/month.length*100*(rr>1?1.1:0.9))))+'%':'—', cls:'p',
+      sub:`Total: ${totalTrades} operações`,
       arrow:'up',
-      line:'linear-gradient(90deg,#FFB547,#FFD700)' },
+      line:'linear-gradient(90deg,#A78BFA,#7C5CFC)' },
   ];
   const kpiEl=document.getElementById('kpi-grid');
   if(kpiEl) kpiEl.innerHTML=kpis.map(k=>`
@@ -3692,6 +3707,16 @@ function renderDashboard() {
 
   // ── EQUITY CHART ──
   renderEquity(all, acct.capital||10000);
+  // ResizeObserver: reconstrói o chart quando sidebar muda largura
+  if (!window._eqResizeObs) {
+    window._eqResizeObs = new ResizeObserver(() => {
+      if (document.getElementById('page-dashboard')?.classList.contains('active')) {
+        renderEquity(getTrades(), getAcct().capital||10000);
+      }
+    });
+    const eqCard = document.querySelector('.db-equity-card');
+    if (eqCard) window._eqResizeObs.observe(eqCard);
+  }
 
   // ── WIN RATE DONUT ──
   renderWRDonut(wins.length, losses.length, wr);
@@ -3709,13 +3734,13 @@ function renderDashboard() {
   const sharpe=avgLoss>0?(expectancy/(avgLoss||1)*Math.sqrt(month.length||1)):0;
   const perfEl=document.getElementById('db-perf-list');
   if(perfEl) perfEl.innerHTML=[
-    ['Avg Ganho',  avgWin>0?'+R$'+avgWin.toFixed(0):'—', 'g'],
-    ['Avg Perda',    avgLoss>0?'-R$'+avgLoss.toFixed(0):'—', 'r'],
+    ['Ganho Médio',  avgWin>0?'+R$'+avgWin.toFixed(0):'—', 'g'],
+    ['Perda Média',    avgLoss>0?'-R$'+avgLoss.toFixed(0):'—', 'r'],
     ['Melhor Dia',   sorted[0]?'+R$'+sorted[0].pnl.toFixed(0):'—', 'g'],
     ['Pior Dia',       sorted.at(-1)?'-R$'+Math.abs(sorted.at(-1).pnl).toFixed(0):'—', 'r'],
-    ['Profit Factor', pf===null?(wins.length>0?'N/A':'—'):pf.toFixed(2), 'b'],
-    ['Expectância',    '+R$'+expectancy.toFixed(0)+'/transação', 'g'],
-    ['Sharpe Ratio',sharpe.toFixed(2), 'o'],
+    ['Fator de Lucro', pf===null?(wins.length>0?'N/A':'—'):pf.toFixed(2), 'b'],
+    ['Expectativa',    '+R$'+expectancy.toFixed(0)+'/transação', 'g'],
+    ['Índice de Sharpe',sharpe.toFixed(2), 'o'],
     ['Consistência',   Math.min(99,Math.max(0,consistency))+'%', 'b'],
   ].map(([k,v,c])=>{const colMap={g:'#00F5A0',r:'#FF5B70',b:'#5BB4FF',o:'#FFB547',p:'#A78BFA',y:'#FFD700'};return`<div class="db-perf-row"><span class="db-perf-key">${k}</span><span class="db-perf-val" style="color:${colMap[c]||'#fff'}">${v}</span></div>`}).join('');
 
@@ -4148,7 +4173,7 @@ function renderAnalytics() {
     });
   }
 
-  // ── 2. Pair Performance (horizontal bar) ──
+  // ── 2. Pair Desempenho (horizontal bar) ──
   const pairMap = {};
   all.forEach(t => {
     if(!t.pair) return;
@@ -4305,7 +4330,7 @@ const BROKER_HINTS = {
   mt4: '<strong style="color:var(--text)">MT4/MT5</strong> — Exporte o histórico de trades em CSV. Colunas: <code style="color:var(--blue)">Ticket, Open Time, Type, Size, Symbol, Open Price, S/L, T/P, Close Time, Close Price, Commission, Swap, Profit</code>',
   topstep: '<strong style="color:var(--text)">Topstep</strong> — No dashboard Topstep: Reports → Export CSV. Colunas: <code style="color:var(--blue)">Date, Contract, P&L, Commissions, Net P&L</code>',
   ftmo: '<strong style="color:var(--text)">FTMO</strong> — No FTMO Client Area: Trade History → Export. Colunas: <code style="color:var(--blue)">Time, Deal, Symbol, Type, Volume, Price, Profit</code>',
-  tradovate: '<strong style="color:var(--text)">Tradovate</strong> — Analytics → Performance → Export CSV. Colunas: <code style="color:var(--blue)">TradeDate, Symbol, Side, Qty, FillPrice, P&L</code>'
+  tradovate: '<strong style="color:var(--text)">Tradovate</strong> — Analytics → Desempenho → Export CSV. Colunas: <code style="color:var(--blue)">TradeDate, Symbol, Side, Qty, FillPrice, P&L</code>'
 };
 
 function selectBroker(b, btn) {
@@ -4691,7 +4716,7 @@ function renderMetas() {
   const totalTrades=month.reduce((a,t)=>a+(t.trades||0),0);
   const kpiEl=document.getElementById('metas-kpi-row');
   if(kpiEl) kpiEl.innerHTML=[
-    {icon:'💹',label:'Profit Factor',val:pf===null?'N/A':pf.toFixed(2),sub:'Meta: >1.5',color:pf===null||pf>=1.5?'var(--green)':'var(--red)'},
+    {icon:'💹',label:'Fator de Lucro',val:pf===null?'N/A':pf.toFixed(2),sub:'Meta: >1.5',color:pf===null||pf>=1.5?'var(--green)':'var(--red)'},
     {icon:'📊',label:'Expectativa/Dia',val:'R$'+expectancy.toFixed(2),sub:'Retorno esperado',color:expectancy>=0?'var(--green)':'var(--red)'},
     {icon:'📉',label:'Max Drawdown',val:'R$'+maxDD.toFixed(2),sub:'No mês atual',color:maxDD>0?'var(--red)':'var(--green)'},
     {icon:'🔢',label:'Total de Trades',val:totalTrades,sub:month.length+' dias registrados',color:'var(--blue)'},
