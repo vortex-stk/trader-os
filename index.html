@@ -1553,7 +1553,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* ── MAIN GRID ── */
 .db-main-grid {
-  display:grid; grid-template-columns:1fr 300px;
+  display:grid; grid-template-columns:minmax(0,1fr) 300px;
   gap:14px; margin-bottom:14px;
 }
 
@@ -1561,6 +1561,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .db-equity-card {
   background:#0c1220; border:1px solid rgba(255,255,255,0.07); isolation:isolate; position:relative; z-index:1;
   border-radius:12px; padding:22px 22px 16px;
+  min-width:0; overflow:hidden;
 }
 .db-eq-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; gap:12px; flex-wrap:wrap; }
 .db-eq-title  { font-size:16px; font-weight:800; color:#fff; }
@@ -3752,6 +3753,57 @@ function renderDashboard() {
 
   // ── SESSION DISTRIBUTION ──
   renderSessionBars(month);
+
+  // ── DIVISÃO DE DIREÇÃO ──
+  const dirEl = document.getElementById('db-direction-bars');
+  if (dirEl) {
+    const longTrades  = month.filter(t => t.direction==='long'  || (!t.direction && t.pnl>0));
+    const shortTrades = month.filter(t => t.direction==='short' || (!t.direction && t.pnl<=0));
+    const lPnL  = longTrades.reduce((a,t)=>a+t.pnl,0);
+    const sPnL2  = shortTrades.reduce((a,t)=>a+t.pnl,0);
+    const lWr   = longTrades.length  ? longTrades.filter(t=>t.pnl>0).length/longTrades.length*100  : 0;
+    const sWr2  = shortTrades.length ? shortTrades.filter(t=>t.pnl>0).length/shortTrades.length*100 : 0;
+    const total2 = month.length || 1;
+    const lPct  = Math.round(longTrades.length/total2*100);
+    const sPct2  = 100-lPct;
+    if (month.length === 0) {
+      dirEl.innerHTML = '<div style="color:var(--text-4);font-size:12px;text-align:center;padding:20px 0">Sem dados no período</div>';
+    } else {
+      dirEl.innerHTML = `
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#00F5A0">
+              <span style="width:8px;height:8px;border-radius:50%;background:#00F5A0;display:inline-block"></span>COMPRA
+              <span style="color:var(--text-3);font-weight:500">${lPct}%</span>
+            </span>
+            <span style="font-family:var(--font-mono);font-size:13px;font-weight:800;color:${lPnL>=0?'#00F5A0':'#FF5B70'}">${lPnL>=0?'+':'-'}R$${Math.abs(lPnL).toFixed(2)}</span>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;margin-bottom:4px">
+            <div style="height:100%;width:${Math.max(lPct,2)}%;background:linear-gradient(90deg,#00F5A0,#00C8FF);border-radius:99px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3)">
+            <span>${longTrades.length} operação${longTrades.length!==1?'s':''}</span>
+            <span>WR: ${lWr.toFixed(0)}%</span>
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#FF5B70">
+              <span style="width:8px;height:8px;border-radius:50%;background:#FF5B70;display:inline-block"></span>VENDA
+              <span style="color:var(--text-3);font-weight:500">${sPct2}%</span>
+            </span>
+            <span style="font-family:var(--font-mono);font-size:13px;font-weight:800;color:${sPnL2>=0?'#00F5A0':'#FF5B70'}">${sPnL2>=0?'+':'-'}R$${Math.abs(sPnL2).toFixed(2)}</span>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;margin-bottom:4px">
+            <div style="height:100%;width:${Math.max(sPct2,2)}%;background:linear-gradient(90deg,#FF5B70,#FF3D6B);border-radius:99px"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3)">
+            <span>${shortTrades.length} operação${shortTrades.length!==1?'s':''}</span>
+            <span>WR: ${sWr2.toFixed(0)}%</span>
+          </div>
+        </div>`;
+    }
+  }
 
   // Header balance pill
   const pill=document.getElementById('hdr-bal-pill');
