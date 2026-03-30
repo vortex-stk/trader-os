@@ -1089,6 +1089,52 @@ header {
 .pd-item.danger .pd-item-icon { background:rgba(255,61,107,0.08); }
 .pd-item.danger:hover { background:rgba(255,61,107,0.06); }
 
+/* ── Profile Dropdown extras ── */
+.pd-meta-row {
+  display:flex; align-items:center; gap:6px;
+  font-size:10px; color:var(--text-3); margin-top:2px;
+}
+.pd-meta-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.pd-meta-dot.active { background:#00F5A0; box-shadow:0 0 6px #00F5A0; }
+.pd-meta-dot.pending { background:#FFB547; }
+
+/* Barra de uso */
+.pd-usage-wrap { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.pd-usage-label { display:flex; justify-content:space-between; font-size:10px; color:var(--text-3); margin-bottom:6px; }
+.pd-usage-bar { height:5px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
+.pd-usage-fill { height:100%; border-radius:99px; transition:width 0.6s ease; }
+
+/* Seções com título */
+.pd-section-title {
+  font-size:9px; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--text-4); font-weight:700; padding:10px 12px 4px;
+}
+
+/* Item com subtítulo */
+.pd-item-sub { font-size:10px; color:var(--text-4); margin-top:1px; }
+
+/* Badge de sessão no header */
+.pd-session-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:10px; color:var(--text-3); margin-top:2px;
+}
+.pd-session-dot { width:5px; height:5px; border-radius:50%; background:#00F5A0; animation:pulseAnim 2s infinite; }
+
+/* Upgrade button */
+.pd-upgrade-btn {
+  margin:8px; border-radius:10px; padding:10px 14px;
+  background:linear-gradient(135deg,rgba(124,92,252,0.18),rgba(59,158,255,0.12));
+  border:1px solid rgba(124,92,252,0.3);
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+  transition:all 0.18s;
+}
+.pd-upgrade-btn:hover { background:linear-gradient(135deg,rgba(124,92,252,0.28),rgba(59,158,255,0.2)); border-color:rgba(124,92,252,0.5); }
+.pd-upgrade-icon { font-size:18px; }
+.pd-upgrade-text { flex:1; }
+.pd-upgrade-title { font-size:12px; font-weight:700; color:var(--purple); }
+.pd-upgrade-sub { font-size:10px; color:var(--text-3); margin-top:1px; }
+.pd-upgrade-arrow { font-size:14px; color:var(--purple); }
+
 /* legado — mantido pra compatibilidade */
 .user-menu { display:none; }
 .user-menu-email { display:none; }
@@ -2147,30 +2193,117 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </div>
 
     <!-- Profile Dropdown -->
-    <div class="profile-dropdown" id="profileDropdown">
+    <div class="profile-dropdown" id="profileDropdown" style="width:300px;max-height:90vh;overflow-y:auto">
+
+      <!-- CABEÇALHO -->
       <div class="pd-header">
         <div class="pd-avatar-lg" id="pd-avatar-lg">JR</div>
         <div class="pd-name" id="pd-name">Trader</div>
         <div class="pd-email" id="pd-email">—</div>
-        <div class="pd-plan-badge">✦ Plano Gratuito</div>
+        <div class="pd-meta-row">
+          <span class="pd-meta-dot active" id="pd-status-dot"></span>
+          <span id="pd-status-text">Conta ativa</span>
+          <span style="color:var(--text-4);margin:0 4px">·</span>
+          <span id="pd-since">—</span>
+        </div>
+        <div class="pd-session-badge">
+          <span class="pd-session-dot"></span>
+          <span id="pd-session-time">Sessão ativa</span>
+        </div>
+        <div class="pd-plan-badge" id="pd-plan-badge">✦ Plano Gratuito</div>
       </div>
-      <div class="pd-menu">
+
+      <!-- BARRA DE USO -->
+      <div class="pd-usage-wrap" id="pd-usage-wrap">
+        <div class="pd-usage-label">
+          <span>Limite de trades do mês</span>
+          <span id="pd-usage-val">— / —</span>
+        </div>
+        <div class="pd-usage-bar">
+          <div class="pd-usage-fill" id="pd-usage-fill" style="width:0%;background:var(--green)"></div>
+        </div>
+      </div>
+
+      <!-- UPGRADE -->
+      <div class="pd-upgrade-btn" onclick="closeProfileDropdown();showPage('settings',null)">
+        <span class="pd-upgrade-icon">⚡</span>
+        <div class="pd-upgrade-text">
+          <div class="pd-upgrade-title">Fazer upgrade para Pro</div>
+          <div class="pd-upgrade-sub">Histórico completo · IA · Prop Firm</div>
+        </div>
+        <span class="pd-upgrade-arrow">›</span>
+      </div>
+
+      <div class="pd-menu" style="padding-top:4px">
+
+        <!-- CONTA -->
+        <div class="pd-section-title">Conta</div>
         <div class="pd-item" onclick="closeProfileDropdown();showPage('profile',null)">
           <div class="pd-item-icon">👤</div>
-          <span class="pd-item-label">Perfil</span>
+          <div style="flex:1">
+            <div class="pd-item-label">Perfil</div>
+            <div class="pd-item-sub">Nome, foto, broker</div>
+          </div>
           <span class="pd-item-arrow">›</span>
         </div>
         <div class="pd-item" onclick="closeProfileDropdown();showPage('settings',null)">
           <div class="pd-item-icon">⚙️</div>
-          <span class="pd-item-label">Configurações</span>
+          <div style="flex:1">
+            <div class="pd-item-label">Configurações</div>
+            <div class="pd-item-sub">Metas, limites, preferências</div>
+          </div>
           <span class="pd-item-arrow">›</span>
         </div>
         <div class="pd-item" onclick="closeProfileDropdown();showPage('settings',null);setTimeout(()=>document.getElementById('cfg-sb-url')?.scrollIntoView({behavior:'smooth'}),200)">
           <div class="pd-item-icon">☁️</div>
-          <span class="pd-item-label">Conta</span>
+          <div style="flex:1">
+            <div class="pd-item-label">Conta & Sincronização</div>
+            <div class="pd-item-sub">Supabase, backup, dados</div>
+          </div>
           <span class="pd-item-arrow">›</span>
         </div>
-        <div class="pd-divider"></div>
+
+        <!-- SEGURANÇA -->
+        <div class="pd-section-title">Segurança</div>
+        <div class="pd-item" onclick="closeProfileDropdown();pdResetPassword()">
+          <div class="pd-item-icon">🔑</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Alterar senha</div>
+            <div class="pd-item-sub">Enviar link por e-mail</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();toast('2FA em breve!')">
+          <div class="pd-item-icon">🛡️</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Autenticação 2FA</div>
+            <div class="pd-item-sub" id="pd-2fa-sub">Em breve</div>
+          </div>
+          <span style="font-size:10px;background:rgba(255,181,71,0.15);border:1px solid rgba(255,181,71,0.3);color:#FFB547;border-radius:20px;padding:2px 7px;font-weight:700">BETA</span>
+        </div>
+
+        <!-- SUPORTE -->
+        <div class="pd-section-title">Suporte</div>
+        <div class="pd-item" onclick="closeProfileDropdown();pdOpenSupport()">
+          <div class="pd-item-icon">💬</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Abrir ticket de suporte</div>
+            <div class="pd-item-sub">Resposta em até 24h</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+        <div class="pd-item" onclick="closeProfileDropdown();pdOpenDocs()">
+          <div class="pd-item-icon">📖</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Documentação & Guias</div>
+            <div class="pd-item-sub">FAQ e tutoriais</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+
+        <div class="pd-divider" style="margin:8px 8px 4px"></div>
+
+        <!-- SAIR -->
         <div class="pd-item danger" onclick="closeProfileDropdown();doLogout()">
           <div class="pd-item-icon">🚪</div>
           <span class="pd-item-label">Encerrar sessão</span>
@@ -3017,22 +3150,107 @@ function toggleProfileDropdown(e) {
   const isOpen = dd.classList.contains('open');
   closeDropdowns();
   if (!isOpen) {
-    // Sincroniza avatar e nome do header para o dropdown
+    // Avatar e nome
     const avatar = document.getElementById('pcb-avatar')?.textContent || 'TR';
     const name   = document.getElementById('pcb-name')?.textContent   || 'Trader';
-    const sub    = document.getElementById('pcb-sub')?.textContent    || '';
-    const pdAvatar = document.getElementById('pd-avatar-lg');
-    const pdName   = document.getElementById('pd-name');
-    const pdEmail  = document.getElementById('pd-email');
-    if (pdAvatar) pdAvatar.textContent = avatar;
-    if (pdName)   pdName.textContent   = name;
-    if (pdEmail)  pdEmail.textContent  = currentUser?.email || (isCloudMode ? 'Cloud' : 'Modo local');
+    const email  = currentUser?.email || (isCloudMode ? 'Modo nuvem' : 'Modo local');
+    const q = id => document.getElementById(id);
+    if (q('pd-avatar-lg')) q('pd-avatar-lg').textContent = avatar;
+    if (q('pd-name'))      q('pd-name').textContent      = name;
+    if (q('pd-email'))     q('pd-email').textContent     = email;
+
+    // Status da conta
+    const statusDot  = q('pd-status-dot');
+    const statusText = q('pd-status-text');
+    if (statusDot && statusText) {
+      if (isCloudMode && currentUser) {
+        statusDot.className = 'pd-meta-dot active';
+        statusText.textContent = 'Conta ativa';
+      } else {
+        statusDot.className = 'pd-meta-dot pending';
+        statusText.textContent = 'Modo local';
+      }
+    }
+
+    // Data de cadastro (do Supabase ou localStorage)
+    const sinceEl = q('pd-since');
+    if (sinceEl) {
+      const createdAt = currentUser?.created_at || localStorage.getItem('tros_created_at');
+      if (createdAt) {
+        const d = new Date(createdAt);
+        sinceEl.textContent = 'desde ' + d.toLocaleDateString('pt-BR', {month:'short', year:'numeric'});
+      } else {
+        sinceEl.textContent = '';
+        // Salva data de primeiro uso
+        if (!localStorage.getItem('tros_created_at')) {
+          localStorage.setItem('tros_created_at', new Date().toISOString());
+        }
+      }
+    }
+
+    // Tempo de sessão
+    const sessionEl = q('pd-session-time');
+    if (sessionEl) {
+      if (!window._sessionStart) window._sessionStart = Date.now();
+      const mins = Math.floor((Date.now() - window._sessionStart) / 60000);
+      sessionEl.textContent = mins < 1 ? 'Sessão ativa há menos de 1 min'
+        : mins < 60 ? `Sessão ativa há ${mins} min`
+        : `Sessão ativa há ${Math.floor(mins/60)}h ${mins%60}min`;
+    }
+
+    // Plano
+    const planBadge = q('pd-plan-badge');
+    if (planBadge) {
+      const plan = localStorage.getItem('tros_plan') || 'free';
+      const planLabels = { free:'✦ Plano Gratuito', pro:'⚡ Plano Pro', premium:'👑 Premium' };
+      planBadge.textContent = planLabels[plan] || planLabels.free;
+      planBadge.style.background = plan==='pro'?'rgba(124,92,252,0.15)':'rgba(0,245,160,0.08)';
+      planBadge.style.borderColor = plan==='pro'?'rgba(124,92,252,0.4)':'rgba(0,245,160,0.2)';
+      planBadge.style.color = plan==='pro'?'var(--purple)':'var(--green)';
+    }
+
+    // Barra de uso (trades do mês atual)
+    const usageVal  = q('pd-usage-val');
+    const usageFill = q('pd-usage-fill');
+    if (usageVal && usageFill) {
+      try {
+        const monthTrades = typeof getMonthTrades === 'function' ? getMonthTrades() : [];
+        const totalOps    = monthTrades.reduce((a,t)=>a+(t.trades||1),0);
+        const limit       = 50; // limite plano gratuito
+        const pct         = Math.min(100, Math.round(totalOps/limit*100));
+        usageVal.textContent  = `${totalOps} / ${limit} trades`;
+        usageFill.style.width = pct + '%';
+        usageFill.style.background = pct>=90?'#FF3D6B':pct>=70?'#FFB547':'var(--green)';
+      } catch(err) { q('pd-usage-wrap') && (q('pd-usage-wrap').style.display='none'); }
+    }
+
     dd.classList.add('open');
   }
 }
 
 function closeProfileDropdown() {
   document.getElementById('profileDropdown')?.classList.remove('open');
+}
+
+// Ações do dropdown
+function pdResetPassword() {
+  const email = currentUser?.email || document.getElementById('l-email')?.value;
+  if (!email) { toast('Faça login primeiro para redefinir a senha','error'); return; }
+  if (!sbClient) { toast('Supabase não configurado','error'); return; }
+  sbClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/auth.html?type=recovery'
+  }).then(({error}) => {
+    if (error) toast('Erro: ' + error.message, true);
+    else toast('✉️ Link de redefinição enviado para ' + email);
+  });
+}
+
+function pdOpenSupport() {
+  window.open('mailto:suporte@traderos.app?subject=Suporte Trader OS&body=Email: ' + (currentUser?.email||'') + '%0ADescrição do problema:%0A', '_blank');
+}
+
+function pdOpenDocs() {
+  window.open('https://github.com/emersonjesusbr/trader-os#readme', '_blank');
 }
 
 function switchAuthTab(tab, btn) {
