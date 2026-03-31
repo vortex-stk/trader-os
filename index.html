@@ -5438,20 +5438,39 @@ function renderTradesPage() {
     tbody.innerHTML = '<div style="padding:48px;text-align:center;color:var(--text-3)">Nenhuma operação encontrada</div>';
     return;
   }
+  const cols = 'grid-template-columns:90px 80px 90px 70px 70px 80px 80px 80px 1fr 40px';
   tbody.innerHTML = `
-    <div style="display:grid;grid-template-columns:100px 80px 70px 70px 80px 80px 1fr;gap:0;border-bottom:1px solid var(--border);padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-4);font-weight:700">
-      <span>Data</span><span>Par</span><span>Trades</span><span>R:R</span><span>Sessão</span><span>P&L</span><span>Setup / Notas</span>
+    <div style="display:grid;${cols};border-bottom:1px solid var(--border);padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-4);font-weight:700;position:sticky;top:0;background:var(--bg-card);z-index:1">
+      <span>Data</span><span>Par</span><span>Direção</span><span>Categ.</span><span>Trades</span><span>R:R</span><span>Sessão</span><span>P&L</span><span>Setup / Notas</span><span></span>
     </div>
-    ${trades.map(t => `
-    <div style="display:grid;grid-template-columns:100px 80px 70px 70px 80px 80px 1fr;gap:0;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="openDayDetail('${t.date}')">
-      <span style="color:var(--text-2);font-family:var(--font-mono)">${t.date.slice(5)}</span>
-      <span style="font-weight:600">${t.pair||'—'}</span>
-      <span style="color:var(--text-3)">${t.trades||1}</span>
-      <span style="color:var(--text-3)">${t.rr ? t.rr+'R' : '—'}</span>
-      <span style="color:var(--text-3);font-size:11px">${t.session||'—'}</span>
-      <span style="font-family:var(--font-mono);font-weight:800;color:${t.pnl>=0?'#00F5A0':'#FF5B70'}">${t.pnl>=0?'+':'-'}R$${Math.abs(t.pnl).toFixed(2)}</span>
-      <span style="color:var(--text-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.setup||''} ${t.notes?'· '+t.notes.slice(0,40):''}</span>
-    </div>`).join('')}`;
+    ${trades.map(t => {
+      const dirLabel = t.direction==='buy' ? '↗ COMPRA' : t.direction==='sell' ? '↘ VENDA' : '—';
+      const dirColor = t.direction==='buy' ? '#00F5A0' : t.direction==='sell' ? '#FF5B70' : 'var(--text-4)';
+      const dirBg    = t.direction==='buy' ? 'rgba(0,245,160,0.08)' : t.direction==='sell' ? 'rgba(255,91,112,0.08)' : 'transparent';
+      const catColor = { FX:'#3B9EFF', Commodity:'#FFB547', Índice:'#A78BFA', Cripto:'#22D3EE', Ação:'#00F5A0', Outro:'var(--text-3)' };
+      const catBg    = { FX:'rgba(59,158,255,0.1)', Commodity:'rgba(255,181,71,0.1)', Índice:'rgba(167,139,250,0.1)', Cripto:'rgba(34,211,238,0.1)', Ação:'rgba(0,245,160,0.08)', Outro:'rgba(255,255,255,0.05)' };
+      return `
+      <div style="display:grid;${cols};padding:11px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;cursor:pointer;transition:background 0.12s;align-items:center"
+        onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+        onmouseout="this.style.background=''"
+        onclick="openDayDetail('${t.date}')">
+        <span style="color:var(--text-2);font-family:var(--font-mono);font-size:12px">${t.date.slice(5)}</span>
+        <span style="font-weight:600;font-size:12px">${t.pair||'—'}</span>
+        <span>
+          ${t.direction ? `<span style="font-size:11px;font-weight:700;color:${dirColor};background:${dirBg};border-radius:20px;padding:3px 8px">${dirLabel}</span>` : '<span style="color:var(--text-4);font-size:12px">—</span>'}
+        </span>
+        <span>
+          ${t.category ? `<span style="font-size:10px;font-weight:700;color:${catColor[t.category]||'var(--text-3)'};background:${catBg[t.category]||'rgba(255,255,255,0.05)'};border-radius:20px;padding:2px 7px">${t.category}</span>` : '<span style="color:var(--text-4);font-size:12px">—</span>'}
+        </span>
+        <span style="color:var(--text-3);font-size:12px">${t.trades||1}</span>
+        <span style="font-family:var(--font-mono);font-size:12px;color:${t.rr!=null?(t.rr>=0?'#00F5A0':'#FF5B70'):'var(--text-4)'}">${t.rr!=null?t.rr+'R':'—'}</span>
+        <span style="color:var(--text-3);font-size:11px">${t.session||'—'}</span>
+        <span style="font-family:var(--font-mono);font-weight:800;font-size:13px;color:${t.pnl>=0?'#00F5A0':'#FF5B70'}">${t.pnl>=0?'+':'-'}R$${Math.abs(t.pnl).toFixed(2)}</span>
+        <span style="color:var(--text-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.setup||''} ${t.notes?'· '+t.notes.slice(0,35):''}</span>
+        <span onclick="event.stopPropagation()" style="text-align:center">
+          <button onclick="openEditModal(getTrades().find(x=>x.id==='${t.id}'))" title="Editar" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:14px;padding:2px 4px">✏️</button>
+        </span>
+      </div>`; }).join('')}`;
 }
 
 // ════════════════════════════════════════
