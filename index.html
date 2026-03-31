@@ -1480,6 +1480,37 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .cfg-progress-bar { height:7px; background:rgba(255,255,255,0.06); border-radius:99px; overflow:hidden; }
 .cfg-progress-fill { height:100%; border-radius:99px; transition:width 0.8s ease; }
 
+/* Notificações toggle */
+.cfg-notif-row {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:12px 14px; border-radius:10px;
+  background:rgba(255,255,255,0.03); border:1px solid var(--border);
+  cursor:pointer; transition:background 0.15s;
+}
+.cfg-notif-row:hover { background:rgba(255,255,255,0.05); }
+.cfg-notif-row input[type=checkbox] { width:16px; height:16px; flex-shrink:0; accent-color:var(--green); margin-top:2px; cursor:pointer; }
+.cfg-notif-title { font-size:13px; font-weight:600; color:var(--text-1); }
+.cfg-notif-sub   { font-size:11px; color:var(--text-3); margin-top:2px; line-height:1.4; }
+
+/* Sync status dot states */
+.sync-status-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+.sync-status-dot.connected   { background:#00F5A0; box-shadow:0 0 8px rgba(0,245,160,0.4); }
+.sync-status-dot.syncing     { background:#FFB547; animation:pulseAnim 1s infinite; }
+.sync-status-dot.error       { background:#FF3D6B; }
+.sync-status-dot.disconnected{ background:var(--text-4); }
+
+/* ── Notif row ── */
+.cfg-notif-row {
+  display:flex; align-items:flex-start; gap:12px;
+  padding:13px 14px; border-radius:10px;
+  background:rgba(255,255,255,0.03); border:1px solid var(--border);
+  cursor:pointer; transition:background 0.15s;
+}
+.cfg-notif-row:hover { background:rgba(255,255,255,0.06); }
+.cfg-notif-row input[type=checkbox] { margin-top:2px; accent-color:var(--green); width:16px; height:16px; flex-shrink:0; cursor:pointer; }
+.cfg-notif-title { font-size:13px; font-weight:600; color:var(--text-1); }
+.cfg-notif-sub   { font-size:11px; color:var(--text-3); margin-top:2px; }
+
 /* Modals */
 .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.82); backdrop-filter:blur(16px); z-index:1000; align-items:center; justify-content:center; padding:16px; }
 .overlay.open { display:flex; }
@@ -2820,6 +2851,22 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
           <span>☁️</span> Sincronização
         </button>
         <div style="height:1px;background:var(--border);margin:6px 4px"></div>
+        <button class="cfg-tab" onclick="switchCfgTab('perfil',this)">
+          <span>👤</span> Perfil
+        </button>
+        <button class="cfg-tab" onclick="switchCfgTab('notificacoes',this)">
+          <span>🔔</span> Notificações
+        </button>
+        <button class="cfg-tab" onclick="switchCfgTab('aparencia',this)">
+          <span>🎨</span> Aparência
+        </button>
+        <button class="cfg-tab" onclick="switchCfgTab('backup',this)">
+          <span>💾</span> Backup
+        </button>
+        <button class="cfg-tab" onclick="switchCfgTab('suporte',this)">
+          <span>❓</span> Suporte
+        </button>
+        <div style="height:1px;background:var(--border);margin:6px 4px"></div>
         <button class="cfg-tab danger-tab" onclick="switchCfgTab('avancado',this)">
           <span>⚠️</span> Avançado
         </button>
@@ -3018,6 +3065,261 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
         </div>
       </div>
 
+
+      <!-- ── ABA PERFIL ── -->
+      <div id="cfg-panel-perfil" class="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-card-title">👤 Identidade</div>
+          <div class="cfg-card-desc">Suas informações de perfil</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:rgba(124,92,252,0.06);border-radius:10px;border:1px solid rgba(124,92,252,0.15)">
+            <div id="cfg-prof-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#7C5CFC,#3B9EFF);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0">JR</div>
+            <div>
+              <div id="cfg-prof-name-disp" style="font-size:16px;font-weight:700;color:var(--text-1)">Trader</div>
+              <div id="cfg-prof-email-disp" style="font-size:12px;color:var(--text-3);margin-top:2px">—</div>
+              <div style="font-size:10px;color:var(--text-4);margin-top:3px" id="cfg-prof-since">Membro desde —</div>
+            </div>
+          </div>
+          <div class="cfg-fields">
+            <div class="cfg-field">
+              <label class="cfg-label">Nome de exibição</label>
+              <input class="sinp" id="cfg-prof-name" placeholder="Seu nome">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">E-mail</label>
+              <input class="sinp" id="cfg-prof-email" type="email" placeholder="seu@email.com">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Telefone</label>
+              <input class="sinp" id="cfg-prof-phone" placeholder="(11) 9xxxx-xxxx">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Fuso Horário</label>
+              <select class="sinp" id="cfg-prof-tz">
+                <option value="America/Sao_Paulo">America/Sao_Paulo (BRT -3)</option>
+                <option value="America/New_York">America/New_York (EST -5)</option>
+                <option value="Europe/London">Europe/London (GMT 0)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (JST +9)</option>
+              </select>
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Broker Principal</label>
+              <input class="sinp" id="cfg-prof-broker" placeholder="FTMO, Exness...">
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Experiência</label>
+              <select class="sinp" id="cfg-prof-exp">
+                <option value="">—</option>
+                <option value="iniciante">Iniciante (menos de 1 ano)</option>
+                <option value="intermediario">Intermediário (1-3 anos)</option>
+                <option value="avancado">Avançado (3-5 anos)</option>
+                <option value="profissional">Profissional (5+ anos)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">🔒 Segurança</div>
+          <div class="cfg-card-desc">Gerencie acesso e autenticação</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div>
+                <div style="font-size:13px;font-weight:600">Alterar Senha</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px">Enviar link de redefinição por e-mail</div>
+              </div>
+              <button onclick="pdResetPassword()" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;color:var(--purple);font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer">Redefinir →</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div>
+                <div style="font-size:13px;font-weight:600">Autenticação 2FA</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px">Camada extra de segurança</div>
+              </div>
+              <span style="background:rgba(255,181,71,0.12);border:1px solid rgba(255,181,71,0.3);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:#FFB547">EM BREVE</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div>
+                <div style="font-size:13px;font-weight:600">Último acesso</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="cfg-last-login">—</div>
+              </div>
+              <span style="font-size:11px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.2);border-radius:20px;padding:4px 10px;color:var(--green);font-weight:700">● Online</span>
+            </div>
+          </div>
+        </div>
+        <button class="cfg-save-btn" onclick="saveCfgProfile()">💾 Salvar Perfil</button>
+      </div>
+
+      <!-- ── ABA NOTIFICAÇÕES ── -->
+      <div id="cfg-panel-notificacoes" class="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-card-title">🔔 Alertas de Risco</div>
+          <div class="cfg-card-desc">Receba avisos automáticos sobre sua conta</div>
+          <div style="display:flex;flex-direction:column;gap:8px" id="notif-risk-list">
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-drawdown" checked> <div><div class="cfg-notif-title">Drawdown próximo do limite</div><div class="cfg-notif-sub">Alerta quando atingir 80% do stop diário ou total</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-daily-limit" checked> <div><div class="cfg-notif-title">Limite diário atingido</div><div class="cfg-notif-sub">Aviso quando perda do dia alcançar o limite</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-meta"> <div><div class="cfg-notif-title">Meta mensal atingida</div><div class="cfg-notif-sub">Celebre quando bater sua meta do mês 🎉</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-streak"> <div><div class="cfg-notif-title">Sequência de vitórias</div><div class="cfg-notif-sub">Notifica a cada 3+ dias consecutivos positivos</div></div></label>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">📊 Resumos Automáticos</div>
+          <div class="cfg-card-desc">Relatórios periódicos enviados para você</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-daily-summary"> <div><div class="cfg-notif-title">Resumo diário (in-app)</div><div class="cfg-notif-sub">Painel de encerramento do dia de trading</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-weekly"> <div><div class="cfg-notif-title">Resumo semanal</div><div class="cfg-notif-sub">Análise da semana toda segunda-feira</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-diary-reminder"> <div><div class="cfg-notif-title">Lembrete do diário</div><div class="cfg-notif-sub">Aviso para registrar operações ao fim do dia</div></div></label>
+          </div>
+        </div>
+        <button class="cfg-save-btn" onclick="saveNotifSettings()">💾 Salvar Notificações</button>
+      </div>
+
+      <!-- ── ABA APARÊNCIA ── -->
+      <div id="cfg-panel-aparencia" class="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-card-title">🎨 Tema</div>
+          <div class="cfg-card-desc">Personalize a aparência do sistema</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">
+            <div class="cfg-theme-opt active" id="theme-dark" onclick="setTheme('dark',this)" style="padding:16px;border-radius:10px;border:2px solid rgba(0,245,160,0.4);background:rgba(0,245,160,0.06);cursor:pointer;text-align:center">
+              <div style="font-size:24px;margin-bottom:8px">🌙</div>
+              <div style="font-size:13px;font-weight:700;color:var(--green)">Escuro</div>
+              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Padrão atual</div>
+            </div>
+            <div class="cfg-theme-opt" id="theme-light" onclick="setTheme('light',this)" style="padding:16px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;opacity:0.6">
+              <div style="font-size:24px;margin-bottom:8px">☀️</div>
+              <div style="font-size:13px;font-weight:700">Claro</div>
+              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Em breve</div>
+            </div>
+            <div class="cfg-theme-opt" id="theme-system" onclick="setTheme('system',this)" style="padding:16px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;opacity:0.6">
+              <div style="font-size:24px;margin-bottom:8px">💻</div>
+              <div style="font-size:13px;font-weight:700">Sistema</div>
+              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Em breve</div>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">⚙️ Interface</div>
+          <div class="cfg-card-desc">Ajuste o layout e densidade da informação</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div><div style="font-size:13px;font-weight:600">Compactar cards</div><div style="font-size:11px;color:var(--text-3)">Menos espaço entre elementos</div></div>
+              <label style="position:relative;width:44px;height:24px;cursor:pointer"><input type="checkbox" id="pref-compact" style="opacity:0;width:0;height:0" onchange="applyPrefs()"><span style="position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:99px;transition:0.3s" id="toggle-compact-bg"></span></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div><div style="font-size:13px;font-weight:600">Animar gráficos</div><div style="font-size:11px;color:var(--text-3)">Animações de entrada nos charts</div></div>
+              <label style="position:relative;width:44px;height:24px;cursor:pointer"><input type="checkbox" id="pref-anim" checked style="opacity:0;width:0;height:0"></label>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div><div style="font-size:13px;font-weight:600">Sidebar expandida</div><div style="font-size:11px;color:var(--text-3)">Estado padrão ao abrir o app</div></div>
+              <label style="position:relative;width:44px;height:24px;cursor:pointer"><input type="checkbox" id="pref-sidebar-open" checked style="opacity:0;width:0;height:0"></label>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">💱 Moeda e Formatos</div>
+          <div class="cfg-card-desc">Como os valores são exibidos</div>
+          <div class="cfg-fields">
+            <div class="cfg-field">
+              <label class="cfg-label">Moeda Principal</label>
+              <select class="sinp" id="pref-currency">
+                <option value="BRL">🇧🇷 Real (R$)</option>
+                <option value="USD">🇺🇸 Dólar (US$)</option>
+                <option value="EUR">🇪🇺 Euro (€)</option>
+                <option value="GBP">🇬🇧 Libra (£)</option>
+              </select>
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Formato de Data</label>
+              <select class="sinp" id="pref-date-format">
+                <option value="DD/MM/YYYY">DD/MM/AAAA (padrão BR)</option>
+                <option value="MM/DD/YYYY">MM/DD/AAAA (EUA)</option>
+                <option value="YYYY-MM-DD">AAAA-MM-DD (ISO)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button class="cfg-save-btn" onclick="saveAppearanceSettings()">💾 Salvar Aparência</button>
+      </div>
+
+      <!-- ── ABA BACKUP ── -->
+      <div id="cfg-panel-backup" class="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-card-title">📥 Exportar Dados</div>
+          <div class="cfg-card-desc">Baixe uma cópia dos seus dados</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+            <button onclick="exportCSV()" style="padding:14px;border-radius:10px;background:rgba(59,158,255,0.08);border:1px solid rgba(59,158,255,0.25);color:#3B9EFF;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📋 Exportar CSV</button>
+            <button onclick="exportTradesJSON()" style="padding:14px;border-radius:10px;background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.25);color:var(--purple);font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📦 Exportar JSON</button>
+            <button onclick="exportPDF('month')" style="padding:14px;border-radius:10px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);color:var(--green);font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📄 PDF Mensal</button>
+            <button onclick="exportPDF('year')" style="padding:14px;border-radius:10px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);color:var(--green);font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📊 PDF Anual</button>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">📤 Importar Dados</div>
+          <div class="cfg-card-desc">Traga dados de outras plataformas</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button onclick="showPage('import',null)" style="padding:13px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center">
+              <span>📥 Importar CSV (MT4/MT5/cTrader)</span><span style="color:var(--text-4)">›</span>
+            </button>
+            <div style="padding:13px 16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-4);font-size:13px;display:flex;justify-content:space-between;align-items:center">
+              <span>🔗 Tradersync CSV</span><span style="font-size:10px;background:rgba(255,181,71,0.12);color:#FFB547;border-radius:20px;padding:2px 8px;font-weight:700">EM BREVE</span>
+            </div>
+            <div style="padding:13px 16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-4);font-size:13px;display:flex;justify-content:space-between;align-items:center">
+              <span>📈 TradingView export</span><span style="font-size:10px;background:rgba(255,181,71,0.12);color:#FFB547;border-radius:20px;padding:2px 8px;font-weight:700">EM BREVE</span>
+            </div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">🕒 Backup Automático</div>
+          <div class="cfg-card-desc">Agende exportações periódicas</div>
+          <div class="cfg-fields">
+            <div class="cfg-field">
+              <label class="cfg-label">Frequência</label>
+              <select class="sinp" id="backup-freq">
+                <option value="manual">Somente manual</option>
+                <option value="daily">Diário</option>
+                <option value="weekly">Semanal</option>
+                <option value="monthly">Mensal</option>
+              </select>
+            </div>
+            <div class="cfg-field">
+              <label class="cfg-label">Formato</label>
+              <select class="sinp" id="backup-format">
+                <option value="csv">CSV</option>
+                <option value="json">JSON completo</option>
+              </select>
+            </div>
+          </div>
+          <button onclick="toast('✅ Configuração de backup salva!')" class="cfg-save-btn" style="margin-top:14px">💾 Salvar Configuração</button>
+        </div>
+      </div>
+
+      <!-- ── ABA SUPORTE ── -->
+      <div id="cfg-panel-suporte" class="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-card-title">💬 Contato & Suporte</div>
+          <div class="cfg-card-desc">Precisa de ajuda? Estamos aqui.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <button onclick="pdOpenSupport()" style="padding:14px 16px;border-radius:10px;background:rgba(0,245,160,0.06);border:1px solid rgba(0,245,160,0.2);color:var(--green);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">💬</span>
+              <div style="text-align:left"><div>Abrir Ticket de Suporte</div><div style="font-size:11px;color:var(--text-3);font-weight:400">Resposta em até 24h por e-mail</div></div>
+            </button>
+            <button onclick="pdOpenDocs()" style="padding:14px 16px;border-radius:10px;background:rgba(59,158,255,0.06);border:1px solid rgba(59,158,255,0.2);color:#3B9EFF;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">📖</span>
+              <div style="text-align:left"><div>Documentação & Guias</div><div style="font-size:11px;color:var(--text-3);font-weight:400">FAQ, tutoriais e guia de início rápido</div></div>
+            </button>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">📋 Sobre o Trader OS</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px"><span style="color:var(--text-2)">Versão</span><span style="font-family:var(--font-mono);color:var(--text-1);font-weight:600">v2.0.0</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px"><span style="color:var(--text-2)">Plataforma</span><span style="color:var(--text-1)">Web (PWA)</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px"><span style="color:var(--text-2)">Banco de dados</span><span style="color:var(--text-1)">Supabase + localStorage</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:13px"><span style="color:var(--text-2)">Desenvolvido por</span><span style="color:var(--purple);font-weight:600">Emerson Jesus</span></div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div class="cfg-card-title">📜 Últimas Ações</div>
+          <div id="cfg-activity-log" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;max-height:220px;overflow-y:auto"></div>
+        </div>
+      </div>
     </div><!-- /conteúdo -->
   </div><!-- /flex layout -->
 </div>
@@ -5273,6 +5575,7 @@ function saveSettings() {
   getAcct().capital = db.config[activeId].capital;
   persistData();
   toast('✅ Configurações salvas!');
+  logActivity('Configurações de risco atualizadas');
   renderDashboard();
   renderMetasProgress();
 }
@@ -6044,9 +6347,13 @@ function switchCfgTab(tab, btn) {
   if (btn) btn.classList.add('active');
   const panel = document.getElementById('cfg-panel-' + tab);
   if (panel) panel.classList.add('active');
-  if (tab === 'metas')  renderMetasProgress();
-  if (tab === 'contas') renderSettingsAccounts();
-  if (tab === 'sync')   updateCloudStatusCard(isCloudMode);
+  if (tab === 'metas')       renderMetasProgress();
+  if (tab === 'contas')      renderSettingsAccounts();
+  if (tab === 'sync')        { updateCloudStatusCard(isCloudMode); loadSyncStatus(); }
+  if (tab === 'perfil')      switchCfgTab_extra_init();
+  if (tab === 'suporte')     renderActivityLog();
+  if (tab === 'notificacoes') loadNotifSettings();
+  if (tab === 'aparencia')   loadAppearanceSettings();
 }
 
 function toggleApiConfig() {
@@ -6063,6 +6370,208 @@ function toggleKeyVisibility() {
   if (!inp) return;
   inp.type = inp.type === 'password' ? 'text' : 'password';
   if (btn) btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ════════════════════════════════════════
+//  SETTINGS — novas abas
+// ════════════════════════════════════════
+// switchCfgTab — ver versão completa
+  // Preenche perfil ao abrir aba
+  const p = db.profile || {};
+  const set = (id, v) => { const el=document.getElementById(id); if(el&&v!=null) el.value=v; };
+  set('cfg-prof-name',   p.name   || '');
+  set('cfg-prof-email',  p.email  || currentUser?.email || '');
+  set('cfg-prof-phone',  p.phone  || '');
+  set('cfg-prof-tz',     p.tz     || 'America/Sao_Paulo');
+  set('cfg-prof-broker', p.broker || '');
+  set('cfg-prof-exp',    p.exp    || '');
+
+  // Avatar e info
+  const initials = p.name ? p.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'TR';
+  const avEl = document.getElementById('cfg-prof-avatar');
+  if (avEl) avEl.textContent = initials;
+  const nmEl = document.getElementById('cfg-prof-name-disp');
+  if (nmEl) nmEl.textContent = p.name || 'Trader';
+  const emEl = document.getElementById('cfg-prof-email-disp');
+  if (emEl) emEl.textContent = p.email || currentUser?.email || '—';
+
+  // Membro desde
+  const sinceEl = document.getElementById('cfg-prof-since');
+  if (sinceEl) {
+    const d = currentUser?.created_at || localStorage.getItem('tros_created_at') || new Date().toISOString();
+    sinceEl.textContent = 'Membro desde ' + new Date(d).toLocaleDateString('pt-BR', {month:'short',year:'numeric'});
+  }
+  // Último acesso
+  const llEl = document.getElementById('cfg-last-login');
+  if (llEl) llEl.textContent = new Date().toLocaleString('pt-BR') + ' · ' + Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Log de atividades
+  renderActivityLog();
+}
+
+function renderActivityLog() {
+  const el = document.getElementById('cfg-activity-log');
+  if (!el) return;
+  const logs = JSON.parse(localStorage.getItem('tros_activity_log') || '[]');
+  if (logs.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-4);font-size:12px;text-align:center;padding:16px">Nenhuma atividade registrada</div>';
+    return;
+  }
+  el.innerHTML = logs.slice(0,20).map(l =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <span style="font-size:10px;color:var(--text-4);font-family:var(--font-mono);flex-shrink:0">${l.time}</span>
+      <span style="font-size:12px;color:var(--text-2)">${l.msg}</span>
+    </div>`
+  ).join('');
+}
+
+// logActivity — ver implementação abaixo
+
+function saveCfgProfile() {
+  const g = id => document.getElementById(id)?.value.trim() || '';
+  const p = {
+    ...(db.profile || {}),
+    name:   g('cfg-prof-name'),
+    email:  g('cfg-prof-email'),
+    phone:  g('cfg-prof-phone'),
+    tz:     g('cfg-prof-tz'),
+    broker: g('cfg-prof-broker'),
+    exp:    g('cfg-prof-exp'),
+  };
+  db.profile = p;
+  localStorage.setItem('trader_os_profile', JSON.stringify(p));
+  persistData();
+  updateProfileUI(p);
+  logActivity('Perfil atualizado');
+  toast('✅ Perfil salvo!');
+}
+
+function saveNotifSettings() {
+  const prefs = {
+    drawdown:     document.getElementById('notif-drawdown')?.checked,
+    dailyLimit:   document.getElementById('notif-daily-limit')?.checked,
+    meta:         document.getElementById('notif-meta')?.checked,
+    streak:       document.getElementById('notif-streak')?.checked,
+    dailySummary: document.getElementById('notif-daily-summary')?.checked,
+    weekly:       document.getElementById('notif-weekly')?.checked,
+    diaryReminder:document.getElementById('notif-diary-reminder')?.checked,
+  };
+  localStorage.setItem('tros_notif_prefs', JSON.stringify(prefs));
+  logActivity('Preferências de notificação salvas');
+  toast('✅ Notificações salvas!');
+}
+
+function saveAppearanceSettings() {
+  const prefs = {
+    currency:   document.getElementById('pref-currency')?.value,
+    dateFormat: document.getElementById('pref-date-format')?.value,
+    compact:    document.getElementById('pref-compact')?.checked,
+    anim:       document.getElementById('pref-anim')?.checked,
+    sidebarOpen:document.getElementById('pref-sidebar-open')?.checked,
+  };
+  localStorage.setItem('tros_appearance', JSON.stringify(prefs));
+  logActivity('Aparência personalizada');
+  toast('✅ Aparência salva!');
+}
+
+function setTheme(theme, btn) {
+  document.querySelectorAll('.cfg-theme-opt').forEach(el => {
+    el.style.borderWidth = '1px';
+    el.style.borderColor = 'var(--border)';
+    el.style.background  = 'rgba(255,255,255,0.03)';
+    el.style.opacity     = '0.6';
+  });
+  if (btn) {
+    btn.style.borderWidth = '2px';
+    btn.style.borderColor = 'rgba(0,245,160,0.4)';
+    btn.style.background  = 'rgba(0,245,160,0.06)';
+    btn.style.opacity     = '1';
+  }
+  localStorage.setItem('tros_theme', theme);
+  if (theme === 'dark') toast('🌙 Tema escuro (padrão)');
+  else toast('🚧 Tema ' + theme + ' em breve!');
+}
+
+function exportTradesJSON() {
+  const all = getTrades();
+  const data = { version:'2.0', exported: new Date().toISOString(), trades: all, accounts: db.accounts, config: db.config, profile: db.profile };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'traderos-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  logActivity('Backup JSON exportado');
+  toast('✅ Backup exportado!');
+}
+
+// Patch switchCfgTab para carregar dados nas novas abas
+const _origSwitchCfgTab = switchCfgTab;
+// switchCfgTab — ver versão completa
+
+
+// ════════════════════════════════════════
+//  SETTINGS — funções auxiliares
+// ════════════════════════════════════════
+
+function loadNotifSettings() {
+  try {
+    const prefs = JSON.parse(localStorage.getItem('tros_notif_prefs') || '{}');
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val ?? el.checked; };
+    set('notif-drawdown',     prefs.drawdown     ?? true);
+    set('notif-daily-limit',  prefs.dailyLimit   ?? true);
+    set('notif-meta',         prefs.meta         ?? false);
+    set('notif-streak',       prefs.streak       ?? false);
+    set('notif-daily-summary',prefs.dailySummary ?? false);
+    set('notif-weekly',       prefs.weekly       ?? false);
+    set('notif-diary-reminder',prefs.diaryReminder ?? false);
+  } catch(e) {}
+}
+
+function loadAppearanceSettings() {
+  try {
+    const prefs = JSON.parse(localStorage.getItem('tros_appearance') || '{}');
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+    set('pref-currency',    prefs.currency   || 'BRL');
+    set('pref-date-format', prefs.dateFormat || 'DD/MM/YYYY');
+    if (document.getElementById('pref-compact'))      document.getElementById('pref-compact').checked     = prefs.compact     ?? false;
+    if (document.getElementById('pref-anim'))         document.getElementById('pref-anim').checked        = prefs.anim        ?? true;
+    if (document.getElementById('pref-sidebar-open')) document.getElementById('pref-sidebar-open').checked = prefs.sidebarOpen ?? true;
+    // Marca tema ativo
+    const theme = localStorage.getItem('tros_theme') || 'dark';
+    const btn = document.getElementById('theme-' + theme);
+    if (btn) setTheme(theme, btn);
+  } catch(e) {}
+}
+
+function loadSyncStatus() {
+  const dot  = document.getElementById('cfg-sync-dot');
+  const text = document.getElementById('cloud-status-text');
+  const sub  = document.getElementById('cfg-sync-sub');
+  if (!dot) return;
+  if (isCloudMode && currentUser) {
+    dot.className  = 'sync-status-dot connected';
+    if (text) text.textContent = '🟢 Conectado ao Supabase';
+    if (sub)  sub.textContent  = 'Conta: ' + (currentUser.email || '—') + ' · Sincronização ativa';
+  } else {
+    dot.className  = 'sync-status-dot disconnected';
+    if (text) text.textContent = '⚫ Modo local';
+    if (sub)  sub.textContent  = 'Configure o Supabase abaixo para ativar a nuvem';
+  }
+}
+
+function updateCloudStatusCard(isCloud) {
+  loadSyncStatus();
+}
+
+function logActivity(msg) {
+  try {
+    const logs = JSON.parse(localStorage.getItem('tros_activity_log') || '[]');
+    const now  = new Date();
+    const time = now.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'}) + ' '
+               + now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    logs.unshift({ time, msg });
+    localStorage.setItem('tros_activity_log', JSON.stringify(logs.slice(0, 50)));
+  } catch(e) {}
 }
 </script>
 </body>
