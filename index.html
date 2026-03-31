@@ -6375,39 +6375,7 @@ function toggleKeyVisibility() {
 // ════════════════════════════════════════
 //  SETTINGS — novas abas
 // ════════════════════════════════════════
-// switchCfgTab — ver versão completa
-  // Preenche perfil ao abrir aba
-  const p = db.profile || {};
-  const set = (id, v) => { const el=document.getElementById(id); if(el&&v!=null) el.value=v; };
-  set('cfg-prof-name',   p.name   || '');
-  set('cfg-prof-email',  p.email  || currentUser?.email || '');
-  set('cfg-prof-phone',  p.phone  || '');
-  set('cfg-prof-tz',     p.tz     || 'America/Sao_Paulo');
-  set('cfg-prof-broker', p.broker || '');
-  set('cfg-prof-exp',    p.exp    || '');
-
-  // Avatar e info
-  const initials = p.name ? p.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'TR';
-  const avEl = document.getElementById('cfg-prof-avatar');
-  if (avEl) avEl.textContent = initials;
-  const nmEl = document.getElementById('cfg-prof-name-disp');
-  if (nmEl) nmEl.textContent = p.name || 'Trader';
-  const emEl = document.getElementById('cfg-prof-email-disp');
-  if (emEl) emEl.textContent = p.email || currentUser?.email || '—';
-
-  // Membro desde
-  const sinceEl = document.getElementById('cfg-prof-since');
-  if (sinceEl) {
-    const d = currentUser?.created_at || localStorage.getItem('tros_created_at') || new Date().toISOString();
-    sinceEl.textContent = 'Membro desde ' + new Date(d).toLocaleDateString('pt-BR', {month:'short',year:'numeric'});
-  }
-  // Último acesso
-  const llEl = document.getElementById('cfg-last-login');
-  if (llEl) llEl.textContent = new Date().toLocaleString('pt-BR') + ' · ' + Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  // Log de atividades
-  renderActivityLog();
-}
+// loadCfgProfileTab — definida abaixo
 
 function renderActivityLog() {
   const el = document.getElementById('cfg-activity-log');
