@@ -2816,10 +2816,19 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <button class="btn-export" onclick="exportPDF('year')"><span>📊</span> PDF Anual</button>
     <button class="btn-export" onclick="exportCSV()"><span>📋</span> Exportar CSV</button>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-    <div class="card card-pad"><div class="section-lbl">P&L por Par</div><canvas id="pairChart" height="240"></canvas></div>
-    <div class="card card-pad"><div class="section-lbl">P&L por Dia da Semana</div><canvas id="dowChart" height="240"></canvas></div>
-    <div class="card card-pad" style="grid-column:span 2"><div class="section-lbl">Histórico Mensal</div><canvas id="rpt-monthlyChart" height="150"></canvas></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card card-pad" style="padding:16px 18px">
+      <div class="section-lbl">P&L por Par</div>
+      <div style="position:relative;height:160px"><canvas id="pairChart" style="position:absolute;inset:0;width:100%!important;height:100%!important"></canvas></div>
+    </div>
+    <div class="card card-pad" style="padding:16px 18px">
+      <div class="section-lbl">P&L por Dia da Semana</div>
+      <div style="position:relative;height:160px"><canvas id="dowChart" style="position:absolute;inset:0;width:100%!important;height:100%!important"></canvas></div>
+    </div>
+    <div class="card card-pad" style="grid-column:span 2;padding:16px 18px">
+      <div class="section-lbl">Histórico Mensal</div>
+      <div style="position:relative;height:120px"><canvas id="rpt-monthlyChart" style="position:absolute;inset:0;width:100%!important;height:100%!important"></canvas></div>
+    </div>
   </div>
 </div>
 
@@ -4505,7 +4514,8 @@ function renderDashboard() {
   const gc=db.globalConfig;
   const month=getMonthTrades();
   const year=getYearTrades();
-  const today=all.find(t=>t.date===todayStr());
+  const todayTrades=all.filter(t=>t.date===todayStr());
+  const today=todayTrades.length ? { pnl: todayTrades.reduce((a,t)=>a+t.pnl,0), trades: todayTrades.reduce((a,t)=>a+(t.trades||1),0), date: todayStr() } : null;
   const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
   // Subtitle
@@ -4545,14 +4555,14 @@ function renderDashboard() {
 
   // ── 6 KPI CARDS ──
   const todayPnL = today ? today.pnl : 0;
-  const todayTrades = today ? (today.trades||0) : 0;
+  const todayTradesCount = today ? (today.trades||0) : 0;
   const ddPct=acct.capital>0?(calcMaxDD(month)/acct.capital*100):0;
   const limitPct=cfg.maxloss>0?(cfg.maxloss/(acct.capital||10000)*100):10;
   const kpis=[
     { tag:'Hoje',
       val:(todayPnL>=0?'+R$':'-R$')+Math.abs(todayPnL).toFixed(2),
       cls:todayPnL>0?'g':todayPnL<0?'r':'',
-      sub:today?`${todayTrades} trade${todayTrades!==1?'s':''} registrado${todayTrades!==1?'s':''}`:'Nenhum trade hoje',
+      sub:today?`${todayTradesCount} trade${todayTradesCount!==1?'s':''} registrado${todayTradesCount!==1?'s':''}`:'Nenhum trade hoje',
       arrow:todayPnL>=0?'up':'down',
       line:'linear-gradient(90deg,#22D3EE,#3B9EFF)' },
     { tag:'P&L do Mês',
@@ -4630,8 +4640,8 @@ function renderDashboard() {
   if(perfEl) perfEl.innerHTML=[
     ['Ganho Médio',  avgWin>0?'+R$'+avgWin.toFixed(0):'—', 'g'],
     ['Perda Média',    avgLoss>0?'-R$'+avgLoss.toFixed(0):'—', 'r'],
-    ['Melhor Dia',   sorted[0]?'+R$'+sorted[0].pnl.toFixed(0):'—', 'g'],
-    ['Pior Dia',       sorted.at(-1)?'-R$'+Math.abs(sorted.at(-1).pnl).toFixed(0):'—', 'r'],
+    ['Melhor Dia',   sorted[0]&&sorted[0].pnl>0?'+R$'+sorted[0].pnl.toFixed(2):(sorted[0]?fmtSign(sorted[0].pnl):'—'), sorted[0]&&sorted[0].pnl>0?'g':'r'],
+    ['Pior Dia',     sorted.at(-1)&&sorted.at(-1).pnl<0?'-R$'+Math.abs(sorted.at(-1).pnl).toFixed(2):(sorted.at(-1)?fmtSign(sorted.at(-1).pnl):'—'), sorted.at(-1)&&sorted.at(-1).pnl<0?'r':'g'],
     ['Fator de Lucro', pf===null?(wins.length>0?'N/A':'—'):pf.toFixed(2), 'b'],
     ['Expectativa',    '+R$'+expectancy.toFixed(0)+'/transação', 'g'],
     ['Índice de Sharpe',sharpe.toFixed(2), 'o'],
@@ -4650,8 +4660,10 @@ function renderDashboard() {
   // ── DIVISÃO DE DIREÇÃO ──
   const dirEl = document.getElementById('db-direction-bars');
   if (dirEl) {
-    const longTrades  = month.filter(t => t.direction==='long'  || (!t.direction && t.pnl>0));
-    const shortTrades = month.filter(t => t.direction==='short' || (!t.direction && t.pnl<=0));
+    // Só usa trades com direction explicitamente preenchido
+    // Aceita tanto 'buy'/'sell' (formulário) quanto 'long'/'short' (importação)
+    const longTrades  = month.filter(t => t.direction==='long'  || t.direction==='buy');
+    const shortTrades = month.filter(t => t.direction==='short' || t.direction==='sell');
     const lPnL  = longTrades.reduce((a,t)=>a+t.pnl,0);
     const sPnL2  = shortTrades.reduce((a,t)=>a+t.pnl,0);
     const lWr   = longTrades.length  ? longTrades.filter(t=>t.pnl>0).length/longTrades.length*100  : 0;
@@ -4659,8 +4671,11 @@ function renderDashboard() {
     const total2 = month.length || 1;
     const lPct  = Math.round(longTrades.length/total2*100);
     const sPct2  = 100-lPct;
-    if (month.length === 0) {
-      dirEl.innerHTML = '<div style="color:var(--text-4);font-size:12px;text-align:center;padding:20px 0">Sem dados no período</div>';
+    const hasDirData = longTrades.length + shortTrades.length > 0;
+    if (month.length === 0 || !hasDirData) {
+      dirEl.innerHTML = '<div style="color:var(--text-4);font-size:12px;text-align:center;padding:20px 0">'
+        + (month.length === 0 ? 'Sem dados no período' : '⚠️ Preencha o campo Direção<br><span style="font-size:10px">ao registrar operações (Comprar/Vender)</span>')
+        + '</div>';
     } else {
       dirEl.innerHTML = `
         <div>
@@ -5435,11 +5450,11 @@ function renderReports() {
   const dm={'Dom':0,'Seg':0,'Ter':0,'Qua':0,'Qui':0,'Sex':0,'Sáb':0};
   month.forEach(t=>{const d=new Date(t.date+'T12:00:00');dm[['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]]+=t.pnl;});
   if(charts.dow) charts.dow.destroy();
-  charts.dow=new Chart(document.getElementById('dowChart').getContext('2d'),{type:'bar',data:{labels:Object.keys(dm),datasets:[{data:Object.values(dm),backgroundColor:Object.values(dm).map(v=>v>=0?'rgba(96,165,250,0.70)':'rgba(255,91,110,0.70)'),borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#3A4155'}},y:{ticks:{color:'#3A4155',callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,0.06)'}}}}});
+  charts.dow=new Chart(document.getElementById('dowChart').getContext('2d'),{type:'bar',data:{labels:Object.keys(dm),datasets:[{data:Object.values(dm),backgroundColor:Object.values(dm).map(v=>v>=0?'rgba(96,165,250,0.70)':'rgba(255,91,110,0.70)'),borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#3A4155'}},y:{ticks:{color:'#3A4155',callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,0.06)'}}}}});
   // Monthly
   const md=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'].map((_,i)=>year.filter(t=>new Date(t.date+'T12:00:00').getMonth()===i).reduce((a,t)=>a+t.pnl,0));
   if(charts.monthly) charts.monthly.destroy();
-  charts.monthly=new Chart(document.getElementById('rpt-monthlyChart').getContext('2d'),{type:'bar',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[{data:md,backgroundColor:md.map(v=>v>=0?'rgba(60,233,143,0.70)':'rgba(255,91,110,0.70)'),borderRadius:8}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#3A4155'}},y:{ticks:{color:'#3A4155',callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,0.06)'}}}}});
+  charts.monthly=new Chart(document.getElementById('rpt-monthlyChart').getContext('2d'),{type:'bar',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],datasets:[{data:md,backgroundColor:md.map(v=>v>=0?'rgba(60,233,143,0.70)':'rgba(255,91,110,0.70)'),borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#3A4155'}},y:{ticks:{color:'#3A4155',callback:v=>'R$'+v},grid:{color:'rgba(255,255,255,0.06)'}}}}});
 }
 
 function exportCSV() {
