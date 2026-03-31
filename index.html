@@ -1460,6 +1460,21 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .ftxt:focus { border-color:var(--purple); }
 .emo-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
 .emo-btn { padding:9px 4px; border-radius:var(--r-sm); border:1px solid var(--border); background:rgba(0,0,0,0.25); cursor:pointer; font-size:18px; text-align:center; transition:all 0.15s; display:flex; flex-direction:column; align-items:center; gap:3px; }
+/* Botões de Direção */
+.dir-btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.dir-btn {
+  padding:11px; border-radius:var(--r-sm); border:1px solid var(--border-md);
+  background:rgba(0,0,0,0.25); cursor:pointer; font-size:13px; font-weight:700;
+  font-family:var(--font-ui); display:flex; align-items:center; justify-content:center;
+  gap:7px; transition:all 0.18s; color:var(--text-2);
+}
+.dir-btn:hover { border-color:var(--border-hi); color:var(--text-1); }
+.dir-btn.sel-buy  { background:rgba(0,245,160,0.12); border-color:rgba(0,245,160,0.5); color:#00F5A0; }
+.dir-btn.sel-sell { background:rgba(255,61,107,0.12); border-color:rgba(255,61,107,0.5); color:#FF5B70; }
+/* Badge direção na tabela */
+.dir-badge-buy  { background:rgba(0,245,160,0.15); color:#00F5A0; border:1px solid rgba(0,245,160,0.3); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.dir-badge-sell { background:rgba(255,61,107,0.15); color:#FF5B70; border:1px solid rgba(255,61,107,0.3); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
+.cat-badge { background:rgba(59,158,255,0.12); color:#5BB4FF; border:1px solid rgba(59,158,255,0.2); border-radius:20px; padding:2px 8px; font-size:10px; font-weight:700; }
 .emo-btn span { font-size:8px; color:var(--text-3); font-family:var(--font-ui); font-weight:700; text-transform:uppercase; }
 .emo-btn:hover,.emo-btn.sel { border-color:var(--purple); background:var(--purple-bg); }
 .ss-zone { border:2px dashed var(--border-md); border-radius:10px; padding:16px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; background:rgba(0,0,0,0.2); }
@@ -2110,7 +2125,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <div class="sidebar-item" data-page="trades" data-tooltip="Registro de Negociações" onclick="showPage('trades',null)">
     <div class="sidebar-icon">📋</div><div class="sidebar-label">Negociações</div>
   </div>
-
+  <div class="sidebar-item" data-page="journal" data-tooltip="Trade Journal" onclick="showPage('journal',null)">
+    <div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div>
+  </div>
   <div class="sidebar-item" data-page="calendar" data-tooltip="Calendário" onclick="showPage('calendar',null)">
     <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
   </div>
@@ -2510,7 +2527,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <!-- Top bar -->
   <div class="rj-topbar">
     <div>
-      <h1 class="rj-title">Negociações</h1>
+      <h1 class="rj-title">Trade Journal</h1>
       <p class="rj-sub" id="rj-sub">0 transações</p>
     </div>
     <div style="display:flex;gap:9px;align-items:center">
@@ -2818,7 +2835,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </select>
   </div>
   <!-- KPIs rápidos -->
-  <div id="trades-kpis" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px"></div>
+  <div id="trades-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
   <!-- Tabela -->
   <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
     <div id="trades-table-body"></div>
@@ -2912,9 +2929,36 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
         </select>
       </div>
     </div>
+    <!-- Direção -->
+    <div class="fgrp">
+      <label class="flbl">Direção</label>
+      <div class="dir-btns">
+        <button type="button" class="dir-btn" id="dir-buy"  onclick="selDir('buy')" >↗ COMPRAR</button>
+        <button type="button" class="dir-btn" id="dir-sell" onclick="selDir('sell')">↘ VENDER</button>
+      </div>
+    </div>
+    <div class="f2">
+      <div class="fgrp">
+        <label class="flbl">Categoria</label>
+        <select class="fsel" id="f-category">
+          <option value="">—</option>
+          <option value="FX">FX (Forex)</option>
+          <option value="Commodity">Commodity</option>
+          <option value="Índice">Índice</option>
+          <option value="Cripto">Cripto</option>
+          <option value="Ação">Ação</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="fgrp"><label class="flbl">R Múltiplo</label><input class="finp" type="number" id="f-rr" step="0.1" placeholder="2.0"></div>
+    </div>
     <div class="f2">
       <div class="fgrp"><label class="flbl">Setup</label><input class="finp" type="text" id="f-setup" placeholder="Breakout London"></div>
-      <div class="fgrp"><label class="flbl">R Múltiplo</label><input class="finp" type="number" id="f-rr" step="0.1" placeholder="2.0"></div>
+      <div class="fgrp"><label class="flbl">Preço Entrada</label><input class="finp" type="number" id="f-entry" step="0.01" placeholder="1850.00"></div>
+    </div>
+    <div class="fgrp">
+      <label class="flbl">Preço de Saída</label>
+      <input class="finp" type="number" id="f-exit" step="0.01" placeholder="1870.00">
     </div>
     <div class="fgrp">
       <label class="flbl">Estado Emocional</label>
@@ -3605,7 +3649,7 @@ function showPage(name, btn, isMobile=false) {
   if (mBtn) mBtn.classList.add('active');
   closeDropdowns();
   if (name==='calendar')  { setTimeout(renderCalendar,  20); }
-  if (name==='journal')     { showPage('trades',null); return; }
+  if (name==='journal')     { renderJournal(); }
   if (name==='trades')      { setTimeout(renderTradesPage, 20); }
   if (name==='reports')     { renderReports(); }
   if (name==='settings')    { loadSettings(); }
@@ -3814,13 +3858,35 @@ function closeDayDetail() {
 // ════════════════════════════════════════
 //  TRADE MODAL
 // ════════════════════════════════════════
+let selDirVal = '';
+
+function selDir(dir) {
+  selDirVal = dir;
+  document.getElementById('dir-buy')?.classList.toggle('sel-buy',   dir==='buy');
+  document.getElementById('dir-sell')?.classList.toggle('sel-sell', dir==='sell');
+  document.getElementById('dir-buy')?.classList.toggle('sel-buy',   false);
+  document.getElementById('dir-sell')?.classList.toggle('sel-sell', false);
+  if (dir==='buy')  { document.getElementById('dir-buy').classList.add('sel-buy'); }
+  if (dir==='sell') { document.getElementById('dir-sell').classList.add('sel-sell'); }
+}
+
+function clearDir() {
+  selDirVal = '';
+  document.getElementById('dir-buy')?.classList.remove('sel-buy');
+  document.getElementById('dir-sell')?.classList.remove('sel-sell');
+}
+
 function openTradeModal(prefill) {
-  editingDate=null; selEmoVal=''; currentSS=null;
+  editingDate=null; editingId=null; selEmoVal=''; currentSS=null;
   document.querySelectorAll('.emo-btn').forEach(b=>b.classList.remove('sel'));
+  clearDir();
   document.getElementById('f-date').value = prefill||todayStr();
-  ['f-pnl','f-trades','f-setup','f-rr','f-notes'].forEach(i=>document.getElementById(i).value='');
+  ['f-pnl','f-trades','f-setup','f-rr','f-notes','f-entry','f-exit'].forEach(i=>{
+    const el=document.getElementById(i); if(el) el.value='';
+  });
   document.getElementById('f-pair').value='';
   document.getElementById('f-session').value='';
+  const catEl = document.getElementById('f-category'); if(catEl) catEl.value='';
   document.getElementById('ss-prev').style.display='none';
   document.getElementById('trade-modal-title').textContent='NOVA OPERAÇÃO';
   openModal('tradeModal');
@@ -3837,6 +3903,10 @@ function openEditModal(t) {
   document.getElementById('f-setup').value=t.setup||'';
   document.getElementById('f-rr').value=t.rr||'';
   document.getElementById('f-notes').value=t.notes||'';
+  const entryEl=document.getElementById('f-entry'); if(entryEl) entryEl.value=t.entry||'';
+  const exitEl=document.getElementById('f-exit');   if(exitEl)  exitEl.value=t.exit||'';
+  const catEl=document.getElementById('f-category'); if(catEl) catEl.value=t.category||'';
+  clearDir(); if(t.direction) selDir(t.direction);
   const prev=document.getElementById('ss-prev');
   if(t.screenshot){prev.src=t.screenshot;prev.style.display='block';}else{prev.style.display='none';}
   document.getElementById('trade-modal-title').textContent='EDITAR OPERAÇÃO';
@@ -3859,16 +3929,22 @@ function saveTrade() {
   const date=document.getElementById('f-date').value;
   const pnl=parseFloat(document.getElementById('f-pnl').value);
   if(!date||isNaN(pnl)){toast('Data e P&L obrigatórios',true);return;}
+  const entryVal = parseFloat(document.getElementById('f-entry')?.value)||null;
+  const exitVal  = parseFloat(document.getElementById('f-exit')?.value)||null;
   const t = {
     date, pnl,
-    trades: parseInt(document.getElementById('f-trades').value)||1,
-    pair: document.getElementById('f-pair').value,
-    session: document.getElementById('f-session').value,
-    setup: document.getElementById('f-setup').value.trim(),
-    rr: parseFloat(document.getElementById('f-rr').value)||null,
-    emotion: selEmoVal,
-    notes: document.getElementById('f-notes').value.trim(),
-    screenshot: currentSS,
+    trades:    parseInt(document.getElementById('f-trades').value)||1,
+    pair:      document.getElementById('f-pair').value,
+    session:   document.getElementById('f-session').value,
+    setup:     document.getElementById('f-setup').value.trim(),
+    rr:        parseFloat(document.getElementById('f-rr').value)||null,
+    emotion:   selEmoVal,
+    notes:     document.getElementById('f-notes').value.trim(),
+    screenshot:currentSS,
+    direction: selDirVal || null,
+    category:  document.getElementById('f-category')?.value || null,
+    entry:     entryVal,
+    exit:      exitVal,
     id: editingId || genId()
   };
   if(!db.trades[activeId]) db.trades[activeId]=[];
@@ -5299,27 +5375,27 @@ function showLoginPanel() {
 
 
 // ════════════════════════════════════════
-//  REGISTRO DE NEGOCIAÇÕES (unificado)
+//  REGISTRO DE NEGOCIAÇÕES
 // ════════════════════════════════════════
 function renderTradesPage() {
   const all = getTrades();
-  const MONTHS_LONG = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const DOW = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const EMO_MAP = { calmo:'😌', confiante:'😎', ansioso:'😰', frustrado:'😤', ganancioso:'🤑', cansado:'😴', no_flow:'🔥', perdido:'😵' };
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  // Popula filtros de mês e par (só na 1ª vez)
+  // Popula filtros
   const monthSel = document.getElementById('trades-filter-month');
   const pairSel  = document.getElementById('trades-filter-pair');
   if (monthSel && monthSel.options.length <= 1) {
-    [...new Set(all.map(t => t.date.slice(0,7)))].sort().reverse().forEach(m => {
+    const months = [...new Set(all.map(t => t.date.slice(0,7)))].sort().reverse();
+    months.forEach(m => {
       const [y, mo] = m.split('-');
       const opt = document.createElement('option');
-      opt.value = m; opt.textContent = MONTHS_LONG[parseInt(mo)-1] + ' ' + y;
+      opt.value = m; opt.textContent = MONTHS[parseInt(mo)-1] + ' ' + y;
       monthSel.appendChild(opt);
     });
   }
   if (pairSel && pairSel.options.length <= 1) {
-    [...new Set(all.map(t => t.pair).filter(Boolean))].sort().forEach(p => {
+    const pairs = [...new Set(all.map(t => t.pair).filter(Boolean))].sort();
+    pairs.forEach(p => {
       const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
       pairSel.appendChild(opt);
     });
@@ -5335,95 +5411,47 @@ function renderTradesPage() {
   if (filterResult === 'win')  trades = trades.filter(t => t.pnl > 0);
   if (filterResult === 'loss') trades = trades.filter(t => t.pnl < 0);
 
-  // Atualiza contador
   const countEl = document.getElementById('trades-count');
   if (countEl) countEl.textContent = trades.length;
 
   // KPIs
-  const wins    = trades.filter(t => t.pnl > 0);
-  const losses  = trades.filter(t => t.pnl < 0);
-  const total   = trades.reduce((a,t) => a + t.pnl, 0);
-  const avgWin  = wins.length   ? wins.reduce((a,t)=>a+t.pnl,0)/wins.length : 0;
-  const avgLoss = losses.length ? Math.abs(losses.reduce((a,t)=>a+t.pnl,0)/losses.length) : 0;
-  const wr      = trades.length ? (wins.length/trades.length*100).toFixed(1) : '0.0';
-  const rrs     = trades.filter(t => t.rr != null);
-  const avgRR   = rrs.length ? (rrs.reduce((a,t)=>a+t.rr,0)/rrs.length).toFixed(2) : '—';
-  const kpisEl  = document.getElementById('trades-kpis');
+  const wins   = trades.filter(t => t.pnl > 0);
+  const losses = trades.filter(t => t.pnl < 0);
+  const total  = trades.reduce((a,t) => a + t.pnl, 0);
+  const wr     = trades.length ? (wins.length/trades.length*100).toFixed(1) : '—';
+  const kpisEl = document.getElementById('trades-kpis');
   if (kpisEl) kpisEl.innerHTML = [
     ['P&L Total',    (total>=0?'+R$':'-R$')+Math.abs(total).toFixed(2), total>=0?'#00F5A0':'#FF5B70'],
     ['Operações',    trades.length, '#5BB4FF'],
     ['Taxa Vitória', wr+'%', '#A78BFA'],
-    ['R:R Médio',    avgRR === '—' ? '—' : avgRR+'R', '#FFB547'],
-    ['Ganho Médio',  avgWin>0?'+R$'+avgWin.toFixed(2):'—', '#00F5A0'],
-    ['Perda Média',  avgLoss>0?'-R$'+avgLoss.toFixed(2):'—', '#FF5B70'],
+    ['Melhor',       wins.length ? '+R$'+Math.max(...wins.map(t=>t.pnl)).toFixed(2) : '—', '#00F5A0'],
   ].map(([k,v,c]) => `
     <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-3);margin-bottom:6px">${k}</div>
-      <div style="font-size:18px;font-weight:800;color:${c};font-family:var(--font-mono)">${v}</div>
+      <div style="font-size:20px;font-weight:800;color:${c};font-family:var(--font-mono)">${v}</div>
     </div>`).join('');
 
   // Tabela
   const tbody = document.getElementById('trades-table-body');
   if (!tbody) return;
   if (trades.length === 0) {
-    tbody.innerHTML = '<div style="padding:60px;text-align:center;color:var(--text-3)"><div style="font-size:36px;margin-bottom:12px">📋</div>Nenhuma operação encontrada</div>';
+    tbody.innerHTML = '<div style="padding:48px;text-align:center;color:var(--text-3)">Nenhuma operação encontrada</div>';
     return;
   }
-
-  // Agrupa por data (mesmo comportamento do journal)
-  const byDate = {};
-  const dateOrder = [];
-  trades.forEach(t => {
-    if (!byDate[t.date]) { byDate[t.date] = []; dateOrder.push(t.date); }
-    byDate[t.date].push(t);
-  });
-
-  const colsHeader = 'grid-template-columns:90px 90px 60px 60px 80px 75px 70px 1fr 36px';
-  const colsRow    = 'grid-template-columns:90px 90px 60px 60px 80px 75px 70px 1fr 36px';
-
   tbody.innerHTML = `
-    <div style="display:grid;${colsHeader};border-bottom:1px solid var(--border);padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-4);font-weight:700;position:sticky;top:0;background:var(--bg-card)">
-      <span>Data</span><span>Par</span><span>Trades</span><span>R:R</span><span>Sessão</span><span>P&L</span><span>Humor</span><span>Setup · Notas</span><span></span>
+    <div style="display:grid;grid-template-columns:100px 80px 70px 70px 80px 80px 1fr;gap:0;border-bottom:1px solid var(--border);padding:10px 16px;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-4);font-weight:700">
+      <span>Data</span><span>Par</span><span>Trades</span><span>R:R</span><span>Sessão</span><span>P&L</span><span>Setup / Notas</span>
     </div>
-    ${dateOrder.map(date => {
-      const ops    = byDate[date];
-      const d      = new Date(date+'T12:00:00');
-      const dayPnL = ops.reduce((a,t)=>a+t.pnl,0);
-      const totalT = ops.reduce((a,t)=>a+(t.trades||1),0);
-      const pairs  = [...new Set(ops.filter(t=>t.pair).map(t=>t.pair))];
-      const setups = [...new Set(ops.filter(t=>t.setup).map(t=>t.setup))];
-      const rrVals = ops.filter(t=>t.rr!=null);
-      const avgRRd = rrVals.length ? rrVals.reduce((a,t)=>a+t.rr,0)/rrVals.length : null;
-      const rrStr  = avgRRd!=null ? (avgRRd>=0?'+':'')+avgRRd.toFixed(1)+'R' : '—';
-      const emo    = ops[0]?.emotion || '';
-      const emoEmoji = EMO_MAP[emo] || (emo ? '😐' : '—');
-      const session = ops[0]?.session || '—';
-      const notes  = ops.length===1 && ops[0].notes ? ops[0].notes.slice(0,50) : ops.length>1 ? ops.length+' ops' : '';
-      const multiTag = ops.length>1 ? `<span style="font-size:9px;background:rgba(124,92,252,0.15);color:#a78bfa;border-radius:20px;padding:1px 6px;margin-left:4px">${ops.length}</span>` : '';
-      return `
-        <div style="display:grid;${colsRow};padding:11px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;cursor:pointer;transition:background 0.12s;align-items:center"
-          onmouseover="this.style.background='rgba(255,255,255,0.03)'"
-          onmouseout="this.style.background=''"
-          onclick="openDayDetail('${date}')">
-          <div>
-            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-1)">${MONTHS_LONG[d.getMonth()]} ${d.getDate()}</div>
-            <div style="font-size:10px;color:var(--text-4)">${DOW[d.getDay()]}</div>
-          </div>
-          <div>${pairs.length ? pairs.map(p=>`<span style="background:rgba(59,158,255,0.12);color:#5BB4FF;border-radius:20px;padding:2px 7px;font-size:11px;font-weight:600">${p}</span>`).join(' ') : '<span style="color:var(--text-4)">—</span>'}${multiTag}</div>
-          <div style="font-size:12px;color:var(--text-3)">${totalT}</div>
-          <div style="font-family:var(--font-mono);font-size:12px;color:${avgRRd!=null?(avgRRd>=0?'#00F5A0':'#FF5B70'):'var(--text-4)'}">${rrStr}</div>
-          <div style="font-size:11px;color:var(--text-3)">${session}</div>
-          <div style="font-family:var(--font-mono);font-weight:800;color:${dayPnL>=0?'#00F5A0':'#FF5B70'}">${dayPnL>=0?'+':'-'}R$${Math.abs(dayPnL).toFixed(2)}</div>
-          <div style="font-size:18px;text-align:center" title="${emo}">${emoEmoji}</div>
-          <div style="font-size:11px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-            ${setups.length ? setups.map(s=>`<span style="background:rgba(0,245,160,0.07);color:var(--green);border-radius:20px;padding:1px 7px;font-size:10px;font-weight:600">${s}</span>`).join(' ') : ''}
-            ${notes ? `<span style="color:var(--text-4);margin-left:4px">${notes}</span>` : ''}
-          </div>
-          <div style="text-align:center" onclick="event.stopPropagation()">
-            <button onclick="toggleRjMenu(event,'${ops[0].id}','${date}')" style="background:none;border:none;color:var(--text-3);cursor:pointer;font-size:16px;padding:0 4px">···</button>
-          </div>
-        </div>`;
-    }).join('')}`;
+    ${trades.map(t => `
+    <div style="display:grid;grid-template-columns:100px 80px 70px 70px 80px 80px 1fr;gap:0;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;cursor:pointer;transition:background 0.12s" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background=''" onclick="openDayDetail('${t.date}')">
+      <span style="color:var(--text-2);font-family:var(--font-mono)">${t.date.slice(5)}</span>
+      <span style="font-weight:600">${t.pair||'—'}</span>
+      <span style="color:var(--text-3)">${t.trades||1}</span>
+      <span style="color:var(--text-3)">${t.rr ? t.rr+'R' : '—'}</span>
+      <span style="color:var(--text-3);font-size:11px">${t.session||'—'}</span>
+      <span style="font-family:var(--font-mono);font-weight:800;color:${t.pnl>=0?'#00F5A0':'#FF5B70'}">${t.pnl>=0?'+':'-'}R$${Math.abs(t.pnl).toFixed(2)}</span>
+      <span style="color:var(--text-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.setup||''} ${t.notes?'· '+t.notes.slice(0,40):''}</span>
+    </div>`).join('')}`;
 }
 
 // ════════════════════════════════════════
