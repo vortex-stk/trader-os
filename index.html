@@ -6350,7 +6350,7 @@ function switchCfgTab(tab, btn) {
   if (tab === 'metas')       renderMetasProgress();
   if (tab === 'contas')      renderSettingsAccounts();
   if (tab === 'sync')        { updateCloudStatusCard(isCloudMode); loadSyncStatus(); }
-  if (tab === 'perfil')      switchCfgTab_extra_init();
+  if (tab === 'perfil')      loadCfgProfileTab();
   if (tab === 'suporte')     renderActivityLog();
   if (tab === 'notificacoes') loadNotifSettings();
   if (tab === 'aparencia')   loadAppearanceSettings();
@@ -6559,9 +6559,7 @@ function loadSyncStatus() {
   }
 }
 
-function updateCloudStatusCard(isCloud) {
-  loadSyncStatus();
-}
+// updateCloudStatusCard — definição principal acima
 
 function logActivity(msg) {
   try {
@@ -6572,6 +6570,34 @@ function logActivity(msg) {
     logs.unshift({ time, msg });
     localStorage.setItem('tros_activity_log', JSON.stringify(logs.slice(0, 50)));
   } catch(e) {}
+}
+
+function loadCfgProfileTab() {
+  const p   = db.profile || {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+  set('cfg-prof-name',   p.name   || '');
+  set('cfg-prof-email',  p.email  || currentUser?.email || '');
+  set('cfg-prof-phone',  p.phone  || '');
+  set('cfg-prof-tz',     p.tz     || 'America/Sao_Paulo');
+  set('cfg-prof-broker', p.broker || '');
+  set('cfg-prof-exp',    p.exp    || '');
+
+  const initials = p.name ? p.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase() : 'TR';
+  const avEl = document.getElementById('cfg-prof-avatar');
+  const nmEl = document.getElementById('cfg-prof-name-disp');
+  const emEl = document.getElementById('cfg-prof-email-disp');
+  if (avEl) avEl.textContent = initials;
+  if (nmEl) nmEl.textContent = p.name || 'Trader';
+  if (emEl) emEl.textContent = p.email || currentUser?.email || '—';
+
+  const sinceEl = document.getElementById('cfg-prof-since');
+  if (sinceEl) {
+    const d = currentUser?.created_at || localStorage.getItem('tros_created_at') || new Date().toISOString();
+    sinceEl.textContent = 'Membro desde ' + new Date(d).toLocaleDateString('pt-BR', {month:'short', year:'numeric'});
+  }
+  const llEl = document.getElementById('cfg-last-login');
+  if (llEl) llEl.textContent = new Date().toLocaleString('pt-BR') + ' · ' + (Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo');
+  renderActivityLog();
 }
 </script>
 </body>
