@@ -1,9 +1,12 @@
 {
+  "id": "/",
   "name": "Trader OS",
   "short_name": "TraderOS",
   "description": "Diário de trading profissional para traders de forex e prop firms",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
   "background_color": "#050810",
   "theme_color": "#050810",
   "orientation": "portrait-primary",
@@ -22,7 +25,15 @@
       "name": "Novo Trade",
       "short_name": "Trade",
       "url": "/?action=new-trade",
-      "description": "Registrar um novo trade rapidamente"
+      "description": "Registrar um novo trade rapidamente",
+      "icons": [{ "src": "/assets/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "url": "/",
+      "description": "Ver painel principal"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }

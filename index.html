@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TRADER OS</title>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#050810">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trader OS">
+<link rel="apple-touch-icon" href="/assets/icon-192.png">
+<meta name="description" content="Diário de trading profissional para traders de forex e prop firms">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2937,6 +2946,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
         <button class="cfg-tab" onclick="switchCfgTab('backup',this)">
           <span>💾</span> Backup
         </button>
+        <button class="cfg-tab" onclick="switchCfgTab('pwa',this)">
+          <span>📱</span> Instalar App
+        </button>
         <button class="cfg-tab" onclick="switchCfgTab('suporte',this)">
           <span>❓</span> Suporte
         </button>
@@ -3365,6 +3377,80 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       </div>
 
       <!-- ── ABA SUPORTE ── -->
+      <!-- ── PWA Install Panel ── -->
+      <div id="cfg-panel-pwa" class="cfg-panel">
+        <div class="cfg-card">
+          <div class="cfg-card-title">📱 Instalar como App</div>
+          <div class="cfg-card-desc">Instale o Trader OS no seu dispositivo para acesso rápido, mesmo offline.</div>
+
+          <!-- Install button (shown when prompt available) -->
+          <div id="pwa-install-wrap" style="margin-top:16px">
+            <button id="pwa-install-btn" onclick="triggerPWAInstall()"
+              style="width:100%;padding:16px;border-radius:12px;background:linear-gradient(135deg,#00F5A0,#00C8FF);border:none;color:#000;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px">
+              <span style="font-size:22px">📲</span> Instalar Trader OS
+            </button>
+            <p id="pwa-install-hint" style="font-size:12px;color:var(--text-3);margin-top:10px;text-align:center">
+              Clique para adicionar à sua tela inicial
+            </p>
+          </div>
+
+          <!-- Already installed / not supported message -->
+          <div id="pwa-installed-msg" style="display:none;margin-top:16px;padding:14px;border-radius:10px;background:rgba(0,245,160,0.07);border:1px solid rgba(0,245,160,0.2);text-align:center">
+            <div style="font-size:28px;margin-bottom:8px">✅</div>
+            <div style="font-weight:700;color:var(--green)">App já instalado!</div>
+            <div style="font-size:12px;color:var(--text-3);margin-top:4px">O Trader OS está na sua tela inicial</div>
+          </div>
+        </div>
+
+        <div class="cfg-card">
+          <div class="cfg-card-title">ℹ️ Como instalar manualmente</div>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,158,255,0.15);border:1px solid rgba(59,158,255,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#3B9EFF;flex-shrink:0">1</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text-1)">Chrome / Edge (Desktop)</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:2px">Clique no ícone ⊕ na barra de endereço e selecione "Instalar"</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#A78BFA;flex-shrink:0">2</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text-1)">Safari (iPhone / iPad)</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:2px">Toque em Compartilhar <span style="font-family:monospace">⬆</span> → "Adicionar à Tela de Início"</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(0,245,160,0.12);border:1px solid rgba(0,245,160,0.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#00F5A0;flex-shrink:0">3</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text-1)">Chrome (Android)</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:2px">Menu ⋮ → "Adicionar à tela inicial" ou aguarde o banner automático</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cfg-card">
+          <div class="cfg-card-title">⚡ Vantagens do App Instalado</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            ${[
+              ['🚀','Abre instantaneamente, sem precisar do browser'],
+              ['📵','Funciona offline — dados sempre acessíveis'],
+              ['🔔','Recebe notificações de alertas de risco'],
+              ['📱','Tela cheia, sem barra de endereço'],
+              ['⚡','Carregamento mais rápido via cache local'],
+            ].map(([i,t]) => `<div style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+              <span style="font-size:18px">${i}</span>
+              <span style="font-size:13px;color:var(--text-2)">${t}</span>
+            </div>`).join('')}
+          </div>
+        </div>
+
+        <div class="cfg-card">
+          <div class="cfg-card-title">📶 Status do Service Worker</div>
+          <div id="pwa-sw-status" style="margin-top:8px;font-size:12px;color:var(--text-3)">Verificando…</div>
+        </div>
+      </div>
+
       <div id="cfg-panel-suporte" class="cfg-panel">
         <div class="cfg-card">
           <div class="cfg-card-title">💬 Contato & Suporte</div>
@@ -4089,6 +4175,14 @@ async function launchApp() {
   setInterval(updateClock, 1000); updateClock();
   renderHeader();
   loadProfile();
+
+  // Handle PWA shortcuts (?action=new-trade)
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('action') === 'new-trade') {
+    setTimeout(() => openTradeModal(), 300);
+    // Clean URL without reload
+    history.replaceState({}, '', '/');
+  }
 
   // Auth some DEPOIS que os dados e gráficos já estão renderizados
   renderDashboard();
@@ -6915,6 +7009,7 @@ function switchCfgTab(tab, btn) {
   if (tab === 'suporte')     renderActivityLog();
   if (tab === 'notificacoes') loadNotifSettings();
   if (tab === 'aparencia')   loadAppearanceSettings();
+  if (tab === 'pwa')         refreshPWAPanel();
 }
 
 function toggleApiConfig() {
@@ -7128,6 +7223,112 @@ function loadCfgProfileTab() {
   if (llEl) llEl.textContent = new Date().toLocaleString('pt-BR') + ' · ' + (Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo');
   renderActivityLog();
 }
+
+// ════════════════════════════════════════
+//  PWA — Service Worker + Install Prompt
+// ════════════════════════════════════════
+let _pwaInstallPrompt = null;
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('[PWA] SW registrado:', reg.scope);
+        updateSWStatus('✅ Ativo — app disponível offline', '#00F5A0');
+        // Check for updates
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              toast('Nova versão disponível! Recarregue para atualizar.', false, 5000);
+            }
+          });
+        });
+      })
+      .catch(err => {
+        console.warn('[PWA] SW falhou:', err);
+        updateSWStatus('⚠️ Não disponível (requer HTTPS)', '#FFB547');
+      });
+  });
+} else {
+  updateSWStatus('❌ Browser não suporta Service Workers', '#FF5B70');
+}
+
+// Capture install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _pwaInstallPrompt = e;
+  // Show install button in header if desired
+  const badge = document.getElementById('pwa-header-badge');
+  if (badge) badge.style.display = 'flex';
+  // Update panel UI when open
+  refreshPWAPanel();
+});
+
+// Detect successful install
+window.addEventListener('appinstalled', () => {
+  _pwaInstallPrompt = null;
+  toast('🎉 Trader OS instalado com sucesso!');
+  refreshPWAPanel();
+});
+
+function triggerPWAInstall() {
+  if (!_pwaInstallPrompt) {
+    // Already installed or browser doesn't support
+    const hint = document.getElementById('pwa-install-hint');
+    if (hint) hint.textContent = 'Use o menu do seu browser para instalar (veja instruções abaixo)';
+    return;
+  }
+  _pwaInstallPrompt.prompt();
+  _pwaInstallPrompt.userChoice.then(result => {
+    if (result.outcome === 'accepted') {
+      toast('🎉 Instalando Trader OS…');
+    }
+    _pwaInstallPrompt = null;
+    refreshPWAPanel();
+  });
+}
+
+function refreshPWAPanel() {
+  const wrap       = document.getElementById('pwa-install-wrap');
+  const installedMsg = document.getElementById('pwa-installed-msg');
+  if (!wrap || !installedMsg) return;
+
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+
+  if (isInstalled) {
+    wrap.style.display = 'none';
+    installedMsg.style.display = 'block';
+  } else if (_pwaInstallPrompt) {
+    wrap.style.display = 'block';
+    installedMsg.style.display = 'none';
+    const hint = document.getElementById('pwa-install-hint');
+    if (hint) hint.textContent = 'Clique para adicionar à sua tela inicial';
+  } else {
+    wrap.style.display = 'block';
+    installedMsg.style.display = 'none';
+    const btn  = document.getElementById('pwa-install-btn');
+    const hint = document.getElementById('pwa-install-hint');
+    if (btn)  { btn.style.opacity = '0.5'; btn.style.cursor = 'default'; }
+    if (hint) hint.textContent = 'Siga as instruções manuais abaixo para instalar';
+  }
+}
+
+function updateSWStatus(msg, color) {
+  const el = document.getElementById('pwa-sw-status');
+  if (el) el.innerHTML = `<span style="color:${color};font-weight:600">${msg}</span>`;
+}
+
+// Run once on load to set initial PWA panel state
+window.addEventListener('load', () => {
+  setTimeout(refreshPWAPanel, 500);
+  // Show installed badge on any page if running as standalone
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    updateSWStatus('✅ Rodando como app instalado', '#00F5A0');
+  }
+});
 </script>
 </body>
 </html>
