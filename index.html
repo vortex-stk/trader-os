@@ -2029,11 +2029,35 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   outline: none;
 }
 #dayDetailModal textarea:focus { border-color: var(--accent); }
-.dd-diary-divider {
-  height: 1px;
-  background: rgba(255,255,255,0.06);
-  margin: 4px 0;
+/* ── Period filter bar ── */
+.period-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0 16px;
 }
+.period-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-3);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.period-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-1);
+}
+.period-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
 
 
 
@@ -2446,6 +2470,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <button class="btn-add" onclick="openTradeModal()">＋ Novo Dia</button>
     </div>
   </div>
+  <div id="dash-period-bar"></div>
 
   <!-- BANNERS -->
   <div id="banners"></div>
@@ -2626,6 +2651,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <button class="btn-add" onclick="openTradeModal()">＋ Novo Trade</button>
     </div>
   </div>
+  <div id="journal-period-bar"></div>
 
   <!-- Filter bar -->
   <div class="rj-filter-bar">
@@ -2748,10 +2774,11 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <div class="an-topbar">
     <div>
       <h1 class="an-title">Análises</h1>
-      <p class="an-sub">Análises detalhadas de desempenho · Sempre</p>
+      <p class="an-sub" id="an-sub">Análises detalhadas de desempenho</p>
     </div>
     <button class="btn-export" onclick="showPage('settings',null)">Configurar</button>
   </div>
+  <div id="analytics-period-bar"></div>
 
   <div class="an-grid-2">
     <!-- Top-left: Win/Loss Distribution -->
@@ -2830,10 +2857,13 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 <!-- ═══ REPORTS ═══ -->
 <div class="page" id="page-reports">
-  <div style="margin-bottom:16px">
-    <h2 style="font-size:20px;font-weight:700">Relatórios</h2>
-    <p style="font-size:12px;color:var(--text3);margin-top:2px">Exportar e analisar performance</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div>
+      <h2 style="font-size:20px;font-weight:700">Relatórios</h2>
+      <p style="font-size:12px;color:var(--text3);margin-top:2px">Exportar e analisar performance</p>
+    </div>
   </div>
+  <div id="reports-period-bar"></div>
   <div class="export-bar">
     <button class="btn-export" onclick="exportPDF('month')"><span>📄</span> PDF Mensal</button>
     <button class="btn-export" onclick="exportPDF('year')"><span>📊</span> PDF Anual</button>
@@ -3369,6 +3399,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <button class="btn-add" onclick="openTradeModal()">＋ Nova Operação</button>
     </div>
   </div>
+  <div id="trades-period-bar"></div>
   <!-- Filtros -->
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
     <select id="trades-filter-month" onchange="renderTradesPage()" style="background:var(--bg-card);border:1px solid var(--border-md);border-radius:8px;padding:8px 12px;color:var(--text-1);font-size:12px;cursor:pointer">
@@ -3421,6 +3452,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <p class="db-sub">Desempenho por ativo · quais pares geram mais resultado</p>
     </div>
   </div>
+  <div id="instruments-period-bar"></div>
   <div id="instruments-content"></div>
 </div>
 </main>
@@ -4221,6 +4253,71 @@ function saveDayMeta(dateStr, data) {
     screenshot: data.screenshot || null,
   };
 }
+
+// ════════════════════════════════════════
+//  PERIOD FILTER (global)
+// ════════════════════════════════════════
+let _activePeriod = 'month'; // '7d' | '30d' | 'month' | 'year' | 'all'
+
+const PERIOD_LABELS = {
+  '7d':    'Últimos 7 dias',
+  '30d':   'Últimos 30 dias',
+  'month': 'Mês atual',
+  'year':  'Ano atual',
+  'all':   'Tudo',
+};
+
+function getFilteredTrades() {
+  const all = getTrades();
+  const now = new Date();
+  if (_activePeriod === 'all') return all;
+  if (_activePeriod === '7d') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+    const cs = cutoff.toISOString().slice(0,10);
+    return all.filter(t => t.date >= cs);
+  }
+  if (_activePeriod === '30d') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+    const cs = cutoff.toISOString().slice(0,10);
+    return all.filter(t => t.date >= cs);
+  }
+  if (_activePeriod === 'month') {
+    return all.filter(t => {
+      const d = new Date(t.date+'T12:00:00');
+      return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+    });
+  }
+  if (_activePeriod === 'year') {
+    return all.filter(t => new Date(t.date+'T12:00:00').getFullYear()===now.getFullYear());
+  }
+  return all;
+}
+
+function setPeriod(p) {
+  _activePeriod = p;
+  // Re-render active page
+  document.querySelectorAll('.period-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.period === p);
+  });
+  // Trigger re-render of whichever page is active
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const id = active.id.replace('page-','');
+  if (id==='dashboard')   renderDashboard();
+  if (id==='journal')     renderJournal();
+  if (id==='trades')      renderTradesPage();
+  if (id==='analytics')   renderAnalytics();
+  if (id==='reports')     renderReports();
+  if (id==='instruments') renderInstrumentsPage();
+}
+
+function periodFilterBar() {
+  return `<div class="period-bar">
+    ${Object.entries(PERIOD_LABELS).map(([k,v]) =>
+      `<button class="period-chip${_activePeriod===k?' active':''}" data-period="${k}" onclick="setPeriod('${k}')">${v}</button>`
+    ).join('')}
+  </div>`;
+}
 function todayStr() { return new Date().toISOString().slice(0,10); }
 function fmt$(v) { return 'R$' + Math.abs(v||0).toFixed(2); }
 function fmtSign(v) { return (v>=0?'+R$':'-R$') + Math.abs(v||0).toFixed(2); }
@@ -4263,6 +4360,12 @@ function showPage(name, btn, isMobile=false) {
   const mBtn = document.getElementById('mnav-'+name);
   if (mBtn) mBtn.classList.add('active');
   closeDropdowns();
+  // Inject period filter bar into supported pages
+  const periodPages = ['dashboard','journal','trades','analytics','reports','instruments'];
+  if (periodPages.includes(name)) {
+    const barEl = document.getElementById(name+'-period-bar');
+    if (barEl) barEl.innerHTML = periodFilterBar();
+  }
   if (name==='calendar')  { setTimeout(renderCalendar,  20); }
   if (name==='journal')     { renderJournal(); }
   if (name==='trades')      { setTimeout(renderTradesPage, 20); }
@@ -4696,8 +4799,13 @@ function deleteTrade(id, date) {
 //  DASHBOARD
 // ════════════════════════════════════════
 function renderDashboard() {
+  // Inject period bar (in case called directly)
+  const barEl = document.getElementById('dash-period-bar');
+  if (barEl) barEl.innerHTML = periodFilterBar();
+
   const now=new Date();
   const all=getTrades();
+  const filtered=getFilteredTrades();
   const cfg=getCfg();
   const acct=getAcct();
   const gc=db.globalConfig;
@@ -4709,7 +4817,7 @@ function renderDashboard() {
 
   // Subtitle
   const sub=document.getElementById('dash-acct-sub');
-  if(sub) sub.textContent=`${acct.name} · ${MONTHS[now.getMonth()]} ${now.getFullYear()} · Todas as sessões`;
+  if(sub) sub.textContent=`${acct.name} · ${PERIOD_LABELS[_activePeriod]} · Todas as sessões`;
 
   // Banners (risk alerts)
   const banners=[];
@@ -4719,28 +4827,29 @@ function renderDashboard() {
   if(cfg.maxloss>0&&totalLoss/cfg.maxloss>=0.9) banners.push({t:'danger',i:'🚨',m:'Max Loss quase atingido!',s:'R$'+totalLoss.toFixed(0)+' de $'+cfg.maxloss});
   document.getElementById('banners').innerHTML=banners.map(b=>`<div class="banner ${b.t}" style="margin-bottom:10px"><span>${b.i}</span><div style="flex:1"><strong>${b.m}</strong><div style="font-size:11px;opacity:0.7">${b.s}</div></div><button class="banner-close" onclick="this.parentElement.remove()">✕</button></div>`).join('');
 
-  // Calculations
+  // Calculations — use filtered for KPIs, all for balance/risk
+  const filtPnL=filtered.reduce((a,t)=>a+t.pnl,0);
   const monthPnL=month.reduce((a,t)=>a+t.pnl,0);
   const yearPnL=year.reduce((a,t)=>a+t.pnl,0);
-  const bal=(acct.capital||10000)+totalPnL;
-  const wins=month.filter(t=>t.pnl>0);
-  const losses=month.filter(t=>t.pnl<0);
-  const wr=month.length?(wins.length/month.length*100):0;
+  const bal=(acct.capital||10000)+all.reduce((a,t)=>a+t.pnl,0);
+  const wins=filtered.filter(t=>t.pnl>0);
+  const losses=filtered.filter(t=>t.pnl<0);
+  const wr=filtered.length?(wins.length/filtered.length*100):0;
   const avgWin=wins.length?wins.reduce((a,t)=>a+t.pnl,0)/wins.length:0;
   const avgLoss=losses.length?Math.abs(losses.reduce((a,t)=>a+t.pnl,0)/losses.length):0;
   const rr=avgLoss>0?(avgWin/avgLoss):0;
   const grossWin=wins.reduce((a,t)=>a+t.pnl,0);
   const grossLoss=Math.abs(losses.reduce((a,t)=>a+t.pnl,0));
   const pf=grossLoss>0?(grossWin/grossLoss):null;
-  const maxDD=calcMaxDD(month);
-  const totalTrades=month.reduce((a,t)=>a+(t.trades||0),0);
+  const maxDD=calcMaxDD(filtered);
+  const totalTrades=filtered.reduce((a,t)=>a+(t.trades||0),0);
 
-  // Prev month comparison
-  const prevDate=new Date(now.getFullYear(),now.getMonth()-1,1);
+  // Prev period comparison
+  const prevDate=new Date(new Date().getFullYear(),new Date().getMonth()-1,1);
   const prevMonth=getTrades().filter(t=>{const d=new Date(t.date+'T12:00:00');return d.getFullYear()===prevDate.getFullYear()&&d.getMonth()===prevDate.getMonth();});
   const prevPnL=prevMonth.reduce((a,t)=>a+t.pnl,0);
-  const pnlDiff=prevPnL!==0?((monthPnL-prevPnL)/Math.abs(prevPnL)*100):0;
-  const retPct=acct.capital>0?(totalPnL/acct.capital*100):0;
+  const pnlDiff=prevPnL!==0?((filtPnL-prevPnL)/Math.abs(prevPnL)*100):0;
+  const retPct=acct.capital>0?(all.reduce((a,t)=>a+t.pnl,0)/acct.capital*100):0;
 
   // ── 6 KPI CARDS ──
   const todayPnL = today ? today.pnl : 0;
@@ -4754,10 +4863,10 @@ function renderDashboard() {
       sub:today?`${todayTradesCount} trade${todayTradesCount!==1?'s':''} registrado${todayTradesCount!==1?'s':''}`:'Nenhum trade hoje',
       arrow:todayPnL>=0?'up':'down',
       line:'linear-gradient(90deg,#22D3EE,#3B9EFF)' },
-    { tag:'P&L do Mês',
-      val:(monthPnL>=0?'+R$':'-R$')+Math.abs(monthPnL).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.'),
-      cls:monthPnL>=0?'g':'r',
-      sub: pnlDiff!==0?`${pnlDiff>=0?'▲':'▼'} ${Math.abs(pnlDiff).toFixed(1)}% vs mês passado`:'Primeiro mês',
+    { tag:'P&L do Período',
+      val:(filtPnL>=0?'+R$':'-R$')+Math.abs(filtPnL).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,'.'),
+      cls:filtPnL>=0?'g':'r',
+      sub: pnlDiff!==0?`${pnlDiff>=0?'▲':'▼'} ${Math.abs(pnlDiff).toFixed(1)}% vs mês passado`:'Primeiro período',
       arrow:pnlDiff>=0?'up':'down',
       line:'linear-gradient(90deg,#00F5A0,#00C8FF)' },
     { tag:'Taxa de Vitórias',
@@ -4776,7 +4885,7 @@ function renderDashboard() {
       arrow:'down',
       line:'linear-gradient(90deg,#FF3D6B,#FF8C69)' },
     { tag:'Consistência',
-      val:month.length?Math.min(99,Math.max(0,Math.round(wins.length/month.length*100*(rr>1?1.1:0.9))))+'%':'—', cls:'p',
+      val:filtered.length?Math.min(99,Math.max(0,Math.round(wins.length/filtered.length*100*(rr>1?1.1:0.9))))+'%':'—', cls:'p',
       sub:`Total: ${totalTrades} operações`,
       arrow:'up',
       line:'linear-gradient(90deg,#A78BFA,#7C5CFC)' },
@@ -4794,7 +4903,7 @@ function renderDashboard() {
   const pnlEl=document.getElementById('eq-pnl');
   const balEl=document.getElementById('eq-bal');
   const retEl=document.getElementById('eq-ret');
-  if(pnlEl){pnlEl.textContent=fmtSign(totalPnL);pnlEl.className='eq-stat-val '+(totalPnL>=0?'g':'r');}
+  if(pnlEl){pnlEl.textContent=fmtSign(filtPnL);pnlEl.className='eq-stat-val '+(filtPnL>=0?'g':'r');}
   if(balEl) balEl.textContent='R$ '+bal.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   if(retEl){retEl.textContent=(retPct>=0?'+':'')+retPct.toFixed(2)+'%';retEl.style.color=retPct>=0?'var(--green)':'var(--red)';}
 
@@ -4818,13 +4927,13 @@ function renderDashboard() {
   const wrDetail=document.getElementById('wr-detail');
   if(wrDetail) wrDetail.textContent=`${wins.length} vitórias · ${losses.length} derrotas`;
   const wrTotal=document.getElementById('wr-total');
-  if(wrTotal) wrTotal.textContent=`${month.length} dias registrados`;
+  if(wrTotal) wrTotal.textContent=`${filtered.length} dias registrados`;
 
   // ── PERFORMANCE LIST ──
-  const sorted=[...month].sort((a,b)=>b.pnl-a.pnl);
-  const expectancy=month.length?((wr/100*avgWin)-((1-wr/100)*avgLoss)):0;
-  const consistency=month.length?Math.round(wins.length/month.length*100*(rr>1?1.1:0.9)):0;
-  const sharpe=avgLoss>0?(expectancy/(avgLoss||1)*Math.sqrt(month.length||1)):0;
+  const sorted=[...filtered].sort((a,b)=>b.pnl-a.pnl);
+  const expectancy=filtered.length?((wr/100*avgWin)-((1-wr/100)*avgLoss)):0;
+  const consistency=filtered.length?Math.round(wins.length/filtered.length*100*(rr>1?1.1:0.9)):0;
+  const sharpe=avgLoss>0?(expectancy/(avgLoss||1)*Math.sqrt(filtered.length||1)):0;
   const perfEl=document.getElementById('db-perf-list');
   if(perfEl) perfEl.innerHTML=[
     ['Ganho Médio',  avgWin>0?'+R$'+avgWin.toFixed(0):'—', 'g'],
@@ -4844,20 +4953,18 @@ function renderDashboard() {
   renderDrawdownTracker(all, acct.capital||10000, cfg);
 
   // ── SESSION DISTRIBUTION ──
-  renderSessionBars(month);
+  renderSessionBars(filtered);
 
   // ── DIVISÃO DE DIREÇÃO ──
   const dirEl = document.getElementById('db-direction-bars');
   if (dirEl) {
-    // Só usa trades com direction explicitamente preenchido
-    // Aceita tanto 'buy'/'sell' (formulário) quanto 'long'/'short' (importação)
-    const longTrades  = month.filter(t => t.direction==='long'  || t.direction==='buy');
-    const shortTrades = month.filter(t => t.direction==='short' || t.direction==='sell');
+    const longTrades  = filtered.filter(t => t.direction==='long'  || t.direction==='buy');
+    const shortTrades = filtered.filter(t => t.direction==='short' || t.direction==='sell');
     const lPnL  = longTrades.reduce((a,t)=>a+t.pnl,0);
     const sPnL2  = shortTrades.reduce((a,t)=>a+t.pnl,0);
     const lWr   = longTrades.length  ? longTrades.filter(t=>t.pnl>0).length/longTrades.length*100  : 0;
     const sWr2  = shortTrades.length ? shortTrades.filter(t=>t.pnl>0).length/shortTrades.length*100 : 0;
-    const total2 = month.length || 1;
+    const total2 = filtered.length || 1;
     const lPct  = Math.round(longTrades.length/total2*100);
     const sPct2  = 100-lPct;
     const hasDirData = longTrades.length + shortTrades.length > 0;
@@ -5125,7 +5232,10 @@ function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth
 //  JOURNAL
 // ════════════════════════════════════════
 function renderJournal() {
-  const allTrades=[...getTrades()].sort((a,b)=>b.date<a.date?-1:1);
+  const barEl = document.getElementById('journal-period-bar');
+  if (barEl) barEl.innerHTML = periodFilterBar();
+
+  const allTrades=[...getFilteredTrades()].sort((a,b)=>b.date<a.date?-1:1);
   const lossOnly=document.getElementById('rj-losses-toggle')?.classList.contains('active');
 
   // Build dynamic filters
@@ -5149,10 +5259,8 @@ function renderJournal() {
   }
   if(lossOnly) trades=trades.filter(t=>t.pnl<0);
 
-  const now=new Date();
-  const MONTHS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
   const sub=document.getElementById('rj-sub');
-  if(sub) sub.textContent=`${trades.length} operações · ${MONTHS[now.getMonth()]} de ${now.getFullYear()}`;
+  if(sub) sub.textContent=`${trades.length} operações · ${PERIOD_LABELS[_activePeriod]}`;
 
   const c=document.getElementById('journal-list');
   if(!c) return;
@@ -5277,7 +5385,12 @@ function updateProfileUI(p) {
 }
 
 function renderAnalytics() {
-  const all = getTrades();
+  const barEl = document.getElementById('analytics-period-bar');
+  if (barEl) barEl.innerHTML = periodFilterBar();
+  const subEl = document.getElementById('an-sub');
+  if (subEl) subEl.textContent = `Análises detalhadas · ${PERIOD_LABELS[_activePeriod]}`;
+
+  const all = getFilteredTrades();
   if(!all || all.length===0) {
     ['an-heatmap','an-strategy-list'].forEach(id=>{
       const el=document.getElementById(id);
@@ -5626,9 +5739,12 @@ function downloadTemplate() {
 //  REPORTS
 // ════════════════════════════════════════
 function renderReports() {
+  const barEl = document.getElementById('reports-period-bar');
+  if (barEl) barEl.innerHTML = periodFilterBar();
+
   const now=new Date();
-  const month=getMonthTrades();
-  const year=getYearTrades();
+  const month=getFilteredTrades();
+  const year=getFilteredTrades();
   // Pair
   const pm={};
   month.forEach(t=>{if(t.pair)pm[t.pair]=(pm[t.pair]||0)+t.pnl;});
@@ -6197,7 +6313,10 @@ function showLoginPanel() {
 //  REGISTRO DE NEGOCIAÇÕES
 // ════════════════════════════════════════
 function renderTradesPage() {
-  const all = getTrades();
+  const barEl = document.getElementById('trades-period-bar');
+  if (barEl) barEl.innerHTML = periodFilterBar();
+
+  const all = getFilteredTrades();
   const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
   // Popula filtros
@@ -6483,7 +6602,10 @@ function calcRR() {
 //  INSTRUMENTOS DE TOPO
 // ════════════════════════════════════════
 function renderInstrumentsPage() {
-  const all = getTrades();
+  const barEl = document.getElementById('instruments-period-bar');
+  if (barEl) barEl.innerHTML = periodFilterBar();
+
+  const all = getFilteredTrades();
   const el  = document.getElementById('instruments-content');
   if (!el) return;
 
