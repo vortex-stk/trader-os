@@ -2013,6 +2013,29 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .dd-sum-lbl  { font-size:10px; color:var(--text3); margin-top:2px; text-transform:uppercase; letter-spacing:.5px; }
 .dd-divider  { width:1px; background:rgba(255,255,255,0.07); align-self:stretch; }
 
+/* ── Day diary section ── */
+#dayDetailModal textarea {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.55;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color .2s;
+  outline: none;
+}
+#dayDetailModal textarea:focus { border-color: var(--accent); }
+.dd-diary-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 4px 0;
+}
+
+
 
 /* ── Journal day groups ── */
 .rj-day-group {
@@ -3408,21 +3431,70 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 <!-- MODALS -->
 <div class="overlay" id="dayDetailModal" style="display:none" onclick="if(event.target===this)closeDayDetail()">
-  <div class="modal" style="max-width:600px;max-height:85vh;display:flex;flex-direction:column">
+  <div class="modal" style="max-width:640px;max-height:90vh;display:flex;flex-direction:column">
     <div class="modal-hdr" style="flex-shrink:0">
-      <div style="display:flex;flex-direction:column;gap:2px">
-        <div class="modal-title" id="dd-title">—</div>
-        <div id="dd-subtitle" style="font-size:12px;color:var(--text3)"></div>
+      <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+        <!-- Day navigation -->
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn-ghost" style="padding:4px 10px;font-size:16px" onclick="navigateDayDetail(-1)" title="Dia anterior">‹</button>
+          <div class="modal-title" id="dd-title" style="flex:1;text-align:center">—</div>
+          <button class="btn-ghost" style="padding:4px 10px;font-size:16px" onclick="navigateDayDetail(1)" title="Próximo dia">›</button>
+        </div>
+        <div id="dd-subtitle" style="font-size:12px;color:var(--text3);text-align:center"></div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;margin-left:12px">
         <button class="btn-add" style="font-size:12px;padding:6px 14px" onclick="openTradeModal(currentDayDetail)">＋ Nova Operação</button>
         <button class="modal-x" onclick="closeDayDetail()">✕</button>
       </div>
     </div>
     <!-- Summary bar -->
     <div id="dd-summary" style="display:flex;gap:12px;padding:12px 20px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0"></div>
-    <!-- Operations list -->
-    <div id="dd-ops" style="overflow-y:auto;flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:10px"></div>
+    <!-- Scrollable body -->
+    <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column">
+      <!-- Operations list -->
+      <div id="dd-ops" style="padding:16px 20px;display:flex;flex-direction:column;gap:10px"></div>
+      <!-- Diary section -->
+      <div style="padding:0 20px 20px;display:flex;flex-direction:column;gap:14px">
+        <!-- Notes -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">📝 Notas do Dia</label>
+          <textarea id="dd-notes" rows="3" placeholder="Como foi o dia? O que aconteceu? O que você sentiu?"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text-1);font-size:13px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit"
+            oninput="debounceSaveDayMeta()"></textarea>
+        </div>
+        <!-- Lesson -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">🏆 Lição do Dia</label>
+          <textarea id="dd-lesson" rows="2" placeholder="O que você aprendeu hoje?"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text-1);font-size:13px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit"
+            oninput="debounceSaveDayMeta()"></textarea>
+        </div>
+        <!-- Rating -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:8px">⭐ Avaliação do Dia</label>
+          <div id="dd-stars" style="display:flex;gap:6px">
+            <button class="dd-star" data-star="1" onclick="setDayRating(1)" title="1 — Péssimo" style="font-size:24px;background:none;border:none;cursor:pointer;opacity:0.3;transition:all .15s">★</button>
+            <button class="dd-star" data-star="2" onclick="setDayRating(2)" title="2 — Ruim"    style="font-size:24px;background:none;border:none;cursor:pointer;opacity:0.3;transition:all .15s">★</button>
+            <button class="dd-star" data-star="3" onclick="setDayRating(3)" title="3 — OK"      style="font-size:24px;background:none;border:none;cursor:pointer;opacity:0.3;transition:all .15s">★</button>
+            <button class="dd-star" data-star="4" onclick="setDayRating(4)" title="4 — Bom"     style="font-size:24px;background:none;border:none;cursor:pointer;opacity:0.3;transition:all .15s">★</button>
+            <button class="dd-star" data-star="5" onclick="setDayRating(5)" title="5 — Excelente" style="font-size:24px;background:none;border:none;cursor:pointer;opacity:0.3;transition:all .15s">★</button>
+          </div>
+        </div>
+        <!-- Day screenshot -->
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px">🖼️ Screenshot do Dia</label>
+          <div id="dd-ss-zone" onclick="document.getElementById('dd-ss-input').click()"
+            style="border:1.5px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;font-size:12px;color:var(--text-3);transition:border-color .2s"
+            onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+            📸 Clique ou arraste uma imagem do gráfico
+          </div>
+          <input type="file" id="dd-ss-input" accept="image/*" style="display:none" onchange="handleDayScreenshot(event)">
+          <img id="dd-ss-prev" style="display:none;width:100%;border-radius:8px;margin-top:8px;cursor:pointer;max-height:200px;object-fit:cover" onclick="openLightbox(this.src)">
+        </div>
+        <!-- Auto-save indicator -->
+        <div id="dd-save-status" style="font-size:11px;color:var(--text-3);text-align:right;min-height:16px"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -3923,7 +3995,8 @@ let db = {
   trades: {},
   config: {},
   globalConfig: { goalMonth:2000, goalYear:24000, goalWinrate:60, goalRR:1.5 },
-  profile: {}
+  profile: {},
+  dayMeta: {}
 };
 let activeId = null;
 let calYear = new Date().getFullYear();
@@ -4006,6 +4079,7 @@ function persistData() {
 function loadLocal() {
   const raw = localStorage.getItem('trader_os_v3');
   if (raw) db = JSON.parse(raw);
+  if (!db.dayMeta) db.dayMeta = {};  // migrate: ensure dayMeta exists
   activeId = localStorage.getItem('trader_os_active') || null;
   // migrate from v2
   const v2 = localStorage.getItem('trader_os_v2');
@@ -4132,6 +4206,21 @@ function genId() { return Date.now().toString(36) + Math.random().toString(36).s
 function getAcct() { return db.accounts.find(a => a.id === activeId) || db.accounts[0]; }
 function getTrades() { return (db.trades[activeId] || []).sort((a,b) => a.date < b.date ? -1:1); }
 function getCfg() { return db.config[activeId] || {}; }
+function getDayMeta(dateStr) {
+  if (!db.dayMeta) db.dayMeta = {};
+  if (!db.dayMeta[activeId]) db.dayMeta[activeId] = {};
+  return db.dayMeta[activeId][dateStr] || { notes:'', lesson:'', rating:0, screenshot:null };
+}
+function saveDayMeta(dateStr, data) {
+  if (!db.dayMeta) db.dayMeta = {};
+  if (!db.dayMeta[activeId]) db.dayMeta[activeId] = {};
+  db.dayMeta[activeId][dateStr] = {
+    notes: (data.notes||'').slice(0,3000),
+    lesson: (data.lesson||'').slice(0,1000),
+    rating: Math.min(5, Math.max(0, parseInt(data.rating,10)||0)),
+    screenshot: data.screenshot || null,
+  };
+}
 function todayStr() { return new Date().toISOString().slice(0,10); }
 function fmt$(v) { return 'R$' + Math.abs(v||0).toFixed(2); }
 function fmtSign(v) { return (v>=0?'+R$':'-R$') + Math.abs(v||0).toFixed(2); }
@@ -4296,6 +4385,8 @@ function saveAcct() {
 //  DAY DETAIL MODAL
 // ════════════════════════════════════════
 let currentDayDetail = null;
+let _dayMetaDebounce = null;
+let _currentDayRating = 0;
 
 function openDayDetail(dateStr) {
   currentDayDetail = dateStr;
@@ -4304,19 +4395,107 @@ function openDayDetail(dateStr) {
   // Title
   const d = new Date(dateStr + 'T12:00:00');
   const DAYS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   document.getElementById('dd-title').textContent =
-    DAYS[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0') + ' de ' + MONTHS[d.getMonth()] + ' de ' + d.getFullYear();
+    DAYS[d.getDay()] + ', ' + d.getDate() + ' de ' + MONTHS[d.getMonth()] + ' de ' + d.getFullYear();
 
   renderDayDetail(ops, dateStr);
+  loadDayMeta(dateStr);
   document.getElementById('dayDetailModal').style.display = 'flex';
+}
+
+function navigateDayDetail(delta) {
+  if (!currentDayDetail) return;
+  // Get all trade dates sorted
+  const allDates = [...new Set(getTrades().map(t => t.date))].sort();
+  const idx = allDates.indexOf(currentDayDetail);
+  let newIdx = idx + delta;
+  // If no trade on target date, step by calendar day
+  if (newIdx < 0 || newIdx >= allDates.length) {
+    const d = new Date(currentDayDetail + 'T12:00:00');
+    d.setDate(d.getDate() + delta);
+    const newDate = d.toISOString().slice(0,10);
+    openDayDetail(newDate);
+  } else {
+    openDayDetail(allDates[newIdx]);
+  }
+}
+
+function loadDayMeta(dateStr) {
+  const meta = getDayMeta(dateStr);
+  const notesEl  = document.getElementById('dd-notes');
+  const lessonEl = document.getElementById('dd-lesson');
+  const ssEl     = document.getElementById('dd-ss-prev');
+  const ssZone   = document.getElementById('dd-ss-zone');
+  if (notesEl)  notesEl.value  = meta.notes  || '';
+  if (lessonEl) lessonEl.value = meta.lesson || '';
+  _currentDayRating = meta.rating || 0;
+  renderStars(_currentDayRating);
+  if (meta.screenshot) {
+    if (ssEl)   { ssEl.src = meta.screenshot; ssEl.style.display = 'block'; }
+    if (ssZone) ssZone.style.display = 'none';
+  } else {
+    if (ssEl)   ssEl.style.display = 'none';
+    if (ssZone) ssZone.style.display = 'block';
+  }
+  const statusEl = document.getElementById('dd-save-status');
+  if (statusEl) statusEl.textContent = '';
+}
+
+function renderStars(rating) {
+  document.querySelectorAll('.dd-star').forEach(btn => {
+    const v = parseInt(btn.dataset.star);
+    const colors = ['#ff4d4d','#ff9a3c','#f5c518','#a8d672','#00F5A0'];
+    btn.style.opacity = v <= rating ? '1' : '0.25';
+    btn.style.color   = v <= rating ? (colors[rating-1] || '#f5c518') : 'var(--text-3)';
+  });
+}
+
+function setDayRating(val) {
+  _currentDayRating = val;
+  renderStars(val);
+  doSaveDayMeta();
+}
+
+function debounceSaveDayMeta() {
+  clearTimeout(_dayMetaDebounce);
+  _dayMetaDebounce = setTimeout(() => doSaveDayMeta(), 800);
+}
+
+function doSaveDayMeta() {
+  if (!currentDayDetail) return;
+  const notes   = document.getElementById('dd-notes')?.value  || '';
+  const lesson  = document.getElementById('dd-lesson')?.value || '';
+  const ssEl    = document.getElementById('dd-ss-prev');
+  const screenshot = (ssEl && ssEl.style.display !== 'none') ? ssEl.src : null;
+  saveDayMeta(currentDayDetail, { notes, lesson, rating: _currentDayRating, screenshot });
+  persistData();
+  const statusEl = document.getElementById('dd-save-status');
+  if (statusEl) {
+    statusEl.textContent = '✓ Salvo';
+    setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2000);
+  }
+}
+
+function handleDayScreenshot(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const src = e.target.result;
+    const ssEl   = document.getElementById('dd-ss-prev');
+    const ssZone = document.getElementById('dd-ss-zone');
+    if (ssEl)   { ssEl.src = src; ssEl.style.display = 'block'; }
+    if (ssZone) ssZone.style.display = 'none';
+    doSaveDayMeta();
+  };
+  reader.readAsDataURL(file);
 }
 
 function renderDayDetail(ops, dateStr) {
   const totalPnL = ops.reduce((a,t) => a+t.pnl, 0);
   const wins  = ops.filter(t => t.pnl > 0);
   const losses = ops.filter(t => t.pnl < 0);
-  const totalTrades = ops.reduce((a,t) => a+(t.trades||1), 0);
 
   document.getElementById('dd-subtitle').textContent =
     ops.length + ' operaç' + (ops.length===1?'ão':'ões') + ' registradas';
@@ -4344,13 +4523,20 @@ function renderDayDetail(ops, dateStr) {
     </div>
     <div class="dd-divider"></div>
     <div class="dd-sum-item">
-      <div class="dd-sum-val" style="color:${wins.length/ops.length>=0.5?'var(--green)':'var(--red)'}">${ops.length?Math.round(wins.length/ops.length*100):0}%</div>
+      <div class="dd-sum-val" style="color:${wins.length/Math.max(ops.length,1)>=0.5?'var(--green)':'var(--red)'}">${ops.length?Math.round(wins.length/ops.length*100):0}%</div>
       <div class="dd-sum-lbl">Win Rate</div>
     </div>
   `;
 
   // Operations list
-  document.getElementById('dd-ops').innerHTML = ops.map(t => {
+  const opsEl = document.getElementById('dd-ops');
+  if (!ops.length) {
+    opsEl.innerHTML = `<div style="text-align:center;padding:24px 20px;color:var(--text-3)">
+      <div style="font-size:28px;margin-bottom:8px;opacity:0.3">📋</div>
+      <p style="margin:0;font-size:13px">Nenhuma operação neste dia.</p></div>`;
+    return;
+  }
+  opsEl.innerHTML = ops.map(t => {
     const rrStr = t.rr != null ? (t.rr >= 0 ? '+' : '') + t.rr + 'R' : null;
     const rrCls = t.rr != null ? (t.rr >= 0 ? 'pos' : 'neg') : '';
     return `<div class="dd-op-card ${t.pnl>=0?'win':'loss'}">
@@ -4372,14 +4558,17 @@ function renderDayDetail(ops, dateStr) {
         ${t.emotion ? `<span>${t.emotion}</span>` : ''}
       </div>
       ${t.notes ? `<div class="dd-op-notes">${t.notes}</div>` : ''}
+      ${t.screenshot ? `<img src="${t.screenshot}" style="width:100%;border-radius:6px;margin-top:8px;cursor:pointer;max-height:180px;object-fit:cover" onclick="openLightbox(this.src)">` : ''}
     </div>`;
   }).join('');
 }
 
 function closeDayDetail() {
+  doSaveDayMeta();
   document.getElementById('dayDetailModal').style.display = 'none';
   currentDayDetail = null;
 }
+
 
 // ════════════════════════════════════════
 //  TRADE MODAL

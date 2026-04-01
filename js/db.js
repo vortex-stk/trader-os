@@ -38,6 +38,7 @@ function emptyDB() {
       goalWinRate: 60,
       goalRR: 1.5,
     },
+    dayMeta: {},  // { [accountId]: { [dateStr]: { notes, lesson, rating, screenshot } } }
   };
 }
 
@@ -86,6 +87,7 @@ function migrateDB(data) {
     data.version = 3;
     if (!data.operations) data.operations = {};
     if (!data.goals) data.goals = {};
+    if (!data.dayMeta) data.dayMeta = {};
     if (!data.globalGoals) {
       data.globalGoals = {
         goalMonth: data.globalConfig?.goalMonth || 2000,
@@ -365,6 +367,26 @@ export function getTradesByYear(year, accountId) {
   return getTrades(accountId).filter(t =>
     new Date(t.date + 'T12:00:00').getFullYear() === year
   );
+}
+
+// ── Diário por dia (notas, lição, rating, screenshot) ─
+export function getDayMeta(dateStr, accountId) {
+  const id = accountId || _activeId;
+  if (!_db.dayMeta) _db.dayMeta = {};
+  if (!_db.dayMeta[id]) _db.dayMeta[id] = {};
+  return _db.dayMeta[id][dateStr] || { notes: '', lesson: '', rating: 0, screenshot: null };
+}
+
+export function saveDayMeta(dateStr, data, accountId) {
+  const id = accountId || _activeId;
+  if (!_db.dayMeta) _db.dayMeta = {};
+  if (!_db.dayMeta[id]) _db.dayMeta[id] = {};
+  _db.dayMeta[id][dateStr] = {
+    notes: sanitizeText(data.notes || '', 3000),
+    lesson: sanitizeText(data.lesson || '', 1000),
+    rating: Math.min(5, Math.max(0, parseInt(data.rating, 10) || 0)),
+    screenshot: data.screenshot || null,
+  };
 }
 
 // ── Exportação CSV ────────────────────
