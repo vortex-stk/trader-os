@@ -911,12 +911,12 @@ body::after {
 .btn-social svg { width:18px; height:18px; flex-shrink:0; }
 /* Modo demo */
 .btn-demo {
-  width:100%; background:rgba(255,255,255,0.03); border:1px solid var(--border);
-  border-radius:var(--r-sm); padding:10px;
-  font-family:var(--font-ui); font-size:12px; font-weight:600;
-  color:var(--text-3); cursor:pointer; transition:all 0.2s;
+  width:100%; background:rgba(0,245,160,0.06); border:1px solid rgba(0,245,160,0.25);
+  border-radius:var(--r-sm); padding:13px;
+  font-family:var(--font-ui); font-size:13px; font-weight:700;
+  color:var(--green); cursor:pointer; transition:all 0.2s;
 }
-.btn-demo:hover { border-color:rgba(0,245,160,0.3); color:var(--green); }
+.btn-demo:hover { background:rgba(0,245,160,0.12); border-color:rgba(0,245,160,0.5); }
 /* Rodapé filosófico */
 .auth-footer-quote {
   text-align:center; font-size:10px; color:var(--text-4);
@@ -2223,6 +2223,11 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </div>
 
     <button class="btn-demo" onclick="useDemoMode()">🔓 Explorar plataforma sem conta</button>
+
+    <div id="auth-loading-hint" style="display:none;margin-top:10px;text-align:center;font-size:11px;color:var(--text-3);animation:fadeIn .5s">
+      ⏳ Conectando ao servidor… <span id="auth-countdown">8</span>s
+      <br><span style="opacity:0.7">Se travar, clique em "Explorar plataforma sem conta"</span>
+    </div>
 
     <p class="auth-footer-quote">Desenvolvido para traders que buscam consistência, não sorte.</p>
 
@@ -3856,14 +3861,23 @@ async function doLogin() {
   showAuthError('');
   const btn = document.getElementById('btn-login');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Entrando…</span>'; }
+
+  // 8-second timeout so the button never freezes
+  const loginTimeout = setTimeout(() => {
+    showAuthError('Tempo esgotado. Verifique sua conexão ou use "Explorar sem conta".');
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
+  }, 8000);
+
   try {
-    if (!sbClient) throw new Error('Serviço indisponível. Tente novamente.');
+    if (!sbClient) throw new Error('Serviço indisponível. Use "Explorar plataforma sem conta".');
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
+    clearTimeout(loginTimeout);
     if (error) throw error;
     currentUser = data.user;
     isCloudMode = true;
     await launchApp();
   } catch(e) {
+    clearTimeout(loginTimeout);
     showAuthError(translateAuthError(e.message || 'Erro ao entrar'));
     if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
   }
@@ -6523,14 +6537,47 @@ function showLoginPanel() {
 
   const hasSB = initSupabase();
   if (hasSB) {
-    // Supabase OK — verifica se já tem sessão ativa
+    // Show loading hint after 2s if still on auth screen
+    const hintTimer = setTimeout(() => {
+      const hint = document.getElementById('auth-loading-hint');
+      if (hint) hint.style.display = 'block';
+      // Countdown display
+      let secs = 8;
+      const cdEl = document.getElementById('auth-countdown');
+      const cdInterval = setInterval(() => {
+        secs--;
+        if (cdEl) cdEl.textContent = secs;
+        if (secs <= 0) clearInterval(cdInterval);
+      }, 1000);
+    }, 2000);
+
+    // Race: Supabase session check vs 4s timeout
+    let launched = false;
+    const fallbackTimer = setTimeout(() => {
+      if (!launched) {
+        launched = true;
+        clearTimeout(hintTimer);
+        console.warn('[Auth] Supabase timeout — entrando em modo local');
+        isCloudMode = false;
+        launchApp();
+      }
+    }, 4000);
+
     sbClient.auth.getSession().then(({ data }) => {
+      clearTimeout(fallbackTimer);
+      clearTimeout(hintTimer);
+      if (launched) return;
+      launched = true;
       if (data?.session?.user) {
         currentUser = data.session.user;
         isCloudMode = true;
         launchApp();
       }
-      // Sem sessão — tela de login já visível, não faz nada
+      // Sem sessão — tela de login visível, usuário escolhe
+    }).catch(() => {
+      clearTimeout(fallbackTimer);
+      clearTimeout(hintTimer);
+      if (!launched) { launched = true; isCloudMode = false; launchApp(); }
     });
   } else {
     // Erro ao conectar — avisa
