@@ -16,6 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 /* ═══════════════════════════════════════
    APEX TRADE · DESIGN SYSTEM
@@ -2480,7 +2481,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <p class="db-sub" id="dash-acct-sub"> </p>
     </div>
     <div style="display:flex;gap:9px;align-items:center">
-      <button class="btn-export" onclick="exportCSV()">⬇ Export</button>
+      <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn-export" onclick="exportXLSX()" style="border-color:rgba(0,200,100,0.3);color:#00C864">📊 Excel</button>
       <button class="btn-add" onclick="openTradeModal()">＋ Novo Dia</button>
     </div>
   </div>
@@ -2894,6 +2896,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <button class="btn-export" onclick="exportPDF('month')"><span>📄</span> PDF Mensal</button>
     <button class="btn-export" onclick="exportPDF('year')"><span>📊</span> PDF Anual</button>
     <button class="btn-export" onclick="exportCSV()"><span>📋</span> Exportar CSV</button>
+    <button class="btn-export" onclick="exportXLSX()" style="border-color:rgba(0,200,100,0.3);color:#00C864"><span>📊</span> Exportar Excel</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
     <div class="card card-pad" style="padding:16px 18px">
@@ -3336,6 +3339,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
           <div class="cfg-card-desc">Baixe uma cópia dos seus dados</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
             <button onclick="exportCSV()" style="padding:14px;border-radius:10px;background:rgba(59,158,255,0.08);border:1px solid rgba(59,158,255,0.25);color:#3B9EFF;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📋 Exportar CSV</button>
+            <button onclick="exportXLSX()" style="padding:14px;border-radius:10px;background:rgba(0,200,100,0.08);border:1px solid rgba(0,200,100,0.25);color:#00C864;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📊 Exportar Excel (.xlsx)</button>
             <button onclick="exportTradesJSON()" style="padding:14px;border-radius:10px;background:rgba(124,92,252,0.08);border:1px solid rgba(124,92,252,0.25);color:var(--purple);font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📦 Exportar JSON</button>
             <button onclick="exportPDF('month')" style="padding:14px;border-radius:10px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);color:var(--green);font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📄 PDF Mensal</button>
             <button onclick="exportPDF('year')" style="padding:14px;border-radius:10px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.25);color:var(--green);font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;justify-content:center">📊 PDF Anual</button>
@@ -3498,7 +3502,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <p class="db-sub">Histórico completo de operações · <span id="trades-count">0</span> registros</p>
     </div>
     <div style="display:flex;gap:9px;align-items:center">
-      <button class="btn-export" onclick="exportCSV()">⬇ Exportar CSV</button>
+      <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
+      <button class="btn-export" onclick="exportXLSX()" style="border-color:rgba(0,200,100,0.3);color:#00C864">📊 Excel</button>
       <button class="btn-add" onclick="openTradeModal()">＋ Nova Operação</button>
     </div>
   </div>
@@ -6020,6 +6025,163 @@ function exportCSV() {
   const a=document.createElement('a');a.href=url;a.download='trader_os_'+getAcct().name.replace(/\s/g,'_')+'.csv';a.click();
   toast('CSV exportado!');
 }
+
+function exportXLSX() {
+  if (typeof XLSX === 'undefined') {
+    toast('⚠️ Biblioteca Excel ainda carregando, tente novamente em segundos.', true);
+    return;
+  }
+  const trades = getTrades();
+  if (!trades.length) { toast('Nenhum trade para exportar', true); return; }
+
+  const acct = getAcct();
+  const now  = new Date();
+  const wb   = XLSX.utils.book_new();
+
+  // ── Helpers ──
+  const fmtDate = d => d || '';
+  const fmtNum  = v => (typeof v === 'number' ? parseFloat(v.toFixed(2)) : '');
+
+  // ── Aba 1: Trades Completos ──
+  const EMOTION_LABELS = {
+    calmo:'Calmo', confiante:'Confiante', ansioso:'Ansioso',
+    frustrado:'Frustrado', ganancioso:'Ganancioso', cansado:'Cansado',
+    no_flow:'No Flow', perdido:'Perdido'
+  };
+  const tradeRows = [
+    ['Data','Par','P&L (R$)','Trades','Sessão','Direção','Categoria','R:R','Setup','Emoção','Notas','Screenshot']
+  ];
+  [...trades].sort((a,b) => a.date < b.date ? -1 : 1).forEach(t => {
+    const dirMap = { buy:'Compra', sell:'Venda', long:'Compra', short:'Venda' };
+    tradeRows.push([
+      fmtDate(t.date),
+      t.pair || '',
+      fmtNum(t.pnl),
+      t.trades || 1,
+      t.session || '',
+      dirMap[t.direction] || '',
+      t.category || '',
+      t.rr != null ? fmtNum(t.rr) : '',
+      t.setup || '',
+      EMOTION_LABELS[t.emotion] || t.emotion || '',
+      t.notes || '',
+      t.screenshot ? 'Sim' : '',
+    ]);
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet(tradeRows);
+  // Column widths
+  ws1['!cols'] = [
+    {wch:12},{wch:10},{wch:12},{wch:8},{wch:12},{wch:10},
+    {wch:12},{wch:8},{wch:22},{wch:14},{wch:40},{wch:8}
+  ];
+  // Header style (bold + green bg)
+  const hRange = XLSX.utils.decode_range(ws1['!ref']);
+  for (let C = hRange.s.c; C <= hRange.e.c; C++) {
+    const cell = ws1[XLSX.utils.encode_cell({r:0, c:C})];
+    if (cell) {
+      cell.s = {
+        font: { bold: true, color: { rgb: '000000' } },
+        fill: { fgColor: { rgb: '00F5A0' }, patternType: 'solid' },
+        alignment: { horizontal: 'center' }
+      };
+    }
+  }
+  XLSX.utils.book_append_sheet(wb, ws1, 'Trades');
+
+  // ── Aba 2: Resumo Mensal ──
+  const byMonth = {};
+  trades.forEach(t => {
+    const m = t.date.slice(0, 7);
+    if (!byMonth[m]) byMonth[m] = { pnl: 0, count: 0, wins: 0, ops: 0 };
+    byMonth[m].pnl   += t.pnl;
+    byMonth[m].count++;
+    byMonth[m].ops   += (t.trades || 1);
+    if (t.pnl > 0) byMonth[m].wins++;
+  });
+  const monthRows = [['Mês','P&L Total (R$)','Dias de Trade','Dias Positivos','Win Rate (%)','Total de Operações']];
+  const MONTH_NAMES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  Object.entries(byMonth).sort().forEach(([m, d]) => {
+    const [y, mo] = m.split('-');
+    const wr = d.count ? parseFloat((d.wins / d.count * 100).toFixed(1)) : 0;
+    monthRows.push([
+      `${MONTH_NAMES[parseInt(mo)-1]} ${y}`,
+      fmtNum(d.pnl),
+      d.count,
+      d.wins,
+      wr,
+      d.ops,
+    ]);
+  });
+  // Totals row
+  const totalPnL = trades.reduce((a,t) => a+t.pnl, 0);
+  const totalWins = trades.filter(t => t.pnl > 0).length;
+  monthRows.push([
+    'TOTAL',
+    fmtNum(totalPnL),
+    trades.length,
+    totalWins,
+    trades.length ? parseFloat((totalWins/trades.length*100).toFixed(1)) : 0,
+    trades.reduce((a,t) => a+(t.trades||1), 0),
+  ]);
+  const ws2 = XLSX.utils.aoa_to_sheet(monthRows);
+  ws2['!cols'] = [{wch:14},{wch:16},{wch:14},{wch:15},{wch:13},{wch:18}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Resumo Mensal');
+
+  // ── Aba 3: Análise por Par ──
+  const byPair = {};
+  trades.forEach(t => {
+    const p = t.pair || 'Sem par';
+    if (!byPair[p]) byPair[p] = { pnl:0, count:0, wins:0, ops:0, rrSum:0, rrCount:0 };
+    byPair[p].pnl   += t.pnl;
+    byPair[p].count++;
+    byPair[p].ops   += (t.trades || 1);
+    if (t.pnl > 0) byPair[p].wins++;
+    if (t.rr != null) { byPair[p].rrSum += t.rr; byPair[p].rrCount++; }
+  });
+  const pairRows = [['Par','P&L Total (R$)','Dias','Win Rate (%)','Operações','R:R Médio']];
+  Object.entries(byPair).sort((a,b) => b[1].pnl - a[1].pnl).forEach(([p, d]) => {
+    pairRows.push([
+      p,
+      fmtNum(d.pnl),
+      d.count,
+      d.count ? parseFloat((d.wins/d.count*100).toFixed(1)) : 0,
+      d.ops,
+      d.rrCount ? parseFloat((d.rrSum/d.rrCount).toFixed(2)) : '',
+    ]);
+  });
+  const ws3 = XLSX.utils.aoa_to_sheet(pairRows);
+  ws3['!cols'] = [{wch:12},{wch:16},{wch:8},{wch:13},{wch:12},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Por Par');
+
+  // ── Aba 4: Análise por Setup ──
+  const bySetup = {};
+  trades.forEach(t => {
+    const s = t.setup || 'Sem setup';
+    if (!bySetup[s]) bySetup[s] = { pnl:0, count:0, wins:0 };
+    bySetup[s].pnl   += t.pnl;
+    bySetup[s].count++;
+    if (t.pnl > 0) bySetup[s].wins++;
+  });
+  const setupRows = [['Setup','P&L Total (R$)','Trades','Win Rate (%)','P&L Médio (R$)']];
+  Object.entries(bySetup).sort((a,b) => b[1].pnl - a[1].pnl).forEach(([s, d]) => {
+    setupRows.push([
+      s,
+      fmtNum(d.pnl),
+      d.count,
+      d.count ? parseFloat((d.wins/d.count*100).toFixed(1)) : 0,
+      d.count ? fmtNum(d.pnl/d.count) : 0,
+    ]);
+  });
+  const ws4 = XLSX.utils.aoa_to_sheet(setupRows);
+  ws4['!cols'] = [{wch:24},{wch:16},{wch:8},{wch:13},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'Por Setup');
+
+  // ── Download ──
+  const fileName = `TraderOS_${acct.name.replace(/\s/g,'_')}_${now.toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  toast('✅ Excel exportado com sucesso!');
+}
+
 
 function exportPDF(type) {
   const trades=type==='month'?getMonthTrades():getYearTrades();
