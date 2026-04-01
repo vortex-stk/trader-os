@@ -1816,16 +1816,16 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 /* Strategy list */
 .an-strat-list { display:flex; flex-direction:column; gap:10px; margin-top:4px; }
 .an-strat-row {
-  display:flex; align-items:center; gap:12px;
-  padding:12px 14px; border-radius:10px;
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 12px; border-radius:10px;
   background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05);
 }
-.an-strat-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.an-strat-name { font-size:13px; font-weight:700; color:#fff; flex:1; }
-.an-strat-count { font-size:11px; color:rgba(255,255,255,0.35); white-space:nowrap; }
+.an-strat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+.an-strat-name { font-size:13px; font-weight:700; color:#fff; }
+.an-strat-count { font-size:11px; color:rgba(255,255,255,0.35); }
 .an-strat-bar-wrap { width:80px; height:4px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden; flex-shrink:0; }
 .an-strat-bar-fill { height:100%; border-radius:99px; }
-.an-strat-pnl { font-family:var(--font-mono); font-size:14px; font-weight:800; white-space:nowrap; min-width:70px; text-align:right; }
+.an-strat-pnl { font-family:var(--font-mono); font-size:13px; font-weight:800; white-space:nowrap; }
 
 @media(max-width:900px) { .an-grid-2 { grid-template-columns:1fr; } }
 .rj-topbar { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
@@ -2780,33 +2780,45 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   </div>
   <div id="analytics-period-bar"></div>
 
+  <!-- Row 1: P&L Distribution + R:R Distribution -->
   <div class="an-grid-2">
-    <!-- Top-left: Win/Loss Distribution -->
     <div class="an-card">
-      <div class="an-card-title">Distribuição Win/Loss</div>
-      <div class="an-card-sub">Por tamanho de balde de P&amp;L</div>
-      <canvas id="an-dist-chart" height="180"></canvas>
+      <div class="an-card-title">Distribuição de P&L</div>
+      <div class="an-card-sub">Frequência de ganhos e perdas por faixa</div>
+      <div style="position:relative;height:180px"><canvas id="an-dist-chart"></canvas></div>
     </div>
-    <!-- Top-right: Pair Desempenho -->
     <div class="an-card">
-      <div class="an-card-title">Desempenho por Par</div>
-      <div class="an-card-sub">Lucro e prejuízo acumulados por instrumento</div>
-      <canvas id="an-pair-chart" height="180"></canvas>
+      <div class="an-card-title">Distribuição de R:R</div>
+      <div class="an-card-sub">Quantos trades fecharam em cada múltiplo de R</div>
+      <div style="position:relative;height:180px"><canvas id="an-rr-chart"></canvas></div>
     </div>
   </div>
 
+  <!-- Row 2: Performance por Sessão + Emoção × Resultado -->
   <div class="an-grid-2" style="margin-top:14px">
-    <!-- Bottom-left: Heatmap -->
     <div class="an-card">
-      <div class="an-card-title">Mapa de calor de lucros e perdas por hora</div>
-      <div class="an-card-sub">Melhores e piores horários de negociação (UTC)</div>
-      <div id="an-heatmap" class="an-heatmap-wrap"></div>
+      <div class="an-card-title">Performance por Sessão</div>
+      <div class="an-card-sub">P&L acumulado e win rate por sessão</div>
+      <div id="an-session-chart" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
     </div>
-    <!-- Bottom-right: Strategy Analysis -->
     <div class="an-card">
-      <div class="an-card-title">Análise da estratégia</div>
-      <div class="an-card-sub">Desempenho por tipo de configuração</div>
+      <div class="an-card-title">Emoção × Resultado</div>
+      <div class="an-card-sub">Como o estado emocional afeta o P&L médio</div>
+      <div style="position:relative;height:180px"><canvas id="an-emotion-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Row 3: Sequências + Setup Analysis -->
+  <div class="an-grid-2" style="margin-top:14px">
+    <div class="an-card">
+      <div class="an-card-title">Análise por Setup</div>
+      <div class="an-card-sub">Desempenho e win rate por tipo de configuração</div>
       <div id="an-strategy-list" class="an-strat-list"></div>
+    </div>
+    <div class="an-card">
+      <div class="an-card-title">Desempenho por Par</div>
+      <div class="an-card-sub">Lucro acumulado por instrumento</div>
+      <div style="position:relative;height:220px"><canvas id="an-pair-chart"></canvas></div>
     </div>
   </div>
 </div>
@@ -5388,154 +5400,272 @@ function renderAnalytics() {
   const barEl = document.getElementById('analytics-period-bar');
   if (barEl) barEl.innerHTML = periodFilterBar();
   const subEl = document.getElementById('an-sub');
-  if (subEl) subEl.textContent = `Análises detalhadas · ${PERIOD_LABELS[_activePeriod]}`;
 
   const all = getFilteredTrades();
-  if(!all || all.length===0) {
-    ['an-heatmap','an-strategy-list'].forEach(id=>{
-      const el=document.getElementById(id);
-      if(el) el.innerHTML='<div style="color:rgba(255,255,255,0.25);font-size:13px;padding:24px 0;text-align:center">Nenhum trade registrado ainda</div>';
+
+  if (!all || all.length === 0) {
+    if (subEl) subEl.textContent = 'Nenhum trade no período selecionado';
+    ['an-strategy-list','an-session-chart'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:13px;padding:24px 0;text-align:center">Nenhum trade registrado ainda</div>';
+    });
+    ['an-dist-chart','an-rr-chart','an-emotion-chart','an-pair-chart'].forEach(id => {
+      const ctx = document.getElementById(id);
+      if (ctx) { const p = ctx.parentElement; p.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:13px;padding:40px 0;text-align:center">Sem dados</div>'; }
     });
     return;
   }
 
-  // ── 1. Win/Loss Distribution by P&L bucket ──
-  const buckets = [
-    {label:'<-400', min:-Infinity, max:-400},
-    {label:'<-200', min:-400,  max:-200},
-    {label:'<-100', min:-200,  max:-100},
-    {label:'0',     min:-100,  max:0},
-    {label:'<+100', min:0,     max:100},
-    {label:'<+200', min:100,   max:200},
-    {label:'<+400', min:200,   max:400},
-    {label:'400+',  min:400,   max:Infinity},
-  ];
-  const wins  = buckets.map(b => all.filter(t => t.pnl > 0  && t.pnl > b.min && t.pnl <= b.max).length);
-  const losses= buckets.map(b => all.filter(t => t.pnl <= 0 && t.pnl > b.min && t.pnl <= b.max).length);
+  if (subEl) subEl.textContent = `${all.length} trades · ${PERIOD_LABELS[_activePeriod]}`;
+
+  const CHART_OPTS = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+  };
+  const TICK_CLR = 'rgba(255,255,255,0.3)';
+  const GRID_CLR = 'rgba(255,255,255,0.06)';
+
+  // ── 1. P&L Distribution (fixed buckets, dynamic range) ──
+  const pnls = all.map(t => t.pnl);
+  const minPnl = Math.min(...pnls), maxPnl = Math.max(...pnls);
+  const range = maxPnl - minPnl || 1;
+  const bucketSize = range <= 200 ? 25 : range <= 1000 ? 100 : range <= 5000 ? 250 : 500;
+  const bMin = Math.floor(minPnl / bucketSize) * bucketSize;
+  const bMax = Math.ceil(maxPnl / bucketSize) * bucketSize;
+  const buckets = [];
+  for (let b = bMin; b < bMax; b += bucketSize) buckets.push(b);
+  const distLabels = buckets.map(b => `${b>=0?'+':''}R$${b}`);
+  const distWins   = buckets.map(b => all.filter(t => t.pnl>0  && t.pnl>=b && t.pnl<b+bucketSize).length);
+  const distLosses = buckets.map(b => all.filter(t => t.pnl<=0 && t.pnl>=b && t.pnl<b+bucketSize).length);
+
   const ctxDist = document.getElementById('an-dist-chart');
-  if(ctxDist) {
-    if(window._anDistChart) window._anDistChart.destroy();
+  if (ctxDist) {
+    if (window._anDistChart) window._anDistChart.destroy();
     window._anDistChart = new Chart(ctxDist, {
-      type:'bar',
-      data:{
-        labels: buckets.map(b=>b.label),
-        datasets:[
-          {label:'Losses', data:losses, backgroundColor:'rgba(255,61,107,0.75)', borderRadius:4, borderSkipped:false},
-          {label:'Wins',   data:wins,   backgroundColor:'rgba(0,245,160,0.75)',  borderRadius:4, borderSkipped:false},
+      type: 'bar',
+      data: {
+        labels: distLabels,
+        datasets: [
+          { label: 'Perdas', data: distLosses, backgroundColor: 'rgba(255,61,107,0.75)', borderRadius: 3, borderSkipped: false },
+          { label: 'Ganhos', data: distWins,   backgroundColor: 'rgba(0,245,160,0.75)',  borderRadius: 3, borderSkipped: false },
         ]
       },
-      options:{
-        responsive:true, aspectRatio:2.2,
-        plugins:{legend:{display:true, labels:{color:'rgba(255,255,255,0.5)',font:{size:10},boxWidth:12}}},
-        scales:{
-          x:{ticks:{color:'#3A4155',font:{size:9}}, grid:{color:'rgba(255,255,255,0.06)'}},
-          y:{ticks:{color:'#3A4155',font:{size:9},stepSize:2}, grid:{color:'rgba(255,255,255,0.06)'}}
+      options: {
+        ...CHART_OPTS,
+        plugins: { legend: { display: true, labels: { color: TICK_CLR, font: { size: 10 }, boxWidth: 10 } },
+          tooltip: { callbacks: { title: c => c[0].label, label: c => ` ${c.dataset.label}: ${c.raw} trades` } }
+        },
+        scales: {
+          x: { ticks: { color: TICK_CLR, font: { size: 9 }, maxRotation: 45 }, grid: { color: GRID_CLR } },
+          y: { ticks: { color: TICK_CLR, font: { size: 9 }, stepSize: 1 }, grid: { color: GRID_CLR } }
         }
       }
     });
   }
 
-  // ── 2. Pair Desempenho (horizontal bar) ──
-  const pairMap = {};
-  all.forEach(t => {
-    if(!t.pair) return;
-    pairMap[t.pair] = (pairMap[t.pair]||0) + t.pnl;
-  });
-  const pairs = Object.entries(pairMap).sort((a,b) => b[1]-a[1]);
-  const ctxPair = document.getElementById('an-pair-chart');
-  if(ctxPair) {
-    if(window._anPairChart) window._anPairChart.destroy();
-    window._anPairChart = new Chart(ctxPair, {
-      type:'bar',
-      data:{
-        labels: pairs.map(p=>p[0]),
-        datasets:[{
-          data: pairs.map(p=>p[1]),
-          backgroundColor: pairs.map(p=>p[1]>=0?'rgba(0,245,160,0.75)':'rgba(255,61,107,0.75)'),
-          borderRadius:4, borderSkipped:false
+  // ── 2. R:R Distribution ──
+  const rrTrades = all.filter(t => t.rr != null);
+  let rrLabels, rrData;
+  if (rrTrades.length === 0) {
+    rrLabels = ['Sem dados R:R'];
+    rrData = [0];
+  } else {
+    const rrBuckets = [
+      { label: '< -2R', test: v => v < -2 },
+      { label: '-2R a -1R', test: v => v >= -2 && v < -1 },
+      { label: '-1R a 0', test: v => v >= -1 && v < 0 },
+      { label: '0 a 1R', test: v => v >= 0 && v < 1 },
+      { label: '1R a 2R', test: v => v >= 1 && v < 2 },
+      { label: '2R a 3R', test: v => v >= 2 && v < 3 },
+      { label: '> 3R',   test: v => v >= 3 },
+    ];
+    rrLabels = rrBuckets.map(b => b.label);
+    rrData   = rrBuckets.map(b => rrTrades.filter(t => b.test(t.rr)).length);
+  }
+  const ctxRR = document.getElementById('an-rr-chart');
+  if (ctxRR) {
+    if (window._anRRChart) window._anRRChart.destroy();
+    window._anRRChart = new Chart(ctxRR, {
+      type: 'bar',
+      data: {
+        labels: rrLabels,
+        datasets: [{
+          data: rrData,
+          backgroundColor: rrLabels.map(l => l.includes('-') || l.includes('< ') ? 'rgba(255,91,110,0.75)' : 'rgba(91,180,255,0.75)'),
+          borderRadius: 4, borderSkipped: false
         }]
       },
-      options:{
-        responsive:true, aspectRatio:2.2, indexAxis:'y',
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{ticks:{color:'#3A4155',font:{size:9},callback:v=>'R$'+v}, grid:{color:'rgba(255,255,255,0.06)'}},
-          y:{ticks:{color:'rgba(255,255,255,0.6)',font:{size:11,weight:'600'}}, grid:{display:false}}
+      options: {
+        ...CHART_OPTS,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: c => ` ${c.raw} trade${c.raw!==1?'s':''}` } }
+        },
+        scales: {
+          x: { ticks: { color: TICK_CLR, font: { size: 9 } }, grid: { color: GRID_CLR } },
+          y: { ticks: { color: TICK_CLR, font: { size: 9 }, stepSize: 1 }, grid: { color: GRID_CLR } }
         }
       }
     });
   }
 
-  // ── 3. Heatmap by hour of day (0-23) ──
-  const hourPnL = Array(24).fill(0);
-  const hourCnt = Array(24).fill(0);
+  // ── 3. Performance por Sessão (horizontal bars) ──
+  const SESSION_NAMES = ['London','New York','Tokyo','Asian','London+NY','Ásia','Nova Iorque','Londres'];
+  const sessMap = {};
   all.forEach(t => {
-    // Use trade time if available, otherwise derive from session
-    let h = 0;
-    if(t.time) { h = parseInt(t.time.split(':')[0])||0; }
-    else {
-      const ns = normalizeSession(t.session);
-      if(ns==='Londres')       h = 8 + Math.floor(Math.random()*4);
-      else if(ns==='Nova Iorque') h = 14 + Math.floor(Math.random()*4);
-      else if(ns==='Ásia')     h = 2 + Math.floor(Math.random()*3);
-      else                     h = 12 + Math.floor(Math.random()*2);
-    }
-    hourPnL[h] += t.pnl;
-    hourCnt[h]++;
+    const s = t.session || 'Sem sessão';
+    if (!sessMap[s]) sessMap[s] = { pnl: 0, count: 0, wins: 0 };
+    sessMap[s].pnl += t.pnl;
+    sessMap[s].count++;
+    if (t.pnl > 0) sessMap[s].wins++;
   });
-  const maxAbs = Math.max(...hourPnL.map(Math.abs), 1);
-  const hmEl = document.getElementById('an-heatmap');
-  if(hmEl) {
-    // Group hours into rows of 7
-    const rows = [];
-    for(let i=0;i<24;i+=7) rows.push([i, Math.min(i+6,23)]);
-    let html = '<div class="an-hm-header"><div class="an-hm-hdr-cell"></div>';
-    ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d => html+=`<div class="an-hm-hdr-cell">${d}</div>`);
-    html += '</div>';
-    rows.forEach(([start,end]) => {
-      html += `<div class="an-hm-row"><div class="an-hm-lbl">${String(start).padStart(2,'0')}</div>`;
-      for(let h=start;h<=end;h++) {
-        const pnl = hourPnL[h];
-        const ratio = pnl/maxAbs;
-        let bg;
-        if(pnl > 0)  bg = `rgba(0,245,160,${0.1 + ratio*0.6})`;
-        else if(pnl < 0) bg = `rgba(124,92,252,${0.1 + Math.abs(ratio)*0.7})`;
-        else bg = 'rgba(255,255,255,0.04)';
-        const txt = pnl !== 0 ? String(h) : String(h);
-        const color = Math.abs(ratio) > 0.4 ? '#fff' : 'rgba(255,255,255,0.5)';
-        html += `<div class="an-hm-cell" style="background:${bg};color:${color}" title="Hora ${h}: ${pnl>=0?'+':''}$${pnl.toFixed(0)}">${h}</div>`;
-      }
-      // Pad row if needed
-      for(let h=end+1; h<start+7; h++) html += '<div class="an-hm-cell" style="background:rgba(255,255,255,0.02)"></div>';
-      html += '</div>';
-    });
-    hmEl.innerHTML = html;
+  const sessions = Object.entries(sessMap).sort((a,b) => b[1].pnl - a[1].pnl);
+  const maxSessPnL = Math.max(...sessions.map(s => Math.abs(s[1].pnl)), 1);
+  const sessEl = document.getElementById('an-session-chart');
+  if (sessEl) {
+    sessEl.innerHTML = sessions.map(([name, d]) => {
+      const pct = Math.abs(d.pnl) / maxSessPnL * 100;
+      const wr  = d.count ? Math.round(d.wins / d.count * 100) : 0;
+      const pos = d.pnl >= 0;
+      return `<div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:700;color:var(--text-1)">${name}</span>
+          <div style="display:flex;gap:10px;font-size:11px">
+            <span style="color:var(--text-3)">${d.count} trades · WR ${wr}%</span>
+            <span style="font-family:var(--font-mono);font-weight:800;color:${pos?'#00F5A0':'#FF5B70'}">${pos?'+':'-'}R$${Math.abs(d.pnl).toFixed(0)}</span>
+          </div>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:${Math.max(pct,2)}%;background:${pos?'linear-gradient(90deg,#00F5A0,#00C8FF)':'linear-gradient(90deg,#FF5B70,#FF3D6B)'};border-radius:99px;transition:width .4s"></div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  // ── 4. Strategy Analysis ──
+  // ── 4. Emoção × Resultado ──
+  const EMO_MAP = {
+    'calmo':'😌 Calmo','confiante':'😎 Confiante','ansioso':'😰 Ansioso',
+    'frustrado':'😤 Frustrado','ganancioso':'🤑 Ganancioso','cansado':'😴 Cansado',
+    'no_flow':'🔥 No Flow','perdido':'😵 Perdido'
+  };
+  const emoMap = {};
+  all.filter(t => t.emotion).forEach(t => {
+    // normalise: strip emoji prefix if saved as "😤 Frustrado"
+    let raw = t.emotion.toLowerCase().replace(/[^\w_\s]/g,'').trim().split(/\s+/).pop();
+    // map common words
+    const aliases = { calmo:'calmo', calm:'calmo', confiante:'confiante', confident:'confiante',
+      ansioso:'ansioso', anxious:'ansioso', frustrado:'frustrado', frustrated:'frustrado',
+      ganancioso:'ganancioso', greedy:'ganancioso', cansado:'cansado', tired:'cansado',
+      no_flow:'no_flow', perdido:'perdido' };
+    const key = aliases[raw] || raw;
+    if (!emoMap[key]) emoMap[key] = { sum: 0, count: 0 };
+    emoMap[key].sum += t.pnl;
+    emoMap[key].count++;
+  });
+  const emos = Object.entries(emoMap).filter(([,d]) => d.count > 0)
+    .sort((a,b) => (b[1].sum/b[1].count) - (a[1].sum/a[1].count));
+  const emoLabels = emos.map(([k]) => EMO_MAP[k] || k);
+  const emoAvg    = emos.map(([,d]) => parseFloat((d.sum / d.count).toFixed(2)));
+  const ctxEmo = document.getElementById('an-emotion-chart');
+  if (ctxEmo) {
+    if (window._anEmoChart) window._anEmoChart.destroy();
+    if (emos.length === 0) {
+      ctxEmo.parentElement.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:13px;padding:60px 0;text-align:center">Registre emoções nos trades para ver essa análise</div>';
+    } else {
+      window._anEmoChart = new Chart(ctxEmo, {
+        type: 'bar',
+        data: {
+          labels: emoLabels,
+          datasets: [{
+            data: emoAvg,
+            backgroundColor: emoAvg.map(v => v >= 0 ? 'rgba(0,245,160,0.75)' : 'rgba(255,91,110,0.75)'),
+            borderRadius: 5, borderSkipped: false
+          }]
+        },
+        options: {
+          ...CHART_OPTS,
+          indexAxis: 'y',
+          plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => ` P&L médio: ${c.raw >= 0 ? '+' : ''}R$${c.raw}` } }
+          },
+          scales: {
+            x: { ticks: { color: TICK_CLR, font: { size: 9 }, callback: v => (v>=0?'+':'')+'R$'+v }, grid: { color: GRID_CLR } },
+            y: { ticks: { color: 'rgba(255,255,255,0.7)', font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+
+  // ── 5. Setup Analysis ──
   const stratMap = {};
   all.forEach(t => {
-    const s = t.setup||'Sem setup';
-    if(!stratMap[s]) stratMap[s] = {pnl:0, count:0};
+    const s = t.setup || 'Sem setup';
+    if (!stratMap[s]) stratMap[s] = { pnl: 0, count: 0, wins: 0 };
     stratMap[s].pnl += t.pnl;
     stratMap[s].count++;
+    if (t.pnl > 0) stratMap[s].wins++;
   });
   const strats = Object.entries(stratMap).sort((a,b) => b[1].pnl - a[1].pnl);
-  const maxPnL = Math.max(...strats.map(s=>Math.abs(s[1].pnl)), 1);
-  const colors = ['#00F5A0','#7C5CFC','#3B9EFF','#FF5B70','#FFB547','#00C8FF'];
+  const maxPnL2 = Math.max(...strats.map(s => Math.abs(s[1].pnl)), 1);
+  const COLORS = ['#00F5A0','#7C5CFC','#3B9EFF','#FF5B70','#FFB547','#00C8FF'];
   const stratEl = document.getElementById('an-strategy-list');
-  if(stratEl) stratEl.innerHTML = strats.map(([name,data],i) => {
-    const pct = Math.abs(data.pnl)/maxPnL*100;
-    const col = colors[i % colors.length];
+  if (stratEl) stratEl.innerHTML = strats.map(([name, data], i) => {
+    const pct = Math.abs(data.pnl) / maxPnL2 * 100;
+    const col = COLORS[i % COLORS.length];
     const pos = data.pnl >= 0;
+    const wr  = data.count ? Math.round(data.wins / data.count * 100) : 0;
     return `<div class="an-strat-row">
       <div class="an-strat-dot" style="background:${col}"></div>
-      <div class="an-strat-name">${name}</div>
-      <div class="an-strat-count">${data.count} negociações</div>
-      <div class="an-strat-bar-wrap"><div class="an-strat-bar-fill" style="width:${pct}%;background:${col}"></div></div>
-      <div class="an-strat-pnl" style="color:${pos?'#00F5A0':'#FF5B70'}">${pos?'+R$':'-R$'}${Math.abs(data.pnl).toFixed(0)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span class="an-strat-name">${name}</span>
+          <span class="an-strat-pnl" style="color:${pos?'#00F5A0':'#FF5B70'}">${pos?'+R$':'-R$'}${Math.abs(data.pnl).toFixed(0)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span class="an-strat-count">${data.count} trade${data.count!==1?'s':''} · WR ${wr}%</span>
+        </div>
+        <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden">
+          <div style="height:100%;width:${Math.max(pct,2)}%;background:${col};border-radius:99px"></div>
+        </div>
+      </div>
     </div>`;
   }).join('');
+
+  // ── 6. Par Performance (horizontal bar) ──
+  const pairMap = {};
+  all.forEach(t => { if (!t.pair) return; pairMap[t.pair] = (pairMap[t.pair]||0) + t.pnl; });
+  const pairs = Object.entries(pairMap).sort((a,b) => b[1]-a[1]);
+  const ctxPair = document.getElementById('an-pair-chart');
+  if (ctxPair) {
+    if (window._anPairChart) window._anPairChart.destroy();
+    if (pairs.length === 0) {
+      ctxPair.parentElement.innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:13px;padding:60px 0;text-align:center">Sem dados de par</div>';
+    } else {
+      window._anPairChart = new Chart(ctxPair, {
+        type: 'bar',
+        data: {
+          labels: pairs.map(p => p[0]),
+          datasets: [{
+            data: pairs.map(p => p[1]),
+            backgroundColor: pairs.map(p => p[1] >= 0 ? 'rgba(0,245,160,0.75)' : 'rgba(255,61,107,0.75)'),
+            borderRadius: 4, borderSkipped: false
+          }]
+        },
+        options: {
+          ...CHART_OPTS,
+          indexAxis: 'y',
+          plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => ` ${c.raw>=0?'+':''}R$${c.raw.toFixed(2)}` } }
+          },
+          scales: {
+            x: { ticks: { color: TICK_CLR, font: { size: 9 }, callback: v => (v>=0?'+':'')+'R$'+v }, grid: { color: GRID_CLR } },
+            y: { ticks: { color: 'rgba(255,255,255,0.65)', font: { size: 11, weight: '600' } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
 }
 
 function toggleSidebar() {
