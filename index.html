@@ -63,7 +63,72 @@
   --shadow-lg:  0 20px 60px rgba(0,0,0,0.6);
   --glow-green: 0 0 30px rgba(0,245,160,0.15);
   --glow-purple:0 0 40px rgba(124,92,252,0.15);
+
+  /* accent alias (for period chips, etc.) */
+  --accent: var(--green);
 }
+
+/* ── Light Theme ── */
+[data-theme="light"] {
+  --bg-deep:    #F0F4F8;
+  --bg-base:    #F8FAFC;
+  --bg-card:    #FFFFFF;
+  --bg-card2:   #F4F6FA;
+  --bg-hover:   #EEF1F7;
+  --border:     rgba(0,0,0,0.08);
+  --border-md:  rgba(0,0,0,0.13);
+  --border-hi:  rgba(0,0,0,0.20);
+
+  --green:      #00A86B;
+  --green-dim:  #007A4D;
+  --green-glow: rgba(0,168,107,0.15);
+  --green-bg:   rgba(0,168,107,0.07);
+  --red:        #E53E5E;
+  --red-bg:     rgba(229,62,94,0.07);
+  --amber:      #D97706;
+  --amber-bg:   rgba(217,119,6,0.08);
+  --purple:     #6D4FF0;
+  --purple-dim: #4E35C0;
+  --purple-bg:  rgba(109,79,240,0.10);
+  --blue:       #2563EB;
+  --blue-bg:    rgba(37,99,235,0.08);
+  --cyan:       #0891B2;
+
+  --text-1:    #0F172A;
+  --text-2:    #475569;
+  --text-3:    #94A3B8;
+  --text-4:    #CBD5E1;
+
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:  0 8px 24px rgba(0,0,0,0.10);
+  --shadow-lg:  0 20px 48px rgba(0,0,0,0.14);
+  --glow-green: 0 0 20px rgba(0,168,107,0.12);
+  --glow-purple:0 0 20px rgba(109,79,240,0.12);
+
+  color-scheme: light;
+}
+
+/* ── Light theme overrides for components that use hardcoded dark colors ── */
+[data-theme="light"] body { background: var(--bg-deep); color: var(--text-1); }
+[data-theme="light"] .sidebar { background: #FFFFFF; border-right: 1px solid var(--border); }
+[data-theme="light"] .topnav  { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+[data-theme="light"] .modal   { background: #FFFFFF; }
+[data-theme="light"] .overlay { background: rgba(0,0,0,0.4); }
+[data-theme="light"] .card, [data-theme="light"] .db-equity-card,
+[data-theme="light"] .db-perf-card, [data-theme="light"] .an-card { background: #FFFFFF; border-color: var(--border); }
+[data-theme="light"] input, [data-theme="light"] select,
+[data-theme="light"] textarea { background: #F8FAFC; color: var(--text-1); border-color: var(--border-md); }
+[data-theme="light"] .cal-cell        { background: var(--bg-card2); }
+[data-theme="light"] .cal-cell.win-day { background: rgba(0,168,107,0.08); }
+[data-theme="light"] .cal-cell.loss-day { background: rgba(229,62,94,0.07); }
+[data-theme="light"] .rj-row, [data-theme="light"] .dd-op-card { background: var(--bg-card2); }
+[data-theme="light"] #auth-screen { background: linear-gradient(135deg, #E8F4FF 0%, #F0F4FF 50%, #E8F8F0 100%); }
+[data-theme="light"] .auth-card { background: #FFFFFF; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+[data-theme="light"] .btn-primary { color: #fff; }
+[data-theme="light"] .sidebar-item:hover, [data-theme="light"] .sidebar-item.active { background: var(--green-bg); }
+[data-theme="light"] .period-chip { background: var(--bg-card2); color: var(--text-2); }
+[data-theme="light"] .period-chip.active { background: var(--green); color: #fff; }
+
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html { font-size:16px; }
@@ -2341,6 +2406,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <span id="hdr-bal-live" style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
     </div>
     <span class="hdr-clock" id="clock"></span>
+    <button id="theme-toggle-btn" onclick="quickToggleTheme()" title="Alternar tema claro/escuro"
+      style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:16px;color:var(--text-2);transition:all .15s"
+      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🌙</button>
     <div class="profile-card-btn" onclick="toggleProfileDropdown(event)" id="profile-card-btn" title="Meu Perfil">
       <div class="pcb-avatar" id="pcb-avatar">JR</div>
       <div class="pcb-info">
@@ -3243,25 +3311,49 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
       <!-- ── ABA NOTIFICAÇÕES ── -->
       <div id="cfg-panel-notificacoes" class="cfg-panel">
+        <!-- Push Permission Card -->
         <div class="cfg-card">
-          <div class="cfg-card-title">🔔 Alertas de Risco</div>
-          <div class="cfg-card-desc">Receba avisos automáticos sobre sua conta</div>
-          <div style="display:flex;flex-direction:column;gap:8px" id="notif-risk-list">
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-drawdown" checked> <div><div class="cfg-notif-title">Drawdown próximo do limite</div><div class="cfg-notif-sub">Alerta quando atingir 80% do stop diário ou total</div></div></label>
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-daily-limit" checked> <div><div class="cfg-notif-title">Limite diário atingido</div><div class="cfg-notif-sub">Aviso quando perda do dia alcançar o limite</div></div></label>
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-meta"> <div><div class="cfg-notif-title">Meta mensal atingida</div><div class="cfg-notif-sub">Celebre quando bater sua meta do mês 🎉</div></div></label>
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-streak"> <div><div class="cfg-notif-title">Sequência de vitórias</div><div class="cfg-notif-sub">Notifica a cada 3+ dias consecutivos positivos</div></div></label>
+          <div class="cfg-card-title">🔔 Notificações Push</div>
+          <div class="cfg-card-desc">Receba alertas de risco diretamente no seu dispositivo, mesmo com o app em segundo plano.</div>
+          <div id="notif-permission-status" style="margin:12px 0;font-size:13px;line-height:1.5">Verificando…</div>
+          <button id="notif-enable-btn" onclick="requestNotifPermission()"
+            style="display:none;width:100%;padding:13px;border-radius:10px;background:linear-gradient(135deg,#00F5A0,#00C8FF);border:none;color:#000;font-size:14px;font-weight:800;cursor:pointer">
+            🔔 Ativar Notificações de Risco
+          </button>
+          <button onclick="checkRiskNotifications();toast('🧪 Teste disparado — verifique se recebeu!')"
+            style="width:100%;margin-top:8px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text-2);font-size:12px;font-weight:600;cursor:pointer">
+            🧪 Testar notificação agora
+          </button>
+        </div>
+
+        <!-- Alert Rules -->
+        <div class="cfg-card">
+          <div class="cfg-card-title">⚠️ Alertas de Risco</div>
+          <div class="cfg-card-desc">Quais eventos disparam notificações</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px" id="notif-risk-list">
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-drawdown" checked>
+              <div><div class="cfg-notif-title">Drawdown 80% do limite</div><div class="cfg-notif-sub">Aviso antes de atingir o teto</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-daily-limit" checked>
+              <div><div class="cfg-notif-title">Limite diário atingido (100%)</div><div class="cfg-notif-sub">Para imediatamente ao bater o stop do dia</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-streak" checked>
+              <div><div class="cfg-notif-title">3 perdas consecutivas</div><div class="cfg-notif-sub">Sugere pausa após sequência ruim</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-meta">
+              <div><div class="cfg-notif-title">Meta mensal atingida 🎉</div><div class="cfg-notif-sub">Celebra quando bater a meta</div></div></label>
           </div>
         </div>
+
+        <!-- Reminders -->
         <div class="cfg-card">
-          <div class="cfg-card-title">📊 Resumos Automáticos</div>
-          <div class="cfg-card-desc">Relatórios periódicos enviados para você</div>
+          <div class="cfg-card-title">📅 Lembretes</div>
+          <div class="cfg-card-desc">Lembretes automáticos (requer PWA instalado)</div>
           <div style="display:flex;flex-direction:column;gap:8px">
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-daily-summary"> <div><div class="cfg-notif-title">Resumo diário (in-app)</div><div class="cfg-notif-sub">Painel de encerramento do dia de trading</div></div></label>
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-weekly"> <div><div class="cfg-notif-title">Resumo semanal</div><div class="cfg-notif-sub">Análise da semana toda segunda-feira</div></div></label>
-            <label class="cfg-notif-row"><input type="checkbox" id="notif-diary-reminder"> <div><div class="cfg-notif-title">Lembrete do diário</div><div class="cfg-notif-sub">Aviso para registrar operações ao fim do dia</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-daily-summary">
+              <div><div class="cfg-notif-title">Resumo diário</div><div class="cfg-notif-sub">Painel de encerramento do dia de trading</div></div></label>
+            <label class="cfg-notif-row"><input type="checkbox" id="notif-diary-reminder">
+              <div><div class="cfg-notif-title">Lembrete do diário</div><div class="cfg-notif-sub">Aviso para registrar operações ao fim do dia</div></div></label>
           </div>
         </div>
+
         <button class="cfg-save-btn" onclick="saveNotifSettings()">💾 Salvar Notificações</button>
       </div>
 
@@ -3279,12 +3371,12 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
             <div class="cfg-theme-opt" id="theme-light" onclick="setTheme('light',this)" style="padding:16px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;opacity:0.6">
               <div style="font-size:24px;margin-bottom:8px">☀️</div>
               <div style="font-size:13px;font-weight:700">Claro</div>
-              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Em breve</div>
+              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Ativado</div>
             </div>
             <div class="cfg-theme-opt" id="theme-system" onclick="setTheme('system',this)" style="padding:16px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);cursor:pointer;text-align:center;opacity:0.6">
               <div style="font-size:24px;margin-bottom:8px">💻</div>
               <div style="font-size:13px;font-weight:700">Sistema</div>
-              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Em breve</div>
+              <div style="font-size:10px;color:var(--text-3);margin-top:3px">Automático</div>
             </div>
           </div>
         </div>
@@ -4192,6 +4284,12 @@ async function launchApp() {
   if (!activeId || !db.accounts.find(a => a.id === activeId)) activeId = db.accounts[0].id;
 
   setInterval(updateClock, 1000); updateClock();
+  // Apply saved theme
+  const savedTheme = localStorage.getItem('tros_theme') || 'dark';
+  if (savedTheme !== 'dark') {
+    const btn = document.getElementById('theme-' + savedTheme);
+    setTheme(savedTheme, btn);
+  }
   renderHeader();
   loadProfile();
 
@@ -4919,6 +5017,8 @@ function saveTrade() {
   const ddm = document.getElementById('dayDetailModal');
   if(ddm && ddm.style.display!=='none' && currentDayDetail===date) openDayDetail(date);
   toast('Operação salva ✓');
+  // Check risk thresholds after every save
+  setTimeout(checkRiskNotifications, 300);
 }
 
 function deleteTrade(id, date) {
@@ -6184,19 +6284,136 @@ function exportXLSX() {
 
 
 function exportPDF(type) {
-  const trades=type==='month'?getMonthTrades():getYearTrades();
-  const acct=getAcct();
-  const now=new Date();
-  const total=trades.reduce((a,t)=>a+t.pnl,0);
-  const wins=trades.filter(t=>t.pnl>0);
-  const wr=trades.length?(wins.length/trades.length*100).toFixed(1):0;
-  const title=type==='month'?`Relatório ${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][now.getMonth()]} ${now.getFullYear()}`:`Relatório Anual ${now.getFullYear()}`;
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:'Courier New',monospace;padding:36px;color:#111}h1{font-size:24px;border-bottom:3px solid #00875A;padding-bottom:8px}h2{font-size:13px;color:#777;font-weight:normal;margin-top:0}.row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}.kpi{background:#f5f5f5;border-radius:6px;padding:12px;text-align:center}.kl{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:2px}.kv{font-size:18px;font-weight:bold;margin-top:3px}.pos{color:#00875A}.neg{color:#cc2244}table{width:100%;border-collapse:collapse;margin-top:16px;font-size:12px}th{background:#111;color:#fff;padding:7px 10px;text-align:left}td{padding:7px 10px;border-bottom:1px solid #eee}footer{margin-top:32px;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:12px;text-align:center}</style></head><body><h1>TRADER OS · ${title}</h1><h2>${acct.name} · ${now.toLocaleDateString('pt-BR')}</h2><div class="row"><div class="kpi"><div class="kl">P&L</div><div class="kv ${total>=0?'pos':'neg'}">${fmtSign(total)}</div></div><div class="kpi"><div class="kl">Dias</div><div class="kv">${trades.length}</div></div><div class="kpi"><div class="kl">Win Rate</div><div class="kv">${wr}%</div></div><div class="kpi"><div class="kl">Max DD</div><div class="kv neg">$${calcMaxDD(trades).toFixed(2)}</div></div></div><table><tr><th>Data</th><th>P&L</th><th>Par</th><th>Trades</th><th>Setup</th><th>R</th><th>Emoção</th></tr>${trades.sort((a,b)=>a.date<b.date?-1:1).map(t=>`<tr><td>${t.date}</td><td class="${t.pnl>=0?'pos':'neg'}">${fmtSign(t.pnl)}</td><td>${t.pair||'—'}</td><td>${t.trades||0}</td><td>${t.setup||'—'}</td><td>${t.rr?t.rr+'R':'—'}</td><td>${t.emotion||'—'}</td></tr>`).join('')}</table><footer>TRADER OS · ${acct.name} · Gerado em ${now.toLocaleDateString('pt-BR')}</footer></body></html>`;
-  const w=window.open('','_blank');
-  w.document.write(html);w.document.close();
-  setTimeout(()=>w.print(),500);
-  toast('PDF pronto!');
+  const trades = type === 'month' ? getFilteredTrades() : getYearTrades();
+  const acct = getAcct();
+  const now  = new Date();
+  const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const total = trades.reduce((a,t) => a+t.pnl, 0);
+  const wins  = trades.filter(t => t.pnl > 0);
+  const losses= trades.filter(t => t.pnl < 0);
+  const wr    = trades.length ? (wins.length/trades.length*100).toFixed(1) : 0;
+  const maxDD = calcMaxDD(trades);
+  const avgWin  = wins.length  ? wins.reduce((a,t)=>a+t.pnl,0)/wins.length : 0;
+  const avgLoss = losses.length? Math.abs(losses.reduce((a,t)=>a+t.pnl,0)/losses.length) : 0;
+  const pf    = avgLoss > 0 ? (avgWin * wins.length / (avgLoss * losses.length)).toFixed(2) : '—';
+  const title = type === 'month'
+    ? `Relatório ${MONTHS_PT[now.getMonth()]} ${now.getFullYear()}`
+    : `Relatório Anual ${now.getFullYear()}`;
+
+  // ── Build equity curve SVG ──
+  const sorted = [...trades].sort((a,b) => a.date < b.date ? -1 : 1);
+  const cap    = acct.capital || 10000;
+  let cum = 0;
+  const points = [{ x: 0, y: 0 }];
+  sorted.forEach((t,i) => { cum += t.pnl; points.push({ x: i+1, y: cum }); });
+
+  const svgW = 680, svgH = 160, padL = 60, padR = 20, padT = 16, padB = 28;
+  const W = svgW - padL - padR;
+  const H = svgH - padT - padB;
+  const maxY = Math.max(...points.map(p=>p.y), 1);
+  const minY = Math.min(...points.map(p=>p.y), -1);
+  const rangeY = maxY - minY || 1;
+  const rangeX = points.length - 1 || 1;
+
+  const px = i => padL + (i / rangeX) * W;
+  const py = v => padT + H - ((v - minY) / rangeY) * H;
+
+  const polyline = points.map((p,i) => `${px(i).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ');
+  const areaPath = `M${px(0)},${py(0)} ` + points.map((p,i)=>`L${px(i).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ')
+    + ` L${px(points.length-1)},${py(0)} Z`;
+
+  const isUp = total >= 0;
+  const lineColor = isUp ? '#00875A' : '#CC2244';
+  const fillColor = isUp ? 'rgba(0,135,90,0.12)' : 'rgba(204,34,68,0.10)';
+
+  // Y axis labels
+  const yLabels = [minY, (minY+maxY)/2, maxY].map(v =>
+    `<text x="${padL-6}" y="${py(v)+4}" text-anchor="end" font-size="9" fill="#999">R$${v.toFixed(0)}</text>`
+  ).join('');
+  // Zero line
+  const zeroY = py(0);
+  const zeroLine = zeroY >= padT && zeroY <= svgH-padB
+    ? `<line x1="${padL}" y1="${zeroY}" x2="${svgW-padR}" y2="${zeroY}" stroke="#ccc" stroke-width="0.7" stroke-dasharray="4,3"/>`
+    : '';
+
+  const equitySVG = `
+  <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto">
+    <defs>
+      <linearGradient id="eg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${lineColor}" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="${lineColor}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <rect x="${padL}" y="${padT}" width="${W}" height="${H}" fill="#fafafa" rx="4"/>
+    ${zeroLine}
+    ${yLabels}
+    <path d="${areaPath}" fill="url(#eg)"/>
+    <polyline points="${polyline}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${px(points.length-1)}" cy="${py(points[points.length-1].y)}" r="4" fill="${lineColor}"/>
+    <text x="${svgW/2}" y="${svgH-4}" text-anchor="middle" font-size="9" fill="#bbb">${sorted[0]?.date||''} → ${sorted[sorted.length-1]?.date||''}</text>
+  </svg>`;
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    body{font-family:Arial,sans-serif;padding:32px 40px;color:#111;max-width:800px;margin:0 auto}
+    h1{font-size:22px;font-weight:800;border-bottom:3px solid #00875A;padding-bottom:10px;margin-bottom:4px}
+    h2{font-size:12px;color:#777;font-weight:400;margin:0 0 20px}
+    .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:16px 0 20px}
+    .kpi{background:#f5f5f5;border-radius:6px;padding:10px;text-align:center}
+    .kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px}
+    .kv{font-size:16px;font-weight:800}
+    .pos{color:#00875A}.neg{color:#CC2244}
+    .section{margin:20px 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px}
+    .chart-box{border:1px solid #eee;border-radius:8px;padding:12px;margin-bottom:16px;background:#fff}
+    table{width:100%;border-collapse:collapse;font-size:11px}
+    th{background:#111;color:#fff;padding:6px 10px;text-align:left;font-weight:600}
+    td{padding:6px 10px;border-bottom:1px solid #f0f0f0}
+    tr:nth-child(even) td{background:#fafafa}
+    footer{margin-top:28px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}
+    @media print{body{padding:16px}}
+  </style></head><body>
+  <h1>TRADER OS · ${title}</h1>
+  <h2>${acct.name} · Gerado em ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</h2>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kl">P&L Total</div><div class="kv ${total>=0?'pos':'neg'}">${fmtSign(total)}</div></div>
+    <div class="kpi"><div class="kl">Dias</div><div class="kv">${trades.length}</div></div>
+    <div class="kpi"><div class="kl">Win Rate</div><div class="kv">${wr}%</div></div>
+    <div class="kpi"><div class="kl">Fator Lucro</div><div class="kv">${pf}</div></div>
+    <div class="kpi"><div class="kl">Max Drawdown</div><div class="kv neg">R$${maxDD.toFixed(0)}</div></div>
+    <div class="kpi"><div class="kl">Total Ops</div><div class="kv">${trades.reduce((a,t)=>a+(t.trades||0),0)}</div></div>
+  </div>
+
+  <div class="section">📈 Curva de Equity</div>
+  <div class="chart-box">${equitySVG}</div>
+
+  <div class="section">📋 Histórico de Trades</div>
+  <table>
+    <tr><th>Data</th><th>Par</th><th>P&L</th><th>Trades</th><th>Setup</th><th>R:R</th><th>Sessão</th><th>Emoção</th></tr>
+    ${[...trades].sort((a,b)=>a.date<b.date?-1:1).map(t=>`
+    <tr>
+      <td>${t.date}</td>
+      <td>${t.pair||'—'}</td>
+      <td style="font-weight:700;color:${t.pnl>=0?'#00875A':'#CC2244'}">${fmtSign(t.pnl)}</td>
+      <td>${t.trades||0}</td>
+      <td>${t.setup||'—'}</td>
+      <td>${t.rr!=null?t.rr+'R':'—'}</td>
+      <td>${t.session||'—'}</td>
+      <td>${t.emotion||'—'}</td>
+    </tr>`).join('')}
+  </table>
+
+  <footer>TRADER OS · ${acct.name} · ${now.toLocaleDateString('pt-BR')} · Desenvolvido por Emerson Jesus</footer>
+  </body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { toast('⚠️ Popup bloqueado. Permita popups para gerar o PDF.', true); return; }
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => w.print(), 600);
+  toast('📄 PDF pronto para impressão!');
 }
+
 
 // ════════════════════════════════════════
 //  SETTINGS
@@ -7307,6 +7524,7 @@ function saveAppearanceSettings() {
 }
 
 function setTheme(theme, btn) {
+  // Update sidebar button states
   document.querySelectorAll('.cfg-theme-opt').forEach(el => {
     el.style.borderWidth = '1px';
     el.style.borderColor = 'var(--border)';
@@ -7320,9 +7538,127 @@ function setTheme(theme, btn) {
     btn.style.opacity     = '1';
   }
   localStorage.setItem('tros_theme', theme);
-  if (theme === 'dark') toast('🌙 Tema escuro (padrão)');
-  else toast('🚧 Tema ' + theme + ' em breve!');
+
+  // Apply to <html>
+  const html = document.documentElement;
+  if (theme === 'light') {
+    html.setAttribute('data-theme', 'light');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#F0F4F8');
+    toast('☀️ Tema claro ativado');
+  } else if (theme === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', prefersDark ? '#050810' : '#F0F4F8');
+    toast('🖥️ Tema do sistema ativado');
+  } else {
+    html.removeAttribute('data-theme');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#050810');
+    toast('🌙 Tema escuro ativado');
+  }
+
+  // Re-render charts with new colors
+  setTimeout(() => {
+    const active = document.querySelector('.page.active');
+    if (!active) return;
+    const id = active.id.replace('page-','');
+    if (id === 'dashboard')   renderDashboard();
+    if (id === 'analytics')   renderAnalytics();
+    if (id === 'reports')     renderReports();
+  }, 100);
 }
+
+function quickToggleTheme() {
+  const current = localStorage.getItem('tros_theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  const btn = document.getElementById('theme-' + next);
+  setTheme(next, btn);
+  // Update toggle button icon
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  if (toggleBtn) toggleBtn.textContent = next === 'dark' ? '🌙' : '☀️';
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (localStorage.getItem('tros_theme') === 'system') {
+    const btn = document.getElementById('theme-system');
+    setTheme('system', btn);
+  }
+});
+
+// ════════════════════════════════════════
+//  NOTIFICAÇÕES DE RISCO (browser push)
+// ════════════════════════════════════════
+const _notifFired = new Set();
+
+async function requestNotifPermission() {
+  if (!('Notification' in window)) { toast('⚠️ Browser não suporta notificações', true); return false; }
+  if (Notification.permission === 'granted') { toast('✅ Notificações já ativadas'); updateNotifUI(); return true; }
+  const result = await Notification.requestPermission();
+  updateNotifUI();
+  if (result === 'granted') toast('🔔 Notificações de risco ativadas!');
+  else toast('❌ Permissão negada', true);
+  return result === 'granted';
+}
+
+function sendRiskNotif(title, body, tag) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const key = tag + '|' + body;
+  if (_notifFired.has(key)) return;
+  _notifFired.add(key);
+  setTimeout(() => _notifFired.delete(key), 600000); // reset after 10min
+  try {
+    const n = new Notification('🔔 ' + title, {
+      body, icon: '/assets/icon-192.png', tag, requireInteraction: true,
+    });
+    n.onclick = () => { window.focus(); n.close(); showPage('risk', null); };
+  } catch(e) { console.warn('[Notif]', e); }
+}
+
+function checkRiskNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const all  = getTrades();
+  const cfg  = getCfg();
+  const cap  = (getAcct().capital || 10000);
+  const todayPnL = all.filter(t => t.date === todayStr()).reduce((a,t) => a+t.pnl, 0);
+  const totalPnL = all.reduce((a,t) => a+t.pnl, 0);
+  const dailyLim = cfg.daily   || cap * 0.05;
+  const totalLim = cfg.maxloss || cap * 0.10;
+  const dailyPct = dailyLim > 0 ? Math.abs(Math.min(0, todayPnL)) / dailyLim * 100 : 0;
+  const totalPct = totalLim > 0 ? Math.abs(Math.min(0, totalPnL)) / totalLim * 100 : 0;
+
+  const today = new Date().toLocaleDateString('pt-BR');
+  if (dailyPct >= 100) sendRiskNotif('Limite Diário Atingido!', `Perda de ${fmtSign(todayPnL)} hoje (${today}). Pare de operar.`, 'daily100');
+  else if (dailyPct >= 80) sendRiskNotif('Atenção: Limite Diário', `${dailyPct.toFixed(0)}% do limite diário usado (${fmtSign(todayPnL)})`, 'daily80');
+  if (totalPct >= 100) sendRiskNotif('Max Loss Atingido!', `Limite total ultrapassado. Não abra novas posições.`, 'total100');
+  else if (totalPct >= 80) sendRiskNotif('Drawdown Elevado', `${totalPct.toFixed(0)}% do limite total consumido`, 'total80');
+
+  // 3 perdas seguidas
+  const last3 = [...all].sort((a,b) => a.date<b.date?-1:1).slice(-3);
+  if (last3.length === 3 && last3.every(t => t.pnl < 0))
+    sendRiskNotif('3 Perdas Consecutivas', 'Você perdeu os últimos 3 trades. Considere uma pausa.', 'streak3');
+}
+
+function updateNotifUI() {
+  const statusEl = document.getElementById('notif-permission-status');
+  const btnEl    = document.getElementById('notif-enable-btn');
+  if (!statusEl) return;
+  const perm = ('Notification' in window) ? Notification.permission : 'unsupported';
+  if (perm === 'granted') {
+    statusEl.innerHTML = '<span style="color:var(--green);font-weight:700">✅ Notificações ativadas — você receberá alertas de risco em tempo real</span>';
+    if (btnEl) btnEl.style.display = 'none';
+  } else if (perm === 'denied') {
+    statusEl.innerHTML = '<span style="color:var(--red)">❌ Notificações bloqueadas. Desbloqueie nas configurações do site (🔒 na barra de endereço).</span>';
+    if (btnEl) btnEl.style.display = 'none';
+  } else if (perm === 'unsupported') {
+    statusEl.innerHTML = '<span style="color:var(--text-3)">Browser não suporta notificações.</span>';
+    if (btnEl) btnEl.style.display = 'none';
+  } else {
+    statusEl.innerHTML = '<span style="color:var(--amber)">🔕 Notificações não ativadas</span>';
+    if (btnEl) btnEl.style.display = 'block';
+  }
+}
+
+
+
 
 function exportTradesJSON() {
   const all = getTrades();
@@ -7349,14 +7685,15 @@ function loadNotifSettings() {
   try {
     const prefs = JSON.parse(localStorage.getItem('tros_notif_prefs') || '{}');
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.checked = val ?? el.checked; };
-    set('notif-drawdown',     prefs.drawdown     ?? true);
-    set('notif-daily-limit',  prefs.dailyLimit   ?? true);
-    set('notif-meta',         prefs.meta         ?? false);
-    set('notif-streak',       prefs.streak       ?? false);
-    set('notif-daily-summary',prefs.dailySummary ?? false);
-    set('notif-weekly',       prefs.weekly       ?? false);
+    set('notif-drawdown',      prefs.drawdown      ?? true);
+    set('notif-daily-limit',   prefs.dailyLimit    ?? true);
+    set('notif-meta',          prefs.meta          ?? false);
+    set('notif-streak',        prefs.streak        ?? true);
+    set('notif-daily-summary', prefs.dailySummary  ?? false);
     set('notif-diary-reminder',prefs.diaryReminder ?? false);
   } catch(e) {}
+  // Update push permission status UI
+  updateNotifUI();
 }
 
 function loadAppearanceSettings() {
