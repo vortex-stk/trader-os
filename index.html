@@ -2286,7 +2286,15 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   outline: none;
 }
 #dayDetailModal textarea:focus { border-color: var(--accent); }
-/* ── Period filter bar ── */
+/* ── Share Modal ── */
+.share-tpl-btn {
+  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-2); font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+}
+.share-tpl-btn:hover { border-color: var(--purple); color: var(--purple); }
+.share-tpl-btn.active { background: var(--purple-bg); border-color: var(--purple); color: var(--purple); }
+
 .period-bar {
   display: flex;
   gap: 6px;
@@ -2733,6 +2741,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <div style="display:flex;gap:9px;align-items:center">
       <button class="btn-export" onclick="exportCSV()">⬇ CSV</button>
       <button class="btn-export" onclick="exportXLSX()" style="border-color:rgba(0,200,100,0.3);color:#00C864">📊 Excel</button>
+      <button class="btn-export" onclick="openShareModal()" style="border-color:rgba(124,92,252,0.4);color:var(--purple);background:var(--purple-bg)">📸 Compartilhar</button>
       <button class="btn-add" onclick="openTradeModal()">＋ Novo Dia</button>
     </div>
   </div>
@@ -3092,38 +3101,81 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 <div class="page" id="page-import">
   <div style="margin-bottom:18px">
     <h2 style="font-size:20px;font-weight:700">Importar Trades</h2>
-    <p style="font-size:12px;color:var(--text3);margin-top:2px">Importe seu histórico diretamente do broker via CSV</p>
+    <p style="font-size:12px;color:var(--text-3);margin-top:2px">Importe histórico de qualquer broker — CSV, HTM ou TXT</p>
   </div>
 
-  <div class="section-lbl">Formato do Broker</div>
+  <div class="section-lbl">Plataforma / Broker</div>
   <div class="broker-tabs">
     <button class="broker-tab active" onclick="selectBroker('generic',this)">📋 Genérico</button>
-    <button class="broker-tab" onclick="selectBroker('mt4',this)">MT4/MT5</button>
+    <button class="broker-tab" onclick="selectBroker('mt4',this)">🟦 MT4/MT5</button>
     <button class="broker-tab" onclick="selectBroker('topstep',this)">Topstep</button>
     <button class="broker-tab" onclick="selectBroker('ftmo',this)">FTMO</button>
     <button class="broker-tab" onclick="selectBroker('tradovate',this)">Tradovate</button>
+    <button class="broker-tab" onclick="selectBroker('xm',this)">XM</button>
+    <button class="broker-tab" onclick="selectBroker('ic',this)">IC Markets</button>
   </div>
 
-  <div id="broker-hint" style="background:var(--s1);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--text3);line-height:1.7">
-    <strong style="color:var(--text)">Formato Genérico</strong> — CSV com colunas:<br>
+  <div id="broker-hint" style="background:var(--bg-card2);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--text-2);line-height:1.8">
+    <strong style="color:var(--text-1)">Formato Genérico</strong> — CSV com colunas:<br>
     <code style="color:var(--blue)">date, pnl, trades, pair, setup, notes</code><br>
     Ex: <code>2025-03-15, 450.00, 5, EUR/USD, Breakout London, Bom dia</code>
   </div>
 
-  <div class="import-zone" id="import-zone">
-    <input type="file" id="csv-input" accept=".csv,.txt" onchange="handleCSV(event)">
+  <!-- MT4/MT5 special instructions card -->
+  <div id="mt4-guide" style="display:none;background:rgba(59,158,255,0.06);border:1px solid rgba(59,158,255,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--blue);margin-bottom:10px">📖 Como exportar do MT4/MT5</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:12px;color:var(--text-2);line-height:1.7">
+      <div>
+        <div style="font-weight:700;color:var(--text-1);margin-bottom:4px">MetaTrader 4</div>
+        1. Abra a aba <strong>Histórico da conta</strong><br>
+        2. Clique com botão direito → <strong>Salvar como Relatório</strong><br>
+        3. Escolha formato <strong>HTML</strong> ou <strong>CSV</strong><br>
+        4. Importe o arquivo aqui
+      </div>
+      <div>
+        <div style="font-weight:700;color:var(--text-1);margin-bottom:4px">MetaTrader 5</div>
+        1. Vá em <strong>Ferramentas → Histórico</strong><br>
+        2. Selecione o período desejado<br>
+        3. Clique direito → <strong>Exportar para CSV</strong><br>
+        4. Importe o arquivo aqui
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text-3)">
+      ✅ Aceitamos: CSV separado por vírgula ou tabulação · HTM/HTML do MT4 · TXT
+    </div>
+  </div>
+
+  <div class="import-zone" id="import-zone" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDropImport(event)">
+    <input type="file" id="csv-input" accept=".csv,.txt,.htm,.html,.tsv" onchange="handleCSV(event)">
     <div class="iz-icon">📥</div>
-    <div class="iz-title">Arraste o CSV aqui ou clique para selecionar</div>
-    <div class="iz-sub">Suporta .csv e .txt · Máximo 5MB</div>
+    <div class="iz-title">Arraste o arquivo aqui ou clique para selecionar</div>
+    <div class="iz-sub">CSV · HTM · TXT · TSV · Máximo 10MB</div>
   </div>
 
   <div id="import-result" style="display:none">
-    <div class="section-lbl">Prévia dos Dados</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="section-lbl" style="margin:0">Prévia dos Dados — <span id="import-count">0</span> registros detectados</div>
+      <div id="import-errors-badge" style="display:none;font-size:11px;color:var(--amber);background:var(--amber-bg);padding:3px 10px;border-radius:20px;border:1px solid var(--amber)"></div>
+    </div>
     <div id="import-preview-wrap"></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn-primary" style="flex:none;padding:10px 24px" onclick="confirmImport()">✅ Importar <span id="import-count">0</span> dias</button>
+    <div style="margin-top:8px;padding:10px 14px;background:var(--bg-card2);border-radius:8px;font-size:12px;color:var(--text-3)" id="import-merge-note">
+      ⚙️ <strong>Modo merge:</strong> trades com a mesma data serão <strong>somados</strong> (sem duplicar)
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn-primary" style="flex:none;padding:10px 24px" onclick="confirmImport()">✅ Importar <span id="import-count2">0</span> trades</button>
       <button class="btn-ghost" onclick="cancelImport()">Cancelar</button>
     </div>
+  </div>
+
+  <div style="margin-top:28px">
+    <div class="section-lbl">Modelo para Download</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-export" onclick="downloadTemplate('generic')">⬇️ Template Genérico</button>
+      <button class="btn-export" onclick="downloadTemplate('mt4')">⬇️ Template MT4/MT5</button>
+    </div>
+    <p style="font-size:11px;color:var(--text-3);margin-top:8px">Use o template para preencher seus trades manualmente e depois importar em massa.</p>
+  </div>
+</div>
   </div>
 
   <div style="margin-top:28px">
@@ -3147,6 +3199,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <button class="btn-export" onclick="exportPDF('year')"><span>📊</span> PDF Anual</button>
     <button class="btn-export" onclick="exportCSV()"><span>📋</span> Exportar CSV</button>
     <button class="btn-export" onclick="exportXLSX()" style="border-color:rgba(0,200,100,0.3);color:#00C864"><span>📊</span> Exportar Excel</button>
+    <button class="btn-export" onclick="openShareModal()" style="border-color:rgba(124,92,252,0.4);color:var(--purple);background:var(--purple-bg)"><span>📸</span> Compartilhar</button>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
     <div class="card card-pad" style="padding:16px 18px">
@@ -3160,6 +3213,63 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <div class="card card-pad" style="grid-column:span 2;padding:16px 18px">
       <div class="section-lbl">Histórico Mensal</div>
       <div style="position:relative;height:120px"><canvas id="rpt-monthlyChart" style="position:absolute;inset:0;width:100%!important;height:100%!important"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SHARE MODAL ═══ -->
+<div class="overlay" id="shareModal" style="display:none" onclick="if(event.target===this)closeShareModal()">
+  <div class="modal" style="max-width:680px;max-height:92vh;display:flex;flex-direction:column">
+    <div class="modal-hdr" style="flex-shrink:0">
+      <div>
+        <div class="modal-title">📸 Compartilhar Resultado</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px">Gere uma imagem para Instagram, Twitter ou LinkedIn</div>
+      </div>
+      <button class="modal-x" onclick="closeShareModal()">✕</button>
+    </div>
+
+    <!-- Template selector -->
+    <div style="display:flex;gap:8px;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <button class="share-tpl-btn active" data-tpl="story" onclick="selectShareTemplate('story',this)">📱 Story</button>
+      <button class="share-tpl-btn" data-tpl="post" onclick="selectShareTemplate('post',this)">🐦 Post</button>
+      <button class="share-tpl-btn" data-tpl="card" onclick="selectShareTemplate('card',this)">💼 Card</button>
+    </div>
+
+    <!-- Period & options -->
+    <div style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;align-items:center">
+      <div style="font-size:12px;color:var(--text-3);font-weight:600">Período:</div>
+      <select id="share-period-sel" onchange="renderSharePreview()" style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text-1);font-size:12px;cursor:pointer">
+        <option value="month">Mês Atual</option>
+        <option value="7d">Últimos 7 dias</option>
+        <option value="30d">Últimos 30 dias</option>
+        <option value="year">Ano Atual</option>
+        <option value="all">Tudo</option>
+      </select>
+      <div style="font-size:12px;color:var(--text-3);font-weight:600">Tema:</div>
+      <select id="share-theme-sel" onchange="renderSharePreview()" style="background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;color:var(--text-1);font-size:12px;cursor:pointer">
+        <option value="dark">🌙 Escuro</option>
+        <option value="green">🌿 Verde</option>
+        <option value="purple">💜 Roxo</option>
+        <option value="gold">✨ Dourado</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);cursor:pointer">
+        <input type="checkbox" id="share-show-name" checked onchange="renderSharePreview()"> Mostrar nome da conta
+      </label>
+    </div>
+
+    <!-- Canvas preview -->
+    <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div id="share-canvas-wrap" style="display:flex;justify-content:center;width:100%">
+        <canvas id="shareCanvas" style="border-radius:12px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.4)"></canvas>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-footer" style="flex-shrink:0;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-ghost" onclick="closeShareModal()">Cancelar</button>
+      <button class="btn-primary" onclick="downloadShareImage()" style="display:flex;align-items:center;gap:6px">
+        <span>⬇</span> Baixar Imagem
+      </button>
     </div>
   </div>
 </div>
@@ -6134,144 +6244,342 @@ const BROKER_HINTS = {
 };
 
 function selectBroker(b, btn) {
-  activeBroker=b;
-  document.querySelectorAll('.broker-tab').forEach(x=>x.classList.remove('active'));
+  activeBroker = b;
+  document.querySelectorAll('.broker-tab').forEach(x => x.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('broker-hint').innerHTML=BROKER_HINTS[b];
+  document.getElementById('broker-hint').innerHTML = BROKER_HINTS[b] || BROKER_HINTS.generic;
+  const mt4Guide = document.getElementById('mt4-guide');
+  if (mt4Guide) mt4Guide.style.display = (b === 'mt4' || b === 'mt5') ? 'block' : 'none';
+}
+
+function handleDropImport(e) {
+  e.preventDefault();
+  document.getElementById('import-zone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processImportFile(file);
 }
 
 function handleCSV(e) {
-  const file=e.target.files[0]; if(!file) return;
-  const r=new FileReader();
-  r.onload=ev=>parseCSV(ev.target.result);
-  r.readAsText(file);
+  const file = e.target.files[0];
+  if (file) processImportFile(file);
 }
 
-function parseCSV(raw) {
-  const lines=raw.trim().split('\n').filter(l=>l.trim());
-  if(lines.length<2){toast('CSV inválido ou vazio',true);return;}
-  const header=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));
-  importData=[];
-  for(let i=1;i<lines.length;i++){
-    const cols=lines[i].split(',').map(c=>c.trim().replace(/"/g,''));
-    let trade=null;
-    if(activeBroker==='generic'){
-      const dateIdx=findCol(header,['date','data','day']);
-      const pnlIdx=findCol(header,['pnl','profit','p&l','net p&l','resultado','lucro']);
-      if(dateIdx<0||pnlIdx<0) continue;
-      const pnl=parseFloat(cols[pnlIdx]);
-      if(isNaN(pnl)) continue;
-      trade={
-        date:normalizeDate(cols[dateIdx]),
-        pnl,
-        trades:parseInt(cols[findCol(header,['trades','num','quantidade'])])||1,
-        pair:cols[findCol(header,['pair','symbol','par','asset'])]||'',
-        setup:cols[findCol(header,['setup','strategy','estrategia'])]||'',
-        notes:cols[findCol(header,['notes','notas','note','comments'])]||'',
-        id:genId()
-      };
-    } else if(activeBroker==='mt4'){
-      // MT4: aggregate by day
-      const profitIdx=findCol(header,['profit','lucro']);
-      const dateIdx=findCol(header,['close time','open time','data']);
-      const symIdx=findCol(header,['symbol','par']);
-      if(profitIdx<0||dateIdx<0) continue;
-      const pnl=parseFloat(cols[profitIdx]);
-      if(isNaN(pnl)) continue;
-      const dateStr=normalizeDate(cols[dateIdx].split(' ')[0]);
-      const existing=importData.find(t=>t.date===dateStr);
-      if(existing){existing.pnl+=pnl;existing.trades++;}
-      else importData.push({date:dateStr,pnl,trades:1,pair:cols[symIdx]||'',setup:'MT4 Import',notes:'',id:genId()});
-      continue;
-    } else if(activeBroker==='topstep'){
-      const dateIdx=findCol(header,['date','data']);
-      const pnlIdx=findCol(header,['net p&l','p&l','profit','pnl']);
-      if(dateIdx<0||pnlIdx<0) continue;
-      const pnl=parseFloat(cols[pnlIdx]);
-      if(isNaN(pnl)) continue;
-      const sym=cols[findCol(header,['contract','symbol'])]||'';
-      const existing=importData.find(t=>t.date===normalizeDate(cols[dateIdx]));
-      if(existing){existing.pnl+=pnl;existing.trades++;}
-      else importData.push({date:normalizeDate(cols[dateIdx]),pnl,trades:1,pair:sym,setup:'Topstep Import',notes:'',id:genId()});
-      continue;
+function processImportFile(file) {
+  if (file.size > 10 * 1024 * 1024) { toast('Arquivo muito grande (máx 10MB)', true); return; }
+  const isHtml = /\.(htm|html)$/i.test(file.name);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const content = ev.target.result;
+    if (isHtml || content.trim().startsWith('<')) {
+      parseMT4HTML(content);
     } else {
-      // Generic fallback for ftmo/tradovate
-      const pnlIdx=findCol(header,['profit','p&l','pnl','net']);
-      const dateIdx=findCol(header,['date','time','data']);
-      if(pnlIdx<0||dateIdx<0) continue;
-      const pnl=parseFloat(cols[pnlIdx]);
-      if(isNaN(pnl)) continue;
-      const dateStr=normalizeDate(cols[dateIdx].split(' ')[0]);
-      const existing=importData.find(t=>t.date===dateStr);
-      if(existing){existing.pnl+=pnl;existing.trades++;}
-      else importData.push({date:dateStr,pnl,trades:1,pair:cols[findCol(header,['symbol','asset'])]||'',setup:activeBroker+' Import',notes:'',id:genId()});
-      continue;
+      parseImportCSV(content);
     }
-    if(trade&&trade.date&&!isNaN(trade.pnl)) importData.push(trade);
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function parseMT4HTML(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = [...doc.querySelectorAll('tr')];
+  const dayMap = {};
+  let parsed = 0, errors = 0;
+
+  rows.forEach(row => {
+    const cells = [...row.querySelectorAll('td')].map(td => td.textContent.trim());
+    if (cells.length < 6) return;
+    const typeIdx = cells.findIndex(c => /^(buy|sell|b\/o|s\/o)/i.test(c));
+    if (typeIdx < 0) return;
+    const type = cells[typeIdx].toLowerCase();
+    if (type === 'balance' || type === 'credit') return;
+
+    let profit = NaN, profitIdx = -1;
+    for (let i = cells.length - 1; i >= 0; i--) {
+      const v = parseFloat(cells[i].replace(/\s/g,'').replace(',','.'));
+      if (!isNaN(v) && Math.abs(v) < 999999) { profit = v; profitIdx = i; break; }
+    }
+    if (isNaN(profit)) { errors++; return; }
+
+    let closeDate = '';
+    for (let i = Math.max(0, profitIdx - 5); i < profitIdx; i++) {
+      const d = normalizeImportDate(cells[i].split(' ')[0]);
+      if (d && d.match(/^\d{4}-\d{2}-\d{2}$/)) { closeDate = d; break; }
+    }
+    if (!closeDate) { errors++; return; }
+
+    const sym = cells.find(c => /^[A-Z]{3,10}$/i.test(c) && c.length <= 10) || '';
+    if (!dayMap[closeDate]) dayMap[closeDate] = { pnl: 0, count: 0, pairs: new Set() };
+    dayMap[closeDate].pnl += profit;
+    dayMap[closeDate].count++;
+    if (sym) dayMap[closeDate].pairs.add(sym.toUpperCase());
+    parsed++;
+  });
+
+  if (parsed === 0) {
+    const textContent = doc.body ? doc.body.innerText : '';
+    parseImportCSV(textContent);
+    return;
   }
 
-  importData=importData.filter(t=>t.date&&t.date!=='Invalid Date'&&!isNaN(t.pnl));
-  if(!importData.length){toast('Nenhum dado válido encontrado',true);return;}
+  importData = Object.entries(dayMap).map(([date, d]) => ({
+    date,
+    pnl: parseFloat(d.pnl.toFixed(2)),
+    trades: d.count,
+    pair: [...d.pairs].slice(0,3).join(', ') || '',
+    setup: 'MT4/MT5 Import',
+    notes: d.count + ' operações importadas do MT4/MT5',
+    id: genId(),
+  })).sort((a,b) => a.date < b.date ? -1 : 1);
+
+  importData = importData.filter(t => t.date && !isNaN(t.pnl));
+  if (!importData.length) { toast('Nenhum trade encontrado no relatório MT4/MT5', true); return; }
+  showImportErrBadge(errors);
   showImportPreview();
 }
 
-function findCol(header, names) {
-  for(const n of names){const i=header.findIndex(h=>h.includes(n));if(i>=0)return i;}return -1;
+function parseImportCSV(raw) {
+  const firstLine = raw.trim().split('\n')[0];
+  const sep = firstLine.includes('\t') ? '\t' : ',';
+  const lines = raw.trim().split('\n').filter(l => l.trim() && !l.startsWith('#'));
+  if (lines.length < 2) { toast('CSV inválido ou vazio', true); return; }
+
+  const header = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/"/g,'').replace(/\uFEFF/g,''));
+  importData = [];
+  const dayMap = {};
+  let errors = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitImportLine(lines[i], sep);
+    if (cols.length < 2) continue;
+    try {
+      if (activeBroker === 'mt4' || activeBroker === 'mt5') {
+        const typeIdx = findImportCol(header, ['type','tipo']);
+        const profIdx = findImportCol(header, ['profit','lucro','net profit']);
+        const dateIdx = findImportCol(header, ['close time','closetime','close date','time']);
+        const symIdx  = findImportCol(header, ['symbol','simbolo','par','instrument']);
+        if (profIdx < 0 || dateIdx < 0) { errors++; continue; }
+        const type = (cols[typeIdx]||'').toLowerCase();
+        if (type === 'balance' || type === 'credit' || type === 'deposit') continue;
+        const pnl  = parseFloat((cols[profIdx]||'').replace(/[^\d.\-]/g,''));
+        if (isNaN(pnl)) { errors++; continue; }
+        const date = normalizeImportDate((cols[dateIdx]||'').split(' ')[0]);
+        if (!date) { errors++; continue; }
+        if (!dayMap[date]) dayMap[date] = { pnl:0, count:0, pairs:new Set() };
+        dayMap[date].pnl += pnl; dayMap[date].count++;
+        const sym = cols[symIdx]; if (sym) dayMap[date].pairs.add(sym.toUpperCase());
+
+      } else if (activeBroker === 'ftmo') {
+        const profIdx = findImportCol(header, ['profit','resultado','net profit']);
+        const dateIdx = findImportCol(header, ['time','date','data']);
+        const symIdx  = findImportCol(header, ['symbol','par']);
+        const typeIdx = findImportCol(header, ['type','tipo']);
+        if (profIdx < 0) { errors++; continue; }
+        const type = (cols[typeIdx]||'').toLowerCase();
+        if (type === 'balance' || type === 'deposit') continue;
+        const pnl  = parseFloat((cols[profIdx]||'').replace(/[^\d.\-]/g,''));
+        if (isNaN(pnl)) { errors++; continue; }
+        const date = normalizeImportDate((cols[dateIdx]||'').split(' ')[0]);
+        if (!date) { errors++; continue; }
+        if (!dayMap[date]) dayMap[date] = { pnl:0, count:0, pairs:new Set() };
+        dayMap[date].pnl += pnl; dayMap[date].count++;
+        const sym = cols[symIdx]; if (sym) dayMap[date].pairs.add(sym.toUpperCase());
+
+      } else if (activeBroker === 'topstep') {
+        const dateIdx = findImportCol(header, ['date','data','trade date']);
+        const pnlIdx  = findImportCol(header, ['net p&l','p&l','profit','pnl']);
+        const symIdx  = findImportCol(header, ['contract','symbol','instrument']);
+        if (dateIdx < 0 || pnlIdx < 0) { errors++; continue; }
+        const pnl  = parseFloat((cols[pnlIdx]||'').replace(/[$,\s]/g,''));
+        if (isNaN(pnl)) { errors++; continue; }
+        const date = normalizeImportDate(cols[dateIdx]);
+        if (!date) { errors++; continue; }
+        if (!dayMap[date]) dayMap[date] = { pnl:0, count:0, pairs:new Set() };
+        dayMap[date].pnl += pnl; dayMap[date].count++;
+        const sym = cols[symIdx]; if (sym) dayMap[date].pairs.add(sym.toUpperCase());
+
+      } else if (activeBroker === 'tradovate') {
+        const dateIdx = findImportCol(header, ['tradedate','trade date','date']);
+        const pnlIdx  = findImportCol(header, ['p&l','pnl','profit','totalpl']);
+        const symIdx  = findImportCol(header, ['symbol','contract']);
+        if (dateIdx < 0 || pnlIdx < 0) { errors++; continue; }
+        const pnl  = parseFloat((cols[pnlIdx]||'').replace(/[$,\s]/g,''));
+        if (isNaN(pnl)) { errors++; continue; }
+        const date = normalizeImportDate((cols[dateIdx]||'').split('T')[0].split(' ')[0]);
+        if (!date) { errors++; continue; }
+        if (!dayMap[date]) dayMap[date] = { pnl:0, count:0, pairs:new Set() };
+        dayMap[date].pnl += pnl; dayMap[date].count++;
+        const sym = cols[symIdx]; if (sym) dayMap[date].pairs.add(sym.toUpperCase());
+
+      } else if (activeBroker === 'xm' || activeBroker === 'ic') {
+        const profIdx = findImportCol(header, ['profit','net profit','p/l','resultado']);
+        const dateIdx = findImportCol(header, ['close time','close date','date']);
+        const symIdx  = findImportCol(header, ['symbol','instrument','par']);
+        const typeIdx = findImportCol(header, ['type','action']);
+        if (profIdx < 0) { errors++; continue; }
+        const type = (cols[typeIdx]||'').toLowerCase();
+        if (type === 'balance' || type === 'deposit' || type === 'credit') continue;
+        const pnl  = parseFloat((cols[profIdx]||'').replace(/[^\d.\-]/g,''));
+        if (isNaN(pnl)) { errors++; continue; }
+        const date = normalizeImportDate((cols[dateIdx]||'').split(' ')[0]);
+        if (!date) { errors++; continue; }
+        if (!dayMap[date]) dayMap[date] = { pnl:0, count:0, pairs:new Set() };
+        dayMap[date].pnl += pnl; dayMap[date].count++;
+        const sym = cols[symIdx]; if (sym) dayMap[date].pairs.add(sym.toUpperCase());
+
+      } else {
+        // GENERIC
+        const dateIdx = findImportCol(header, ['date','data','day','dia']);
+        const pnlIdx  = findImportCol(header, ['pnl','profit','p&l','net p&l','resultado','lucro']);
+        if (dateIdx < 0 || pnlIdx < 0) { errors++; continue; }
+        const pnl  = parseFloat((cols[pnlIdx]||'').replace(/[$,\s]/g,''));
+        if (isNaN(pnl)) { errors++; continue; }
+        const date = normalizeImportDate(cols[dateIdx]);
+        if (!date) { errors++; continue; }
+        const trade = {
+          date, pnl,
+          trades:  parseInt(cols[findImportCol(header, ['trades','ops','num','quantidade'])]) || 1,
+          pair:    (cols[findImportCol(header, ['pair','symbol','par','asset'])] || '').toUpperCase(),
+          setup:   cols[findImportCol(header, ['setup','strategy','estrategia'])] || '',
+          notes:   cols[findImportCol(header, ['notes','notas','note','comments'])] || '',
+          session: cols[findImportCol(header, ['session','sessao'])] || '',
+          rr:      parseFloat(cols[findImportCol(header, ['rr','r:r','rratio'])]) || null,
+          emotion: cols[findImportCol(header, ['emotion','emocao'])] || '',
+          id: genId(),
+        };
+        if (trade.rr && isNaN(trade.rr)) trade.rr = null;
+        importData.push(trade);
+      }
+    } catch(e) { errors++; }
+  }
+
+  // Convert dayMap to importData
+  if (Object.keys(dayMap).length > 0) {
+    importData = Object.entries(dayMap).map(([date, d]) => ({
+      date,
+      pnl: parseFloat(d.pnl.toFixed(2)),
+      trades: d.count,
+      pair: [...d.pairs].slice(0,3).join(', ') || '',
+      setup: activeBroker.toUpperCase() + ' Import',
+      notes: d.count + ' operação' + (d.count !== 1 ? 'ões' : '') + ' importadas',
+      id: genId(),
+    })).sort((a,b) => a.date < b.date ? -1 : 1);
+  }
+
+  importData = importData.filter(t => t.date && t.date.match(/^\d{4}-\d{2}-\d{2}$/) && !isNaN(t.pnl));
+  showImportErrBadge(errors);
+  if (!importData.length) { toast('Nenhum dado válido encontrado. Verifique o formato.', true); return; }
+  showImportPreview();
 }
 
-function normalizeDate(raw) {
-  if(!raw) return '';
-  const s=raw.trim();
-  // yyyy-mm-dd
-  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
-  // dd/mm/yyyy
-  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) { const p=s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; }
-  // mm/dd/yyyy
-  if(/^\d{2}\/\d{2}\/\d{4}/.test(s)) { const p=s.split('/'); return `${p[2]}-${p[0]}-${p[1]}`; }
-  // dd.mm.yyyy
-  if(/^\d{2}\.\d{2}\.\d{4}/.test(s)) { const p=s.split('.'); return `${p[2]}-${p[1]}-${p[0]}`; }
-  return s.slice(0,10);
+function showImportErrBadge(errors) {
+  const errBadge = document.getElementById('import-errors-badge');
+  if (errBadge) {
+    if (errors > 0) { errBadge.style.display = 'block'; errBadge.textContent = '\u26A0\uFE0F ' + errors + ' linhas ignoradas'; }
+    else errBadge.style.display = 'none';
+  }
+}
+
+function splitImportLine(line, sep) {
+  const result = []; let cur = ''; let inQ = false;
+  for (const ch of line) {
+    if (ch === '"') { inQ = !inQ; continue; }
+    if (ch === sep && !inQ) { result.push(cur.trim()); cur = ''; continue; }
+    cur += ch;
+  }
+  result.push(cur.trim());
+  return result;
+}
+
+function findImportCol(header, names) {
+  for (const n of names) {
+    const i = header.findIndex(h => h.includes(n));
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
+function normalizeImportDate(raw) {
+  if (!raw) return '';
+  const s = raw.trim().replace(/['"]/g, '');
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+  if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) { const p=s.split('/'); return p[2]+'-'+p[1]+'-'+p[0]; }
+  if (/^\d{2}\.\d{2}\.\d{4}/.test(s)) { const p=s.split('.'); return p[2]+'-'+p[1]+'-'+p[0]; }
+  if (/^\d{4}\.\d{2}\.\d{2}/.test(s)) { const p=s.split('.'); return p[0]+'-'+p[1]+'-'+p[2]; }
+  if (/^\d{4}\/\d{2}\/\d{2}/.test(s)) return s.replace(/\//g,'-').slice(0,10);
+  const d = new Date(s); if (!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+  return '';
 }
 
 function showImportPreview() {
-  const wrap=document.getElementById('import-preview-wrap');
-  const cols='grid-template-columns:120px 90px 60px 100px 1fr';
-  wrap.innerHTML=`<div class="import-preview"><div class="import-preview-hdr" style="${cols}"><span>Data</span><span>P&L</span><span>Trades</span><span>Par</span><span>Setup</span></div>`+
-    importData.slice(0,15).map(t=>`<div class="import-row ${t.pnl>=0?'pos':'neg'}" style="${cols}"><span>${t.date}</span><span>${fmtSign(t.pnl)}</span><span>${t.trades}</span><span>${t.pair||'—'}</span><span>${t.setup||'—'}</span></div>`).join('')+
-    (importData.length>15?`<div class="import-row" style="grid-template-columns:1fr;color:var(--text3)">...e mais ${importData.length-15} registros</div>`:'')+
+  const wrap = document.getElementById('import-preview-wrap');
+  const cols = 'grid-template-columns:110px 90px 60px 120px 1fr';
+  wrap.innerHTML = '<div class="import-preview">' +
+    '<div class="import-preview-hdr" style="' + cols + '"><span>Data</span><span>P&L</span><span>Trades</span><span>Par</span><span>Setup</span></div>' +
+    importData.slice(0,20).map(t =>
+      '<div class="import-row ' + (t.pnl>=0?'pos':'neg') + '" style="' + cols + '">' +
+      '<span>' + t.date + '</span><span>' + fmtSign(t.pnl) + '</span><span>' + (t.trades||1) + '</span>' +
+      '<span style="font-size:11px">' + (t.pair||'—').slice(0,18) + '</span>' +
+      '<span style="font-size:11px;color:var(--text-3)">' + (t.setup||'—').slice(0,30) + '</span></div>'
+    ).join('') +
+    (importData.length > 20 ? '<div class="import-row" style="grid-template-columns:1fr;color:var(--text-3);font-size:12px">... e mais ' + (importData.length-20) + ' registros</div>' : '') +
     '</div>';
-  document.getElementById('import-count').textContent=importData.length;
-  document.getElementById('import-result').style.display='block';
+  document.getElementById('import-count').textContent = importData.length;
+  const c2 = document.getElementById('import-count2');
+  if (c2) c2.textContent = importData.length;
+  document.getElementById('import-result').style.display = 'block';
 }
 
 function confirmImport() {
-  let added=0, updated=0;
-  importData.forEach(t=>{
-    const existing=(db.trades[activeId]||[]).find(x=>x.date===t.date);
-    db.trades[activeId]=(db.trades[activeId]||[]).filter(x=>x.date!==t.date);
-    db.trades[activeId].push({...t,id:existing?.id||genId()});
-    if(existing) updated++; else added++;
+  let added = 0, updated = 0;
+  importData.forEach(t => {
+    if (!db.trades[activeId]) db.trades[activeId] = [];
+    const existing = db.trades[activeId].find(x => x.date === t.date && (x.pair === t.pair || !t.pair));
+    if (existing) {
+      existing.pnl    += t.pnl;
+      existing.trades  = (existing.trades||0) + (t.trades||1);
+      existing.updatedAt = new Date().toISOString();
+      updated++;
+    } else {
+      db.trades[activeId].push({ ...t, id: genId(), createdAt: new Date().toISOString() });
+      added++;
+    }
   });
   persistData();
   cancelImport();
   renderHeader();
   renderDashboard();
-  toast(`✅ ${added} adicionados, ${updated} atualizados`);
+  toast('\u2705 ' + added + ' trades adicionados, ' + updated + ' mesclados!');
 }
 
 function cancelImport() {
-  importData=[];
-  document.getElementById('import-result').style.display='none';
-  document.getElementById('csv-input').value='';
+  importData = [];
+  document.getElementById('import-result').style.display = 'none';
+  const inp = document.getElementById('csv-input');
+  if (inp) inp.value = '';
 }
 
-function downloadTemplate() {
-  const csv='date,pnl,trades,pair,session,setup,rr,notes\n2025-03-15,450.00,5,EUR/USD,London,Breakout,2.5,Bom dia de trading\n2025-03-16,-120.00,3,GBP/USD,New York,VWAP,-0.8,Parei no limite diario\n2025-03-17,280.00,4,USD/JPY,London+NY,Trend Follow,1.8,Seguiu o plano';
-  const blob=new Blob([csv],{type:'text/csv'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='trader_os_template.csv';a.click();
+function downloadTemplate(type) {
+  let csv, filename;
+  if (type === 'mt4') {
+    csv = 'Ticket,Open Time,Type,Size,Symbol,Open Price,S/L,T/P,Close Time,Close Price,Commission,Swap,Profit\n' +
+      '12345,2025-03-15 09:30:00,buy,0.10,XAUUSD,1850.00,1840.00,1870.00,2025-03-15 14:22:00,1870.00,-2.00,0.00,18.00\n' +
+      '12346,2025-03-15 15:10:00,sell,0.10,EURUSD,1.0850,1.0880,1.0820,2025-03-15 17:05:00,1.0820,-2.00,0.00,30.00\n' +
+      '12347,2025-03-16 09:45:00,buy,0.10,GBPUSD,1.2650,1.2620,1.2680,2025-03-16 12:30:00,1.2635,-2.00,0.00,-13.00';
+    filename = 'template_mt4_mt5.csv';
+  } else {
+    csv = 'date,pnl,trades,pair,session,setup,rr,emotion,notes\n' +
+      '2025-03-15,450.00,5,EUR/USD,London,Breakout,2.5,confiante,Bom dia\n' +
+      '2025-03-16,-120.00,3,GBP/USD,New York,VWAP,-0.8,ansioso,Parei no limite\n' +
+      '2025-03-17,280.00,4,USD/JPY,London+NY,Trend Follow,1.8,calmo,Seguiu o plano';
+    filename = 'template_generico.csv';
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
   toast('Template baixado!');
 }
+
 
 // ════════════════════════════════════════
 //  REPORTS
@@ -7955,7 +8263,325 @@ function loadCfgProfileTab() {
 }
 
 // ════════════════════════════════════════
-//  PWA — Service Worker + Install Prompt
+//  COMPARTILHAR RESULTADO — Canvas Generator
+// ════════════════════════════════════════
+let _shareTpl = 'story'; // 'story' | 'post' | 'card'
+
+const SHARE_THEMES = {
+  dark:   { bg:'#050810', bg2:'#0C1220', accent:'#00F5A0', accent2:'#00C8FF', text:'#F0F6FF', sub:'rgba(255,255,255,0.45)', card:'rgba(255,255,255,0.06)', line:'rgba(255,255,255,0.08)', pos:'#00F5A0', neg:'#FF5B70', purple:'#7C5CFC' },
+  green:  { bg:'#071a10', bg2:'#0a2a18', accent:'#00F5A0', accent2:'#4ade80', text:'#f0fff4', sub:'rgba(200,255,220,0.5)', card:'rgba(0,245,160,0.08)', line:'rgba(0,245,160,0.12)', pos:'#00F5A0', neg:'#fb7185', purple:'#34d399' },
+  purple: { bg:'#0d0720', bg2:'#160d35', accent:'#a78bfa', accent2:'#818cf8', text:'#f5f3ff', sub:'rgba(200,190,255,0.5)', card:'rgba(124,92,252,0.12)', line:'rgba(124,92,252,0.15)', pos:'#4ade80', neg:'#fb7185', purple:'#a78bfa' },
+  gold:   { bg:'#130e02', bg2:'#1f1803', accent:'#fbbf24', accent2:'#f59e0b', text:'#fffbeb', sub:'rgba(255,240,180,0.5)', card:'rgba(251,191,36,0.10)', line:'rgba(251,191,36,0.12)', pos:'#4ade80', neg:'#fb7185', purple:'#fbbf24' },
+};
+
+const SHARE_SIZES = {
+  story: { w:1080, h:1920, label:'Instagram Story (9:16)' },
+  post:  { w:1080, h:1080, label:'Post Quadrado (1:1)' },
+  card:  { w:1200, h:628,  label:'Twitter/LinkedIn (1.91:1)' },
+};
+
+function openShareModal() {
+  document.getElementById('shareModal').style.display = 'flex';
+  renderSharePreview();
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').style.display = 'none';
+}
+
+function selectShareTemplate(tpl, btn) {
+  _shareTpl = tpl;
+  document.querySelectorAll('.share-tpl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSharePreview();
+}
+
+function getShareTrades() {
+  const period = document.getElementById('share-period-sel')?.value || 'month';
+  const all = getTrades();
+  const now = new Date();
+  if (period === 'month') return all.filter(t => { const d=new Date(t.date+'T12:00:00'); return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth(); });
+  if (period === '7d')   { const cs=new Date(); cs.setDate(cs.getDate()-7); return all.filter(t=>t.date>=cs.toISOString().slice(0,10)); }
+  if (period === '30d')  { const cs=new Date(); cs.setDate(cs.getDate()-30); return all.filter(t=>t.date>=cs.toISOString().slice(0,10)); }
+  if (period === 'year') return all.filter(t=>new Date(t.date+'T12:00:00').getFullYear()===now.getFullYear());
+  return all;
+}
+
+function renderSharePreview() {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const themeKey = document.getElementById('share-theme-sel')?.value || 'dark';
+  const T = SHARE_THEMES[themeKey];
+  const S = SHARE_SIZES[_shareTpl];
+  const showName = document.getElementById('share-show-name')?.checked ?? true;
+  const trades = getShareTrades();
+  const acct = getAcct();
+  const period = document.getElementById('share-period-sel')?.value || 'month';
+
+  // Scale canvas for preview (max 360px wide)
+  const scale = Math.min(360 / S.w, 600 / S.h);
+  canvas.width  = S.w;
+  canvas.height = S.h;
+  canvas.style.width  = Math.round(S.w * scale) + 'px';
+  canvas.style.height = Math.round(S.h * scale) + 'px';
+
+  const ctx = canvas.getContext('2d');
+  drawShareCard(ctx, S.w, S.h, T, trades, acct, showName, period, _shareTpl);
+}
+
+function drawShareCard(ctx, W, H, T, trades, acct, showName, period, tpl) {
+  const dpr = 1; // canvas already at full res
+
+  // ── Background ──
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, T.bg);
+  grad.addColorStop(1, T.bg2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Ambient glow top-right
+  const glow = ctx.createRadialGradient(W*0.85, H*0.08, 0, W*0.85, H*0.08, W*0.55);
+  glow.addColorStop(0, T.accent + '18');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Stats ──
+  const pnl    = trades.reduce((a,t) => a+t.pnl, 0);
+  const wins   = trades.filter(t => t.pnl > 0);
+  const losses = trades.filter(t => t.pnl < 0);
+  const wr     = trades.length ? (wins.length/trades.length*100) : 0;
+  const maxDD  = calcMaxDD(trades);
+  const avgWin = wins.length ? wins.reduce((a,t)=>a+t.pnl,0)/wins.length : 0;
+  const avgLoss= losses.length ? Math.abs(losses.reduce((a,t)=>a+t.pnl,0)/losses.length) : 0;
+  const pf     = avgLoss > 0 ? (avgWin*wins.length)/(avgLoss*losses.length) : null;
+
+  const PERIOD_MAP = { month:'Mês Atual', '7d':'Últimos 7 Dias', '30d':'Últimos 30 Dias', year:'Ano Atual', all:'Histórico Completo' };
+
+  // ── Layout helpers ──
+  const pad = tpl === 'story' ? W*0.09 : W*0.07;
+  let y = 0;
+
+  // ── HEADER ──
+  y = tpl === 'story' ? H*0.07 : H*0.08;
+
+  // Logo mark
+  const lx = pad, ly = y, lr = W*0.035;
+  const logoGrad = ctx.createLinearGradient(lx-lr, ly-lr, lx+lr, ly+lr);
+  logoGrad.addColorStop(0, T.accent);
+  logoGrad.addColorStop(1, T.accent2);
+  ctx.fillStyle = logoGrad;
+  roundRect(ctx, lx-lr, ly-lr, lr*2, lr*2, lr*0.5);
+  ctx.fill();
+  ctx.fillStyle = T.bg;
+  ctx.font = `bold ${lr*1.1}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.fillText('T', lx, ly + lr*0.38);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = T.text;
+  ctx.font = `bold ${W*0.03}px Arial`;
+  ctx.fillText('TRADER OS', lx + lr*2.4, ly + lr*0.4);
+
+  // Period badge
+  const badgeText = PERIOD_MAP[period] || period;
+  ctx.font = `600 ${W*0.018}px Arial`;
+  const bw = ctx.measureText(badgeText).width + W*0.03;
+  const bh = W*0.032; const bx = W - pad - bw; const by = ly - bh*0.5;
+  ctx.fillStyle = T.card;
+  roundRect(ctx, bx, by, bw, bh, bh/2);
+  ctx.fill();
+  ctx.fillStyle = T.accent;
+  ctx.textAlign = 'center';
+  ctx.fillText(badgeText, bx + bw/2, by + bh*0.67);
+
+  // Account name
+  if (showName) {
+    ctx.textAlign = 'left';
+    ctx.fillStyle = T.sub;
+    ctx.font = `${W*0.018}px Arial`;
+    ctx.fillText(acct?.name || 'Conta Principal', lx + lr*2.4, ly + lr*1.6);
+  }
+
+  // ── MAIN P&L ──
+  y = tpl === 'story' ? H*0.20 : H*0.24;
+  const pnlStr = (pnl >= 0 ? '+R$' : '-R$') + Math.abs(pnl).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const pnlColor = pnl >= 0 ? T.pos : T.neg;
+
+  // Big glow behind PnL
+  const pnlGlow = ctx.createRadialGradient(W/2, y, 0, W/2, y, W*0.4);
+  pnlGlow.addColorStop(0, pnlColor + '22');
+  pnlGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = pnlGlow;
+  ctx.fillRect(0, y - H*0.1, W, H*0.25);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = pnlColor;
+  const pnlFontSize = tpl === 'story' ? W*0.115 : W*0.092;
+  ctx.font = `900 ${pnlFontSize}px Arial`;
+  ctx.fillText(pnlStr, W/2, y);
+
+  ctx.fillStyle = T.sub;
+  ctx.font = `${W*0.022}px Arial`;
+  ctx.fillText('RESULTADO', W/2, y + pnlFontSize*0.55);
+
+  // ── EQUITY MINI CHART ──
+  y += pnlFontSize * 0.9;
+  const chartH = tpl === 'story' ? H*0.15 : H*0.16;
+  const chartW = W - pad*2;
+  const chartY = y + (tpl === 'story' ? H*0.04 : H*0.03);
+  drawMiniEquity(ctx, trades, pad, chartY, chartW, chartH, pnlColor, T);
+  y = chartY + chartH;
+
+  // ── STATS GRID ──
+  const statsY = y + (tpl === 'story' ? H*0.055 : H*0.04);
+  const stats = [
+    { label: 'WIN RATE',   value: wr.toFixed(1) + '%',     color: wr >= 50 ? T.pos : T.neg },
+    { label: 'TRADES',     value: String(trades.length),   color: T.text },
+    { label: 'FATOR P/L',  value: pf ? pf.toFixed(2) : '—', color: T.accent },
+    { label: 'DRAWDOWN',   value: '-R$' + maxDD.toFixed(0), color: T.neg },
+  ];
+
+  const cols = tpl === 'card' ? 4 : 2;
+  const rows = Math.ceil(stats.length / cols);
+  const cellW = chartW / cols;
+  const cellH = tpl === 'story' ? H*0.10 : H*0.11;
+
+  stats.forEach((s, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const cx = pad + col * cellW;
+    const cy = statsY + row * (cellH + H*0.012);
+
+    // Card background
+    ctx.fillStyle = T.card;
+    roundRect(ctx, cx + W*0.01, cy, cellW - W*0.02, cellH, W*0.014);
+    ctx.fill();
+
+    // Subtle border
+    ctx.strokeStyle = T.line;
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, cx + W*0.01, cy, cellW - W*0.02, cellH, W*0.014);
+    ctx.stroke();
+
+    // Value
+    ctx.textAlign = 'center';
+    ctx.fillStyle = s.color;
+    ctx.font = `800 ${W*0.042}px Arial`;
+    ctx.fillText(s.value, cx + cellW/2, cy + cellH*0.52);
+
+    // Label
+    ctx.fillStyle = T.sub;
+    ctx.font = `600 ${W*0.018}px Arial`;
+    ctx.fillText(s.label, cx + cellW/2, cy + cellH*0.82);
+  });
+
+  // ── FOOTER ──
+  const footerY = H - (tpl === 'story' ? H*0.06 : H*0.055);
+  ctx.fillStyle = T.line;
+  ctx.fillRect(pad, footerY - H*0.005, W - pad*2, 1);
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = T.sub;
+  ctx.font = `${W*0.018}px Arial`;
+  ctx.fillText('trader-os.vercel.app', pad, footerY + W*0.025);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = T.sub;
+  const nowStr = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'});
+  ctx.fillText(nowStr, W - pad, footerY + W*0.025);
+}
+
+function drawMiniEquity(ctx, trades, x, y, w, h, lineColor, T) {
+  const sorted = [...trades].sort((a,b) => a.date<b.date?-1:1);
+  if (sorted.length < 2) {
+    // No data — draw flat line
+    ctx.strokeStyle = T.line;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x, y+h/2); ctx.lineTo(x+w, y+h/2); ctx.stroke();
+    return;
+  }
+
+  let cum = 0;
+  const pts = [0, ...sorted.map(t => { cum += t.pnl; return cum; })];
+  const minV = Math.min(...pts);
+  const maxV = Math.max(...pts);
+  const rangeV = maxV - minV || 1;
+  const px = (i) => x + (i / (pts.length-1)) * w;
+  const py = (v) => y + h - ((v - minV) / rangeV) * h * 0.85 - h*0.075;
+
+  // Area fill
+  const areaGrad = ctx.createLinearGradient(0, y, 0, y+h);
+  areaGrad.addColorStop(0, lineColor + '40');
+  areaGrad.addColorStop(1, lineColor + '00');
+  ctx.fillStyle = areaGrad;
+  ctx.beginPath();
+  ctx.moveTo(px(0), py(0));
+  pts.forEach((v,i) => ctx.lineTo(px(i), py(v)));
+  ctx.lineTo(px(pts.length-1), y+h);
+  ctx.lineTo(px(0), y+h);
+  ctx.closePath();
+  ctx.fill();
+
+  // Line
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = w * 0.005;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  pts.forEach((v,i) => i===0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v)));
+  ctx.stroke();
+
+  // End dot
+  const lastX = px(pts.length-1), lastY = py(pts[pts.length-1]);
+  ctx.fillStyle = lineColor;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, w*0.012, 0, Math.PI*2);
+  ctx.fill();
+
+  // Pulse ring
+  ctx.strokeStyle = lineColor + '50';
+  ctx.lineWidth = w * 0.004;
+  ctx.beginPath();
+  ctx.arc(lastX, lastY, w*0.022, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h); ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r); ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function downloadShareImage() {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const themeKey = document.getElementById('share-theme-sel')?.value || 'dark';
+  const T = SHARE_THEMES[themeKey];
+  const S = SHARE_SIZES[_shareTpl];
+  const showName = document.getElementById('share-show-name')?.checked ?? true;
+  const trades = getShareTrades();
+  const acct = getAcct();
+  const period = document.getElementById('share-period-sel')?.value || 'month';
+
+  // Render at full resolution
+  const fullCanvas = document.createElement('canvas');
+  fullCanvas.width  = S.w;
+  fullCanvas.height = S.h;
+  const ctx = fullCanvas.getContext('2d');
+  drawShareCard(ctx, S.w, S.h, T, trades, acct, showName, period, _shareTpl);
+
+  const link = document.createElement('a');
+  link.download = `TraderOS_resultado_${new Date().toISOString().slice(0,10)}_${_shareTpl}.png`;
+  link.href = fullCanvas.toDataURL('image/png', 1.0);
+  link.click();
+  toast('📸 Imagem baixada! Agora é só postar nas redes! 🚀');
+}
+
 // ════════════════════════════════════════
 let _pwaInstallPrompt = null;
 
