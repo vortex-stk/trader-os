@@ -2374,6 +2374,61 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .rj-op-actions { flex-shrink:0; }
 
 
+
+/* ════════════════════════════════════════
+   TOUR GUIADO
+════════════════════════════════════════ */
+#tour-overlay {
+  position:fixed;inset:0;z-index:9000;pointer-events:none;
+  transition:opacity 0.3s;
+}
+#tour-overlay.hidden { opacity:0;pointer-events:none; }
+.tour-backdrop {
+  position:fixed;inset:0;background:rgba(5,8,16,0.75);z-index:9001;
+}
+.tour-highlight {
+  position:fixed;z-index:9002;border-radius:10px;
+  box-shadow:0 0 0 4px var(--green),0 0 0 9999px rgba(5,8,16,0.75);
+  pointer-events:none;transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.tour-card {
+  position:fixed;z-index:9003;background:var(--bg-card2);
+  border:1px solid rgba(0,245,160,0.3);border-radius:14px;
+  padding:20px 22px;width:300px;pointer-events:all;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.tour-step-badge {
+  font-size:10px;font-weight:700;color:var(--green);
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;
+}
+.tour-card h3 { font-size:15px;font-weight:800;color:var(--text-1);margin-bottom:6px; }
+.tour-card p  { font-size:12px;color:var(--text-2);line-height:1.6;margin-bottom:14px; }
+.tour-actions { display:flex;gap:8px;align-items:center;justify-content:space-between; }
+.tour-btn-skip { font-size:11px;color:var(--text-4);cursor:pointer;background:none;border:none;padding:0; }
+.tour-btn-skip:hover { color:var(--text-2); }
+.tour-btn-next { background:var(--green);color:#050810;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer; }
+.tour-btn-next:hover { background:var(--green-dim); }
+.tour-dots { display:flex;gap:4px;align-items:center; }
+.tour-dot { width:6px;height:6px;border-radius:50%;background:var(--border-hi);transition:all 0.2s; }
+.tour-dot.active { background:var(--green);width:16px;border-radius:3px; }
+
+/* ════════════════════════════════════════
+   WIKI / FAQ
+════════════════════════════════════════ */
+.wiki-search { width:100%;background:var(--bg-card);border:1px solid var(--border-md);border-radius:10px;padding:11px 16px;color:var(--text-1);font-size:13px;margin-bottom:18px;outline:none;transition:border 0.2s; }
+.wiki-search:focus { border-color:var(--green); }
+.wiki-cat { margin-bottom:22px; }
+.wiki-cat-title { font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-3);margin-bottom:10px; }
+.wiki-item { background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden;transition:border 0.2s; }
+.wiki-item:hover { border-color:var(--border-md); }
+.wiki-q { display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-1); }
+.wiki-q span { font-size:16px;color:var(--text-3);transition:transform 0.2s; }
+.wiki-item.open .wiki-q span { transform:rotate(45deg);color:var(--green); }
+.wiki-a { display:none;padding:0 16px 14px;font-size:12px;color:var(--text-2);line-height:1.7;border-top:1px solid var(--border); }
+.wiki-item.open .wiki-a { display:block; }
+.wiki-a code { background:var(--bg-deep);border:1px solid var(--border-md);border-radius:4px;padding:1px 6px;font-family:var(--font-mono);font-size:11px;color:var(--green); }
+
 </style>
 </head>
 <!-- ════════════════════════════════
@@ -2543,6 +2598,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
   <!-- ⚙️ CONTA -->
   <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
+  <div class="sidebar-item" data-page="wiki" data-tooltip="Wiki & Ajuda" onclick="showPage('wiki',null)">
+    <div class="sidebar-icon">❓</div><div class="sidebar-label">Wiki & Ajuda</div>
+  </div>
   <div class="sidebar-item" data-page="mt5integration" data-tooltip="Integração MT5" onclick="showPage('mt5integration',null)">
     <div class="sidebar-icon">🔗</div><div class="sidebar-label">Integração MT5</div>
   </div>
@@ -3156,6 +3214,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <div class="export-bar">
     <button class="btn-export" onclick="exportPDF('month')"><span>📄</span> PDF Mensal</button>
     <button class="btn-export" onclick="exportPDF('year')"><span>📊</span> PDF Anual</button>
+    <button class="btn-export" onclick="exportDashboardPDF()" style="border-color:rgba(0,245,160,0.4);color:var(--green);background:var(--green-bg)"><span>🗂️</span> PDF Completo</button>
+    <button class="btn-export" onclick="exportAnnualComparativePDF()" style="border-color:rgba(59,158,255,0.4);color:var(--blue);background:var(--blue-bg)"><span>📅</span> Comparativo Anual</button>
     <button class="btn-export" onclick="exportCSV()"><span>📋</span> Exportar CSV</button>
     <button class="btn-export" onclick="exportXLSX()" style="border-color:rgba(0,200,100,0.3);color:#00C864"><span>📊</span> Exportar Excel</button>
     <button class="btn-export" onclick="openShareModal()" style="border-color:rgba(124,92,252,0.4);color:var(--purple);background:var(--purple-bg)"><span>📸</span> Compartilhar</button>
@@ -7273,6 +7333,745 @@ function exportXLSX() {
 }
 
 
+// ════════════════════════════════════════
+//  PDF COMPLETO DO DASHBOARD
+// ════════════════════════════════════════
+function exportDashboardPDF() {
+  const acct    = getAcct();
+  const cfg     = getCfg();
+  const all     = getTrades();
+  const now     = new Date();
+  const MONTHS  = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const MSHORT  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  // KPIs globais
+  const cap     = acct.capital || 10000;
+  const total   = all.reduce((a,t)=>a+t.pnl,0);
+  const wins    = all.filter(t=>t.pnl>0);
+  const losses  = all.filter(t=>t.pnl<0);
+  const wr      = all.length ? (wins.length/all.length*100) : 0;
+  const avgWin  = wins.length  ? wins.reduce((a,t)=>a+t.pnl,0)/wins.length : 0;
+  const avgLoss = losses.length? Math.abs(losses.reduce((a,t)=>a+t.pnl,0)/losses.length) : 0;
+  const pf      = avgLoss>0 ? avgWin*wins.length/(avgLoss*losses.length) : 0;
+  const maxDD   = calcMaxDD(all);
+  const balance = cap + total;
+  const retPct  = (total/cap*100);
+
+  // Equity curve SVG
+  const sorted  = [...all].sort((a,b)=>a.date<b.date?-1:1);
+  let cum=0; const pts=[{x:0,y:0}];
+  sorted.forEach((t,i)=>{cum+=t.pnl;pts.push({x:i+1,y:cum});});
+  const svgW=700,svgH=180,pL=55,pR=20,pT=16,pB=28;
+  const W=svgW-pL-pR, H=svgH-pT-pB;
+  const maxY=Math.max(...pts.map(p=>p.y),1), minY=Math.min(...pts.map(p=>p.y),-1);
+  const rY=maxY-minY||1, rX=pts.length-1||1;
+  const px=i=>pL+(i/rX)*W, py=v=>pT+H-((v-minY)/rY)*H;
+  const poly=pts.map((p,i)=>`${px(i).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ');
+  const area=`M${px(0)},${py(0)} `+pts.map((p,i)=>`L${px(i).toFixed(1)},${py(p.y).toFixed(1)}`).join(' ')+` L${px(pts.length-1)},${py(0)} Z`;
+  const isUp=total>=0; const lc=isUp?'#00875A':'#CC2244';
+  const yLbls=[minY,(minY+maxY)/2,maxY].map(v=>`<text x="${pL-6}" y="${py(v)+4}" text-anchor="end" font-size="9" fill="#999">R$${v.toFixed(0)}</text>`).join('');
+  const zY=py(0); const zLine=zY>=pT&&zY<=svgH-pB?`<line x1="${pL}" y1="${zY}" x2="${svgW-pR}" y2="${zY}" stroke="#ccc" stroke-width="0.7" stroke-dasharray="4,3"/>`:'';
+  const equitySVG=`<svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto">
+    <defs><linearGradient id="eg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lc}" stop-opacity="0.3"/><stop offset="100%" stop-color="${lc}" stop-opacity="0"/></linearGradient></defs>
+    <rect x="${pL}" y="${pT}" width="${W}" height="${H}" fill="#fafafa" rx="4"/>${zLine}${yLbls}
+    <path d="${area}" fill="url(#eg2)"/>
+    <polyline points="${poly}" fill="none" stroke="${lc}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="${px(pts.length-1)}" cy="${py(pts[pts.length-1].y)}" r="4" fill="${lc}"/>
+    <text x="${svgW/2}" y="${svgH-4}" text-anchor="middle" font-size="9" fill="#bbb">${sorted[0]?.date||''} → ${sorted[sorted.length-1]?.date||''}</text>
+  </svg>`;
+
+  // Performance por sessão
+  const sessions={Tokyo:0,London:0,'New York':0};
+  all.forEach(t=>{if(t.session&&sessions[t.session]!==undefined)sessions[t.session]+=t.pnl;});
+
+  // Performance por par (top 5)
+  const byPair={};
+  all.forEach(t=>{if(t.pair)byPair[t.pair]=(byPair[t.pair]||{pnl:0,c:0,w:0});byPair[t.pair].pnl+=t.pnl;byPair[t.pair].c++;if(t.pnl>0)byPair[t.pair].w++;});
+  const topPairs=Object.entries(byPair).sort((a,b)=>Math.abs(b[1].pnl)-Math.abs(a[1].pnl)).slice(0,5);
+
+  // Meses do ano atual
+  const yr=now.getFullYear();
+  const monthlyPnL=Array(12).fill(0).map((_,i)=>all.filter(t=>new Date(t.date+'T12:00:00').getFullYear()===yr&&new Date(t.date+'T12:00:00').getMonth()===i).reduce((a,t)=>a+t.pnl,0));
+  const maxBar=Math.max(...monthlyPnL.map(Math.abs),1);
+  const barSVG=(v,label)=>{
+    const h=Math.round(Math.abs(v)/maxBar*60);
+    const color=v>=0?'#00875A':'#CC2244';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+      <div style="font-size:8px;color:${color};font-weight:700">${v!==0?(v>=0?'+':'')+v.toFixed(0):''}</div>
+      <div style="width:100%;height:60px;display:flex;align-items:flex-end;justify-content:center">
+        <div style="width:80%;background:${color};height:${Math.max(h,v!==0?2:0)}px;border-radius:3px 3px 0 0"></div>
+      </div>
+      <div style="font-size:8px;color:#888">${label}</div>
+    </div>`;
+  };
+
+  // Drawdown tracker
+  const ddPct = cap>0 ? (maxDD/cap*100) : 0;
+  const ddLimit = cfg.maxloss ? (cfg.maxloss/cap*100) : 10;
+
+  // Best/worst trades
+  const bestTrade  = [...all].sort((a,b)=>b.pnl-a.pnl)[0];
+  const worstTrade = [...all].sort((a,b)=>a.pnl-b.pnl)[0];
+
+  // Streak
+  let curStreak=0, maxStreak=0, streak=0;
+  [...all].sort((a,b)=>a.date<b.date?-1:1).forEach(t=>{
+    if(t.pnl>0){streak=Math.max(0,streak)+1;}else{streak=Math.min(0,streak)-1;}
+    if(streak>maxStreak)maxStreak=streak;
+    curStreak=streak;
+  });
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Trader OS — Relatório Completo</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto;background:#fff}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #00875A}
+    .header-left h1{font-size:24px;font-weight:900;color:#111;letter-spacing:-0.5px}
+    .header-left p{font-size:12px;color:#777;margin-top:4px}
+    .header-right{text-align:right}
+    .badge{display:inline-block;background:#00875A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:0.5px}
+    .balance{font-size:22px;font-weight:900;color:${balance>=cap?'#00875A':'#CC2244'};margin-top:4px}
+    .section{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:5px;margin:20px 0 12px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+    .kpi{background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}
+    .kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+    .kv{font-size:18px;font-weight:900}
+    .pos{color:#00875A}.neg{color:#CC2244}.neu{color:#555}
+    .kpi2-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+    .kpi2{background:#f8f8f8;border-radius:8px;padding:10px;border:1px solid #eee}
+    .kpi2 .kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+    .kpi2 .kv{font-size:14px;font-weight:800}
+    .chart-box{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:16px;background:#fff}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    table{width:100%;border-collapse:collapse;font-size:11px}
+    th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}
+    td{padding:6px 10px;border-bottom:1px solid #f0f0f0}
+    tr:nth-child(even) td{background:#fafafa}
+    .sess-row{display:flex;gap:10px;margin-bottom:16px}
+    .sess-card{flex:1;background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}
+    .sess-name{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+    .sess-val{font-size:15px;font-weight:800}
+    .dd-bar{background:#eee;border-radius:20px;height:8px;margin-top:6px;overflow:hidden}
+    .dd-fill{height:100%;border-radius:20px;background:${ddPct>70?'#CC2244':ddPct>40?'#F59E0B':'#00875A'}}
+    .monthly-bars{display:flex;gap:3px;align-items:flex-end;height:80px;padding-bottom:16px;border-bottom:1px solid #eee;position:relative;margin-bottom:4px}
+    .footer{margin-top:28px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center;display:flex;justify-content:space-between}
+    @media print{body{padding:16px}@page{margin:1.5cm}}
+  </style></head><body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>TRADER OS · Relatório Completo</h1>
+      <p>${acct.name} · Gerado em ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</p>
+    </div>
+    <div class="header-right">
+      <div class="badge">RELATÓRIO COMPLETO</div>
+      <div class="balance">${balance>=0?'+':''}R$${balance.toFixed(2)}</div>
+      <div style="font-size:10px;color:#999;margin-top:2px">Saldo atual · Capital base R$${cap.toFixed(0)}</div>
+    </div>
+  </div>
+
+  <!-- KPIs PRINCIPAIS -->
+  <div class="section">📊 Resumo Geral — Todo o Histórico</div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kl">P&L Total</div><div class="kv ${total>=0?'pos':'neg'}">${total>=0?'+':''}R$${total.toFixed(2)}</div></div>
+    <div class="kpi"><div class="kl">Retorno</div><div class="kv ${retPct>=0?'pos':'neg'}">${retPct>=0?'+':''}${retPct.toFixed(1)}%</div></div>
+    <div class="kpi"><div class="kl">Win Rate</div><div class="kv ${wr>=50?'pos':'neg'}">${wr.toFixed(1)}%</div></div>
+    <div class="kpi"><div class="kl">Fator de Lucro</div><div class="kv ${pf>=1?'pos':'neg'}">${pf>0?pf.toFixed(2):'—'}</div></div>
+  </div>
+  <div class="kpi2-grid">
+    <div class="kpi2"><div class="kl">Total Operações</div><div class="kv neu">${all.length}</div></div>
+    <div class="kpi2"><div class="kl">Ganho Médio</div><div class="kv pos">+R$${avgWin.toFixed(2)}</div></div>
+    <div class="kpi2"><div class="kl">Perda Média</div><div class="kv neg">-R$${avgLoss.toFixed(2)}</div></div>
+    <div class="kpi2"><div class="kl">Max Drawdown</div><div class="kv neg">-R$${maxDD.toFixed(2)}</div></div>
+    <div class="kpi2"><div class="kl">Melhor Trade</div><div class="kv pos">${bestTrade?'+R$'+bestTrade.pnl.toFixed(2):'—'}</div></div>
+    <div class="kpi2"><div class="kl">Pior Trade</div><div class="kv neg">${worstTrade?'R$'+worstTrade.pnl.toFixed(2):'—'}</div></div>
+    <div class="kpi2"><div class="kl">Maior Sequência +</div><div class="kv pos">${maxStreak} vitórias</div></div>
+    <div class="kpi2"><div class="kl">Sequência Atual</div><div class="kv ${curStreak>=0?'pos':'neg'}">${curStreak>=0?'+':''}${curStreak}</div></div>
+  </div>
+
+  <!-- CURVA DE EQUITY -->
+  <div class="section">📈 Curva de Equity</div>
+  <div class="chart-box">${equitySVG}</div>
+
+  <!-- DRAWDOWN + SESSÕES -->
+  <div class="two-col">
+    <div>
+      <div class="section">🛡️ Drawdown</div>
+      <div class="chart-box" style="padding:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:#CC2244">-R$${maxDD.toFixed(2)}</span>
+          <span style="font-size:11px;color:#888">${ddPct.toFixed(1)}% do capital</span>
+        </div>
+        <div class="dd-bar"><div class="dd-fill" style="width:${Math.min(ddPct/ddLimit*100,100).toFixed(0)}%"></div></div>
+        <div style="font-size:9px;color:#bbb;margin-top:4px">Limite configurado: ${ddLimit.toFixed(0)}% · ${ddPct<ddLimit*0.5?'✅ Seguro':ddPct<ddLimit*0.8?'⚠️ Atenção':'🚨 Crítico'}</div>
+      </div>
+    </div>
+    <div>
+      <div class="section">⏰ Performance por Sessão</div>
+      <div class="sess-row">
+        ${Object.entries(sessions).map(([s,v])=>`<div class="sess-card"><div class="sess-name">${s}</div><div class="sess-val ${v>=0?'pos':'neg'}">${v>=0?'+':''}R$${v.toFixed(0)}</div></div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- MENSAL + PARES -->
+  <div class="two-col">
+    <div>
+      <div class="section">📅 P&L Mensal — ${yr}</div>
+      <div class="chart-box">
+        <div style="display:flex;gap:2px;height:90px;align-items:flex-end">
+          ${monthlyPnL.map((v,i)=>{const h=Math.round(Math.abs(v)/maxBar*70);const c=v>=0?'#00875A':'#CC2244';return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px">
+            <div style="width:85%;height:${Math.max(h,v!==0?2:0)}px;background:${c};border-radius:2px 2px 0 0"></div>
+            <div style="font-size:7px;color:#999">${MSHORT[i]}</div>
+          </div>`;}).join('')}
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section">📊 Top Pares</div>
+      <div class="chart-box" style="padding:0">
+        <table>
+          <tr><th>Par</th><th>P&L</th><th>Trades</th><th>W%</th></tr>
+          ${topPairs.map(([pair,d])=>`<tr>
+            <td style="font-weight:700">${pair}</td>
+            <td style="font-weight:700;color:${d.pnl>=0?'#00875A':'#CC2244'}">${d.pnl>=0?'+':''}R$${d.pnl.toFixed(2)}</td>
+            <td>${d.c}</td>
+            <td>${d.c?(d.w/d.c*100).toFixed(0)+'%':'—'}</td>
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO COMPLETO -->
+  <div class="section">📋 Histórico Completo de Trades</div>
+  <table>
+    <tr><th>Data</th><th>Par</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>Entrada</th><th>Saída</th><th>R:R</th><th>P&L</th></tr>
+    ${sorted.map(t=>`<tr>
+      <td>${t.date}</td>
+      <td style="font-weight:700">${t.pair||'—'}</td>
+      <td style="color:${t.direction==='buy'||t.direction==='COMPRA'?'#00875A':'#CC2244'};font-weight:700">${t.direction==='buy'||t.direction==='COMPRA'?'▲ COMPRA':'▼ VENDA'}</td>
+      <td>${t.session||'—'}</td>
+      <td>${t.setup||'—'}</td>
+      <td style="font-family:monospace">${t.entry||'—'}</td>
+      <td style="font-family:monospace">${t.exit||'—'}</td>
+      <td>${t.rr!=null?t.rr+'R':'—'}</td>
+      <td style="font-weight:800;color:${t.pnl>=0?'#00875A':'#CC2244'}">${t.pnl>=0?'+':''}R$${t.pnl.toFixed(2)}</td>
+    </tr>`).join('')}
+  </table>
+
+  <div class="footer">
+    <span>TRADER OS · Relatório Completo</span>
+    <span>${acct.name} · ${all.length} operações · ${now.toLocaleDateString('pt-BR')}</span>
+    <span>Desenvolvido por Emerson Jesus</span>
+  </div>
+  
+<!-- ═══ TOUR GUIADO ═══ -->
+<div id="tour-overlay" class="hidden">
+  <div class="tour-highlight" id="tour-highlight"></div>
+  <div class="tour-card" id="tour-card">
+    <div class="tour-step-badge" id="tour-badge">Passo 1 de 8</div>
+    <h3 id="tour-title">Bem-vindo ao Trader OS!</h3>
+    <p id="tour-desc">Vamos fazer um tour rápido pelas principais funcionalidades. Leva menos de 2 minutos.</p>
+    <div class="tour-actions">
+      <button class="tour-btn-skip" onclick="endTour()">Pular tour</button>
+      <div class="tour-dots" id="tour-dots"></div>
+      <button class="tour-btn-next" id="tour-next-btn" onclick="tourNext()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WIKI / FAQ ═══ -->
+<div class="page" id="page-wiki">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Wiki & Ajuda</h1>
+      <p class="db-sub">Guia completo do Trader OS — encontre respostas para qualquer dúvida</p>
+    </div>
+    <button class="btn-add" onclick="startTour()" style="display:flex;align-items:center;gap:8px;padding:0 20px">
+      <span>🎯</span> Iniciar Tour
+    </button>
+  </div>
+
+  <input class="wiki-search" id="wiki-search" placeholder="🔍  Buscar na wiki..." oninput="filterWiki(this.value)">
+
+  <div id="wiki-content">
+
+    <div class="wiki-cat" data-cat="inicio">
+      <div class="wiki-cat-title">🚀 Primeiros Passos</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Trader OS? <span>+</span></div>
+        <div class="wiki-a">O Trader OS é um diário de trading profissional completo. Ele permite registrar, analisar e melhorar seu desempenho como trader. Você pode registrar operações manualmente, importar via CSV, ou conectar diretamente ao MetaTrader 5 para sincronização automática.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como criar minha primeira conta? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Contas</strong> e clique em <strong>"+ Nova Conta"</strong>. Preencha o nome, tipo (Real/Demo/Prop Firm), capital inicial e cor. Você pode ter múltiplas contas e alternar entre elas pelo header.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como registrar uma operação manualmente? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Negociações</strong> no menu lateral e clique em <strong>"+ Nova Operação"</strong>. Preencha os campos: data, P&L (lucro/perda), par, sessão, direção (compra/venda), setup, preços de entrada e saída, e estado emocional. Clique em Salvar.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O Trader OS funciona sem internet? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS é um PWA (Progressive Web App) com Service Worker. Depois de aberto uma vez, funciona offline. Os dados ficam salvos localmente no seu navegador e sincronizam com a nuvem quando você voltar a ter conexão.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como instalar o app no celular? <span>+</span></div>
+        <div class="wiki-a"><strong>Android:</strong> Abra no Chrome → menu (⋮) → "Adicionar à tela inicial". <strong>iOS:</strong> Abra no Safari → compartilhar (□↑) → "Adicionar à Tela de Início". <strong>Desktop:</strong> Clique no ícone de instalar na barra de endereços do Chrome.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="operacoes">
+      <div class="wiki-cat-title">📋 Operações & Registro</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o R Múltiplo? <span>+</span></div>
+        <div class="wiki-a">O R Múltiplo representa quantas vezes o seu risco inicial você ganhou ou perdeu. Se você arriscou R$10 e ganhou R$20, seu R Múltiplo é <code>+2R</code>. Se perdeu R$10, é <code>-1R</code>. É calculado automaticamente quando você informa o preço de entrada e o Stop Loss.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso adicionar screenshot da operação? <span>+</span></div>
+        <div class="wiki-a">Sim! Ao criar ou editar uma operação, clique na área de Screenshot ou arraste uma imagem. O print fica salvo junto com a operação e aparece no Detalhe do Dia ao clicar no calendário.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o filtro de período? <span>+</span></div>
+        <div class="wiki-a">O filtro de período no topo de cada página (Últimos 7 dias, 30 dias, Mês atual, Ano atual, Tudo) filtra os dados de toda a tela simultaneamente. Ele persiste entre as páginas enquanto você navega.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como excluir múltiplas operações de uma vez? <span>+</span></div>
+        <div class="wiki-a">Na página <strong>Negociações</strong>, marque as checkboxes à esquerda de cada trade que deseja excluir. Uma barra aparecerá no rodapé com a opção de excluir todos os selecionados ou exportá-los.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como importar operações via CSV? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Importar CSV</strong> no menu lateral. Escolha o formato do seu broker (MT4/MT5, MyFXBook, Forex Tester ou Genérico), faça o upload do arquivo e confira o preview antes de confirmar a importação.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="mt5">
+      <div class="wiki-cat-title">🔗 Integração MT5</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como conectar o MT5 ao Trader OS? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Integração MT5</strong> no menu lateral e baixe o arquivo <code>TraderOS.ex5</code>. Copie para a pasta <code>MQL5/Experts/</code> do MT5, adicione a URL do Supabase nas opções de WebRequest e arraste o EA no gráfico. Os trades aparecem automaticamente.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Por que o EA mostra "Erro WebRequest -1"? <span>+</span></div>
+        <div class="wiki-a">A URL do Supabase não foi adicionada nas opções do MT5. Vá em <strong>Ferramentas → Opções → Expert Advisors</strong>, marque "Permitir solicitações WebRequest" e adicione <code>https://slffnyslgmdateaaxceo.supabase.co</code>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O EA envia trades antigos automaticamente? <span>+</span></div>
+        <div class="wiki-a">Não — por padrão o EA só envia trades fechados a partir da ativação. Para importar histórico antigo, certifique-se que o histórico está carregado no MT5 (clique direito na aba Histórico → "Todo o histórico") e delete o arquivo <code>TraderOS_lastTicket.txt</code> da pasta de dados do MT5 para resetar o ponto de partida.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Os trades aparecem em tempo real? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS usa o Supabase Realtime para detectar mudanças no banco de dados instantaneamente. Quando o EA envia um trade, ele aparece no site em menos de 1 segundo sem você precisar atualizar a página ou clicar em "Baixar da Nuvem".</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="analises">
+      <div class="wiki-cat-title">🔬 Análises & Métricas</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Fator de Lucro? <span>+</span></div>
+        <div class="wiki-a">O Fator de Lucro (Profit Factor) é a relação entre o total ganho e o total perdido. Um valor acima de <strong>1.5</strong> indica uma estratégia rentável. Calculado como: <code>Total de Ganhos ÷ Total de Perdas</code>. Valores abaixo de 1 indicam que a estratégia está perdendo dinheiro.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o Score de Saúde da Conta? <span>+</span></div>
+        <div class="wiki-a">O Score (0-100) é calculado com base em 4 fatores: Win Rate (25pts), R:R médio (25pts), Drawdown atual vs limite (25pts) e Fator de Lucro (25pts). Acima de 80 = Excelente, 60-79 = Bom, 40-59 = Regular, abaixo de 40 = Crítico.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Max Drawdown? <span>+</span></div>
+        <div class="wiki-a">É a maior queda do seu capital em relação ao pico anterior. Se sua conta chegou a R$12.000 e depois caiu para R$10.500, seu drawdown foi de R$1.500 (12.5%). Monitore isso para não ultrapassar os limites das prop firms.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como usar os relatórios de PDF? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Resumo Mensal</strong> e clique nos botões de exportação: <strong>PDF Mensal</strong> (período atual), <strong>PDF Anual</strong> (ano corrente), <strong>🗂️ PDF Completo</strong> (todo o histórico com todos os gráficos e métricas) ou <strong>📅 Comparativo Anual</strong> (ano atual vs ano anterior lado a lado).</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="cloud">
+      <div class="wiki-cat-title">☁️ Nuvem & Sincronização</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como configurar a sincronização com Supabase? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Sincronização → Configurações de API</strong>. Insira a URL do seu projeto Supabase e a Anon Key (disponíveis em supabase.com → Settings → API). Clique em Salvar e depois em "Enviar para Nuvem".</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Meus dados são seguros? <span>+</span></div>
+        <div class="wiki-a">Sim. Os dados ficam no seu próprio projeto Supabase, que só você controla. O Trader OS usa Row Level Security (RLS) para garantir que cada usuário acesse apenas seus próprios dados. Faça backups regulares em <strong>Configurações → Backup → Exportar JSON</strong>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso usar em múltiplos dispositivos? <span>+</span></div>
+        <div class="wiki-a">Sim! Com o Supabase configurado, seus dados sincronizam automaticamente entre todos os dispositivos onde você fizer login com a mesma conta. Celular, tablet, desktop — tudo em sincronia.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){toast('⚠️ Popup bloqueado. Permita popups para gerar o PDF.',true);return;}
+  w.document.write(html); w.document.close();
+  setTimeout(()=>w.print(),600);
+  toast('📄 PDF completo gerado!');
+}
+
+// ════════════════════════════════════════
+//  RELATÓRIO ANUAL COMPARATIVO
+// ════════════════════════════════════════
+function exportAnnualComparativePDF() {
+  const acct   = getAcct();
+  const all    = getTrades();
+  const now    = new Date();
+  const curYr  = now.getFullYear();
+  const prevYr = curYr - 1;
+  const cap    = acct.capital || 10000;
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  const byYear = (yr) => all.filter(t=>new Date(t.date+'T12:00:00').getFullYear()===yr);
+  const curAll = byYear(curYr);
+  const prvAll = byYear(prevYr);
+
+  if(curAll.length===0&&prvAll.length===0){toast('⚠️ Sem dados para gerar o comparativo.',true);return;}
+
+  const stats = (trades) => {
+    const wins  = trades.filter(t=>t.pnl>0);
+    const losses= trades.filter(t=>t.pnl<0);
+    const pnl   = trades.reduce((a,t)=>a+t.pnl,0);
+    const wr    = trades.length?(wins.length/trades.length*100):0;
+    const avgW  = wins.length  ? wins.reduce((a,t)=>a+t.pnl,0)/wins.length : 0;
+    const avgL  = losses.length? Math.abs(losses.reduce((a,t)=>a+t.pnl,0)/losses.length) : 0;
+    const pf    = avgL>0 ? avgW*wins.length/(avgL*losses.length) : 0;
+    const dd    = calcMaxDD(trades);
+    const byM   = Array(12).fill(0).map((_,i)=>trades.filter(t=>new Date(t.date+'T12:00:00').getMonth()===i).reduce((a,t)=>a+t.pnl,0));
+    return {pnl,wr,wins:wins.length,losses:losses.length,total:trades.length,pf,dd,avgW,avgL,byM};
+  };
+
+  const cur = stats(curAll);
+  const prv = stats(prvAll);
+
+  const cmp = (cv,pv,prefix='R$',digits=2,reverse=false) => {
+    if(pv===0)return'—';
+    const diff=cv-pv; const better=reverse?diff<0:diff>0;
+    const sign=diff>=0?'+':'';
+    return `<span style="color:${better?'#00875A':'#CC2244'};font-size:10px;font-weight:700">${sign}${prefix==='%'?diff.toFixed(1)+'%':prefix+Math.abs(diff).toFixed(digits)} ${better?'▲':'▼'}</span>`;
+  };
+
+  const maxBar=Math.max(...cur.byM.map(Math.abs),...prv.byM.map(Math.abs),1);
+  const monthRows=MONTHS.map((m,i)=>{
+    const c=cur.byM[i], p=prv.byM[i];
+    return `<tr>
+      <td style="font-weight:700">${m}</td>
+      <td style="color:${c>=0?'#00875A':'#CC2244'};font-weight:700">${c!==0?(c>=0?'+':'')+'R$'+c.toFixed(2):'—'}</td>
+      <td style="color:${p>=0?'#00875A':'#CC2244'};font-weight:700">${p!==0?(p>=0?'+':'')+'R$'+p.toFixed(2):'—'}</td>
+      <td>${c!==0&&p!==0?((c-p)>=0?'<span style="color:#00875A">▲</span>':'<span style="color:#CC2244">▼</span>')+' R$'+(Math.abs(c-p)).toFixed(2):'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Trader OS — Comparativo Anual</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #3B9EFF}
+    h1{font-size:22px;font-weight:900;letter-spacing:-0.5px}
+    .badge{background:#3B9EFF;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+    .section{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:5px;margin:20px 0 12px}
+    .cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+    .yr-card{border-radius:10px;padding:18px;border:2px solid}
+    .yr-card.cur{border-color:#00875A;background:#f0fdf8}
+    .yr-card.prv{border-color:#3B9EFF;background:#eff6ff}
+    .yr-label{font-size:20px;font-weight:900;margin-bottom:12px}
+    .yr-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .yk{background:#fff;border-radius:6px;padding:8px;text-align:center}
+    .ykl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+    .ykv{font-size:14px;font-weight:800}
+    .pos{color:#00875A}.neg{color:#CC2244}.blu{color:#3B9EFF}
+    table{width:100%;border-collapse:collapse;font-size:11px}
+    th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}
+    td{padding:7px 10px;border-bottom:1px solid #f0f0f0}
+    tr:nth-child(even) td{background:#fafafa}
+    .chart-box{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:16px}
+    .bar-wrap{display:flex;gap:2px;align-items:flex-end;height:90px}
+    .footer{margin-top:28px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}
+    @media print{body{padding:16px}@page{margin:1.5cm}}
+  </style></head><body>
+
+  <div class="header">
+    <div>
+      <h1>TRADER OS · Comparativo Anual</h1>
+      <p style="font-size:12px;color:#777;margin-top:4px">${acct.name} · ${prevYr} vs ${curYr} · Gerado em ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</p>
+    </div>
+    <div><span class="badge">${prevYr} vs ${curYr}</span></div>
+  </div>
+
+  <!-- Cards dos dois anos -->
+  <div class="section">📊 Resumo por Ano</div>
+  <div class="cmp-grid">
+    <div class="yr-card cur">
+      <div class="yr-label" style="color:#00875A">${curYr} <span style="font-size:12px;font-weight:500;color:#555">(atual)</span></div>
+      <div class="yr-kpi">
+        <div class="yk"><div class="ykl">P&L</div><div class="ykv ${cur.pnl>=0?'pos':'neg'}">${cur.pnl>=0?'+':''}R$${cur.pnl.toFixed(2)}</div></div>
+        <div class="yk"><div class="ykl">Win Rate</div><div class="ykv ${cur.wr>=50?'pos':'neg'}">${cur.wr.toFixed(1)}%</div></div>
+        <div class="yk"><div class="ykl">Trades</div><div class="ykv">${cur.total}</div></div>
+        <div class="yk"><div class="ykl">Fator Lucro</div><div class="ykv ${cur.pf>=1?'pos':'neg'}">${cur.pf>0?cur.pf.toFixed(2):'—'}</div></div>
+        <div class="yk"><div class="ykl">Ganho Médio</div><div class="ykv pos">+R$${cur.avgW.toFixed(2)}</div></div>
+        <div class="yk"><div class="ykl">Max Drawdown</div><div class="ykv neg">-R$${cur.dd.toFixed(2)}</div></div>
+      </div>
+    </div>
+    <div class="yr-card prv">
+      <div class="yr-label" style="color:#3B9EFF">${prevYr}</div>
+      <div class="yr-kpi">
+        <div class="yk"><div class="ykl">P&L</div><div class="ykv ${prv.pnl>=0?'pos':'neg'}">${prv.pnl>=0?'+':''}R$${prv.pnl.toFixed(2)}</div></div>
+        <div class="yk"><div class="ykl">Win Rate</div><div class="ykv ${prv.wr>=50?'pos':'neg'}">${prv.wr.toFixed(1)}%</div></div>
+        <div class="yk"><div class="ykl">Trades</div><div class="ykv">${prv.total}</div></div>
+        <div class="yk"><div class="ykl">Fator Lucro</div><div class="ykv ${prv.pf>=1?'pos':'neg'}">${prv.pf>0?prv.pf.toFixed(2):'—'}</div></div>
+        <div class="yk"><div class="ykl">Ganho Médio</div><div class="ykv pos">+R$${prv.avgW.toFixed(2)}</div></div>
+        <div class="yk"><div class="ykl">Max Drawdown</div><div class="ykv neg">-R$${prv.dd.toFixed(2)}</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparativo linha a linha -->
+  <div class="section">⚖️ Comparativo Direto</div>
+  <table style="margin-bottom:20px">
+    <tr><th>Métrica</th><th>${curYr}</th><th>${prevYr}</th><th>Diferença</th></tr>
+    <tr><td>P&L Total</td><td style="color:${cur.pnl>=0?'#00875A':'#CC2244'};font-weight:700">${cur.pnl>=0?'+':''}R$${cur.pnl.toFixed(2)}</td><td style="color:${prv.pnl>=0?'#00875A':'#CC2244'};font-weight:700">${prv.pnl>=0?'+':''}R$${prv.pnl.toFixed(2)}</td><td>${cmp(cur.pnl,prv.pnl)}</td></tr>
+    <tr><td>Win Rate</td><td>${cur.wr.toFixed(1)}%</td><td>${prv.wr.toFixed(1)}%</td><td>${cmp(cur.wr,prv.wr,'%',1)}</td></tr>
+    <tr><td>Total Operações</td><td>${cur.total}</td><td>${prv.total}</td><td>${cmp(cur.total,prv.total,'',0)}</td></tr>
+    <tr><td>Fator de Lucro</td><td>${cur.pf>0?cur.pf.toFixed(2):'—'}</td><td>${prv.pf>0?prv.pf.toFixed(2):'—'}</td><td>${cmp(cur.pf,prv.pf,'',2)}</td></tr>
+    <tr><td>Ganho Médio</td><td style="color:#00875A">+R$${cur.avgW.toFixed(2)}</td><td style="color:#00875A">+R$${prv.avgW.toFixed(2)}</td><td>${cmp(cur.avgW,prv.avgW)}</td></tr>
+    <tr><td>Max Drawdown</td><td style="color:#CC2244">-R$${cur.dd.toFixed(2)}</td><td style="color:#CC2244">-R$${prv.dd.toFixed(2)}</td><td>${cmp(cur.dd,prv.dd,'R$',2,true)}</td></tr>
+  </table>
+
+  <!-- Barras mensais dos dois anos -->
+  <div class="section">📅 P&L Mensal — ${prevYr} vs ${curYr}</div>
+  <div class="chart-box">
+    <div style="display:flex;gap:4px;align-items:flex-end;height:100px">
+      ${MONTHS.map((m,i)=>{
+        const c=cur.byM[i], p=prv.byM[i];
+        const hC=Math.round(Math.abs(c)/maxBar*85), hP=Math.round(Math.abs(p)/maxBar*85);
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:1px">
+          <div style="width:100%;display:flex;gap:1px;justify-content:center;align-items:flex-end">
+            <div style="flex:1;height:${Math.max(hP,p!==0?2:0)}px;background:${p>=0?'#93C5FD':'#FCA5A5'};border-radius:2px 2px 0 0"></div>
+            <div style="flex:1;height:${Math.max(hC,c!==0?2:0)}px;background:${c>=0?'#00875A':'#CC2244'};border-radius:2px 2px 0 0"></div>
+          </div>
+          <div style="font-size:7px;color:#999">${m}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:16px;margin-top:8px;font-size:9px;color:#777">
+      <span><span style="display:inline-block;width:10px;height:10px;background:#93C5FD;border-radius:2px;margin-right:4px"></span>${prevYr}</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#00875A;border-radius:2px;margin-right:4px"></span>${curYr}</span>
+    </div>
+  </div>
+
+  <!-- Tabela mensal -->
+  <div class="section">📋 Resultado por Mês</div>
+  <table>
+    <tr><th>Mês</th><th>${curYr}</th><th>${prevYr}</th><th>Variação</th></tr>
+    ${monthRows}
+    <tr style="background:#111;color:#fff">
+      <td style="font-weight:800;color:#fff">TOTAL</td>
+      <td style="font-weight:800;color:${cur.pnl>=0?'#4ade80':'#f87171'}">${cur.pnl>=0?'+':''}R$${cur.pnl.toFixed(2)}</td>
+      <td style="font-weight:800;color:${prv.pnl>=0?'#4ade80':'#f87171'}">${prv.pnl>=0?'+':''}R$${prv.pnl.toFixed(2)}</td>
+      <td style="font-weight:800;color:${(cur.pnl-prv.pnl)>=0?'#4ade80':'#f87171'}">${(cur.pnl-prv.pnl)>=0?'+':''}R$${(cur.pnl-prv.pnl).toFixed(2)}</td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <span>TRADER OS · Comparativo Anual ${prevYr} vs ${curYr}</span>
+    <span>${acct.name} · ${now.toLocaleDateString('pt-BR')}</span>
+    <span>Desenvolvido por Emerson Jesus</span>
+  </div>
+  
+<!-- ═══ TOUR GUIADO ═══ -->
+<div id="tour-overlay" class="hidden">
+  <div class="tour-highlight" id="tour-highlight"></div>
+  <div class="tour-card" id="tour-card">
+    <div class="tour-step-badge" id="tour-badge">Passo 1 de 8</div>
+    <h3 id="tour-title">Bem-vindo ao Trader OS!</h3>
+    <p id="tour-desc">Vamos fazer um tour rápido pelas principais funcionalidades. Leva menos de 2 minutos.</p>
+    <div class="tour-actions">
+      <button class="tour-btn-skip" onclick="endTour()">Pular tour</button>
+      <div class="tour-dots" id="tour-dots"></div>
+      <button class="tour-btn-next" id="tour-next-btn" onclick="tourNext()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WIKI / FAQ ═══ -->
+<div class="page" id="page-wiki">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Wiki & Ajuda</h1>
+      <p class="db-sub">Guia completo do Trader OS — encontre respostas para qualquer dúvida</p>
+    </div>
+    <button class="btn-add" onclick="startTour()" style="display:flex;align-items:center;gap:8px;padding:0 20px">
+      <span>🎯</span> Iniciar Tour
+    </button>
+  </div>
+
+  <input class="wiki-search" id="wiki-search" placeholder="🔍  Buscar na wiki..." oninput="filterWiki(this.value)">
+
+  <div id="wiki-content">
+
+    <div class="wiki-cat" data-cat="inicio">
+      <div class="wiki-cat-title">🚀 Primeiros Passos</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Trader OS? <span>+</span></div>
+        <div class="wiki-a">O Trader OS é um diário de trading profissional completo. Ele permite registrar, analisar e melhorar seu desempenho como trader. Você pode registrar operações manualmente, importar via CSV, ou conectar diretamente ao MetaTrader 5 para sincronização automática.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como criar minha primeira conta? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Contas</strong> e clique em <strong>"+ Nova Conta"</strong>. Preencha o nome, tipo (Real/Demo/Prop Firm), capital inicial e cor. Você pode ter múltiplas contas e alternar entre elas pelo header.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como registrar uma operação manualmente? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Negociações</strong> no menu lateral e clique em <strong>"+ Nova Operação"</strong>. Preencha os campos: data, P&L (lucro/perda), par, sessão, direção (compra/venda), setup, preços de entrada e saída, e estado emocional. Clique em Salvar.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O Trader OS funciona sem internet? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS é um PWA (Progressive Web App) com Service Worker. Depois de aberto uma vez, funciona offline. Os dados ficam salvos localmente no seu navegador e sincronizam com a nuvem quando você voltar a ter conexão.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como instalar o app no celular? <span>+</span></div>
+        <div class="wiki-a"><strong>Android:</strong> Abra no Chrome → menu (⋮) → "Adicionar à tela inicial". <strong>iOS:</strong> Abra no Safari → compartilhar (□↑) → "Adicionar à Tela de Início". <strong>Desktop:</strong> Clique no ícone de instalar na barra de endereços do Chrome.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="operacoes">
+      <div class="wiki-cat-title">📋 Operações & Registro</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o R Múltiplo? <span>+</span></div>
+        <div class="wiki-a">O R Múltiplo representa quantas vezes o seu risco inicial você ganhou ou perdeu. Se você arriscou R$10 e ganhou R$20, seu R Múltiplo é <code>+2R</code>. Se perdeu R$10, é <code>-1R</code>. É calculado automaticamente quando você informa o preço de entrada e o Stop Loss.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso adicionar screenshot da operação? <span>+</span></div>
+        <div class="wiki-a">Sim! Ao criar ou editar uma operação, clique na área de Screenshot ou arraste uma imagem. O print fica salvo junto com a operação e aparece no Detalhe do Dia ao clicar no calendário.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o filtro de período? <span>+</span></div>
+        <div class="wiki-a">O filtro de período no topo de cada página (Últimos 7 dias, 30 dias, Mês atual, Ano atual, Tudo) filtra os dados de toda a tela simultaneamente. Ele persiste entre as páginas enquanto você navega.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como excluir múltiplas operações de uma vez? <span>+</span></div>
+        <div class="wiki-a">Na página <strong>Negociações</strong>, marque as checkboxes à esquerda de cada trade que deseja excluir. Uma barra aparecerá no rodapé com a opção de excluir todos os selecionados ou exportá-los.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como importar operações via CSV? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Importar CSV</strong> no menu lateral. Escolha o formato do seu broker (MT4/MT5, MyFXBook, Forex Tester ou Genérico), faça o upload do arquivo e confira o preview antes de confirmar a importação.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="mt5">
+      <div class="wiki-cat-title">🔗 Integração MT5</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como conectar o MT5 ao Trader OS? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Integração MT5</strong> no menu lateral e baixe o arquivo <code>TraderOS.ex5</code>. Copie para a pasta <code>MQL5/Experts/</code> do MT5, adicione a URL do Supabase nas opções de WebRequest e arraste o EA no gráfico. Os trades aparecem automaticamente.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Por que o EA mostra "Erro WebRequest -1"? <span>+</span></div>
+        <div class="wiki-a">A URL do Supabase não foi adicionada nas opções do MT5. Vá em <strong>Ferramentas → Opções → Expert Advisors</strong>, marque "Permitir solicitações WebRequest" e adicione <code>https://slffnyslgmdateaaxceo.supabase.co</code>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O EA envia trades antigos automaticamente? <span>+</span></div>
+        <div class="wiki-a">Não — por padrão o EA só envia trades fechados a partir da ativação. Para importar histórico antigo, certifique-se que o histórico está carregado no MT5 (clique direito na aba Histórico → "Todo o histórico") e delete o arquivo <code>TraderOS_lastTicket.txt</code> da pasta de dados do MT5 para resetar o ponto de partida.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Os trades aparecem em tempo real? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS usa o Supabase Realtime para detectar mudanças no banco de dados instantaneamente. Quando o EA envia um trade, ele aparece no site em menos de 1 segundo sem você precisar atualizar a página ou clicar em "Baixar da Nuvem".</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="analises">
+      <div class="wiki-cat-title">🔬 Análises & Métricas</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Fator de Lucro? <span>+</span></div>
+        <div class="wiki-a">O Fator de Lucro (Profit Factor) é a relação entre o total ganho e o total perdido. Um valor acima de <strong>1.5</strong> indica uma estratégia rentável. Calculado como: <code>Total de Ganhos ÷ Total de Perdas</code>. Valores abaixo de 1 indicam que a estratégia está perdendo dinheiro.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o Score de Saúde da Conta? <span>+</span></div>
+        <div class="wiki-a">O Score (0-100) é calculado com base em 4 fatores: Win Rate (25pts), R:R médio (25pts), Drawdown atual vs limite (25pts) e Fator de Lucro (25pts). Acima de 80 = Excelente, 60-79 = Bom, 40-59 = Regular, abaixo de 40 = Crítico.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Max Drawdown? <span>+</span></div>
+        <div class="wiki-a">É a maior queda do seu capital em relação ao pico anterior. Se sua conta chegou a R$12.000 e depois caiu para R$10.500, seu drawdown foi de R$1.500 (12.5%). Monitore isso para não ultrapassar os limites das prop firms.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como usar os relatórios de PDF? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Resumo Mensal</strong> e clique nos botões de exportação: <strong>PDF Mensal</strong> (período atual), <strong>PDF Anual</strong> (ano corrente), <strong>🗂️ PDF Completo</strong> (todo o histórico com todos os gráficos e métricas) ou <strong>📅 Comparativo Anual</strong> (ano atual vs ano anterior lado a lado).</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="cloud">
+      <div class="wiki-cat-title">☁️ Nuvem & Sincronização</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como configurar a sincronização com Supabase? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Sincronização → Configurações de API</strong>. Insira a URL do seu projeto Supabase e a Anon Key (disponíveis em supabase.com → Settings → API). Clique em Salvar e depois em "Enviar para Nuvem".</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Meus dados são seguros? <span>+</span></div>
+        <div class="wiki-a">Sim. Os dados ficam no seu próprio projeto Supabase, que só você controla. O Trader OS usa Row Level Security (RLS) para garantir que cada usuário acesse apenas seus próprios dados. Faça backups regulares em <strong>Configurações → Backup → Exportar JSON</strong>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso usar em múltiplos dispositivos? <span>+</span></div>
+        <div class="wiki-a">Sim! Com o Supabase configurado, seus dados sincronizam automaticamente entre todos os dispositivos onde você fizer login com a mesma conta. Celular, tablet, desktop — tudo em sincronia.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body></html>`;
+
+  const w=window.open('','_blank');
+  if(!w){toast('⚠️ Popup bloqueado.',true);return;}
+  w.document.write(html); w.document.close();
+  setTimeout(()=>w.print(),600);
+  toast('📊 Relatório comparativo gerado!');
+}
+
 function exportPDF(type) {
   const trades = type === 'month' ? getFilteredTrades() : getYearTrades();
   const acct = getAcct();
@@ -7394,7 +8193,167 @@ function exportPDF(type) {
   </table>
 
   <footer>TRADER OS · ${acct.name} · ${now.toLocaleDateString('pt-BR')} · Desenvolvido por Emerson Jesus</footer>
-  </body></html>`;
+  
+<!-- ═══ TOUR GUIADO ═══ -->
+<div id="tour-overlay" class="hidden">
+  <div class="tour-highlight" id="tour-highlight"></div>
+  <div class="tour-card" id="tour-card">
+    <div class="tour-step-badge" id="tour-badge">Passo 1 de 8</div>
+    <h3 id="tour-title">Bem-vindo ao Trader OS!</h3>
+    <p id="tour-desc">Vamos fazer um tour rápido pelas principais funcionalidades. Leva menos de 2 minutos.</p>
+    <div class="tour-actions">
+      <button class="tour-btn-skip" onclick="endTour()">Pular tour</button>
+      <div class="tour-dots" id="tour-dots"></div>
+      <button class="tour-btn-next" id="tour-next-btn" onclick="tourNext()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WIKI / FAQ ═══ -->
+<div class="page" id="page-wiki">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Wiki & Ajuda</h1>
+      <p class="db-sub">Guia completo do Trader OS — encontre respostas para qualquer dúvida</p>
+    </div>
+    <button class="btn-add" onclick="startTour()" style="display:flex;align-items:center;gap:8px;padding:0 20px">
+      <span>🎯</span> Iniciar Tour
+    </button>
+  </div>
+
+  <input class="wiki-search" id="wiki-search" placeholder="🔍  Buscar na wiki..." oninput="filterWiki(this.value)">
+
+  <div id="wiki-content">
+
+    <div class="wiki-cat" data-cat="inicio">
+      <div class="wiki-cat-title">🚀 Primeiros Passos</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Trader OS? <span>+</span></div>
+        <div class="wiki-a">O Trader OS é um diário de trading profissional completo. Ele permite registrar, analisar e melhorar seu desempenho como trader. Você pode registrar operações manualmente, importar via CSV, ou conectar diretamente ao MetaTrader 5 para sincronização automática.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como criar minha primeira conta? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Contas</strong> e clique em <strong>"+ Nova Conta"</strong>. Preencha o nome, tipo (Real/Demo/Prop Firm), capital inicial e cor. Você pode ter múltiplas contas e alternar entre elas pelo header.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como registrar uma operação manualmente? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Negociações</strong> no menu lateral e clique em <strong>"+ Nova Operação"</strong>. Preencha os campos: data, P&L (lucro/perda), par, sessão, direção (compra/venda), setup, preços de entrada e saída, e estado emocional. Clique em Salvar.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O Trader OS funciona sem internet? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS é um PWA (Progressive Web App) com Service Worker. Depois de aberto uma vez, funciona offline. Os dados ficam salvos localmente no seu navegador e sincronizam com a nuvem quando você voltar a ter conexão.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como instalar o app no celular? <span>+</span></div>
+        <div class="wiki-a"><strong>Android:</strong> Abra no Chrome → menu (⋮) → "Adicionar à tela inicial". <strong>iOS:</strong> Abra no Safari → compartilhar (□↑) → "Adicionar à Tela de Início". <strong>Desktop:</strong> Clique no ícone de instalar na barra de endereços do Chrome.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="operacoes">
+      <div class="wiki-cat-title">📋 Operações & Registro</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o R Múltiplo? <span>+</span></div>
+        <div class="wiki-a">O R Múltiplo representa quantas vezes o seu risco inicial você ganhou ou perdeu. Se você arriscou R$10 e ganhou R$20, seu R Múltiplo é <code>+2R</code>. Se perdeu R$10, é <code>-1R</code>. É calculado automaticamente quando você informa o preço de entrada e o Stop Loss.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso adicionar screenshot da operação? <span>+</span></div>
+        <div class="wiki-a">Sim! Ao criar ou editar uma operação, clique na área de Screenshot ou arraste uma imagem. O print fica salvo junto com a operação e aparece no Detalhe do Dia ao clicar no calendário.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o filtro de período? <span>+</span></div>
+        <div class="wiki-a">O filtro de período no topo de cada página (Últimos 7 dias, 30 dias, Mês atual, Ano atual, Tudo) filtra os dados de toda a tela simultaneamente. Ele persiste entre as páginas enquanto você navega.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como excluir múltiplas operações de uma vez? <span>+</span></div>
+        <div class="wiki-a">Na página <strong>Negociações</strong>, marque as checkboxes à esquerda de cada trade que deseja excluir. Uma barra aparecerá no rodapé com a opção de excluir todos os selecionados ou exportá-los.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como importar operações via CSV? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Importar CSV</strong> no menu lateral. Escolha o formato do seu broker (MT4/MT5, MyFXBook, Forex Tester ou Genérico), faça o upload do arquivo e confira o preview antes de confirmar a importação.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="mt5">
+      <div class="wiki-cat-title">🔗 Integração MT5</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como conectar o MT5 ao Trader OS? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Integração MT5</strong> no menu lateral e baixe o arquivo <code>TraderOS.ex5</code>. Copie para a pasta <code>MQL5/Experts/</code> do MT5, adicione a URL do Supabase nas opções de WebRequest e arraste o EA no gráfico. Os trades aparecem automaticamente.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Por que o EA mostra "Erro WebRequest -1"? <span>+</span></div>
+        <div class="wiki-a">A URL do Supabase não foi adicionada nas opções do MT5. Vá em <strong>Ferramentas → Opções → Expert Advisors</strong>, marque "Permitir solicitações WebRequest" e adicione <code>https://slffnyslgmdateaaxceo.supabase.co</code>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O EA envia trades antigos automaticamente? <span>+</span></div>
+        <div class="wiki-a">Não — por padrão o EA só envia trades fechados a partir da ativação. Para importar histórico antigo, certifique-se que o histórico está carregado no MT5 (clique direito na aba Histórico → "Todo o histórico") e delete o arquivo <code>TraderOS_lastTicket.txt</code> da pasta de dados do MT5 para resetar o ponto de partida.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Os trades aparecem em tempo real? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS usa o Supabase Realtime para detectar mudanças no banco de dados instantaneamente. Quando o EA envia um trade, ele aparece no site em menos de 1 segundo sem você precisar atualizar a página ou clicar em "Baixar da Nuvem".</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="analises">
+      <div class="wiki-cat-title">🔬 Análises & Métricas</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Fator de Lucro? <span>+</span></div>
+        <div class="wiki-a">O Fator de Lucro (Profit Factor) é a relação entre o total ganho e o total perdido. Um valor acima de <strong>1.5</strong> indica uma estratégia rentável. Calculado como: <code>Total de Ganhos ÷ Total de Perdas</code>. Valores abaixo de 1 indicam que a estratégia está perdendo dinheiro.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o Score de Saúde da Conta? <span>+</span></div>
+        <div class="wiki-a">O Score (0-100) é calculado com base em 4 fatores: Win Rate (25pts), R:R médio (25pts), Drawdown atual vs limite (25pts) e Fator de Lucro (25pts). Acima de 80 = Excelente, 60-79 = Bom, 40-59 = Regular, abaixo de 40 = Crítico.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Max Drawdown? <span>+</span></div>
+        <div class="wiki-a">É a maior queda do seu capital em relação ao pico anterior. Se sua conta chegou a R$12.000 e depois caiu para R$10.500, seu drawdown foi de R$1.500 (12.5%). Monitore isso para não ultrapassar os limites das prop firms.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como usar os relatórios de PDF? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Resumo Mensal</strong> e clique nos botões de exportação: <strong>PDF Mensal</strong> (período atual), <strong>PDF Anual</strong> (ano corrente), <strong>🗂️ PDF Completo</strong> (todo o histórico com todos os gráficos e métricas) ou <strong>📅 Comparativo Anual</strong> (ano atual vs ano anterior lado a lado).</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="cloud">
+      <div class="wiki-cat-title">☁️ Nuvem & Sincronização</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como configurar a sincronização com Supabase? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Sincronização → Configurações de API</strong>. Insira a URL do seu projeto Supabase e a Anon Key (disponíveis em supabase.com → Settings → API). Clique em Salvar e depois em "Enviar para Nuvem".</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Meus dados são seguros? <span>+</span></div>
+        <div class="wiki-a">Sim. Os dados ficam no seu próprio projeto Supabase, que só você controla. O Trader OS usa Row Level Security (RLS) para garantir que cada usuário acesse apenas seus próprios dados. Faça backups regulares em <strong>Configurações → Backup → Exportar JSON</strong>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso usar em múltiplos dispositivos? <span>+</span></div>
+        <div class="wiki-a">Sim! Com o Supabase configurado, seus dados sincronizam automaticamente entre todos os dispositivos onde você fizer login com a mesma conta. Celular, tablet, desktop — tudo em sincronia.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body></html>`;
 
   const w = window.open('', '_blank');
   if (!w) { toast('⚠️ Popup bloqueado. Permita popups para gerar o PDF.', true); return; }
@@ -9460,6 +10419,269 @@ window.addEventListener('load', () => {
     updateSWStatus('✅ Rodando como app instalado', '#00F5A0');
   }
 });
+
+// ════════════════════════════════════════
+//  TOUR GUIADO
+// ════════════════════════════════════════
+const TOUR_STEPS = [
+  { title:'Bem-vindo ao Trader OS! 🎉', desc:'Vamos fazer um tour rápido pelas principais funcionalidades. Clique em Próximo para começar.', selector:null },
+  { title:'📊 Dashboard', desc:'Aqui você vê todos os KPIs da sua conta: P&L, Win Rate, Fator de Lucro, Drawdown e a Curva de Equity atualizada em tempo real.', selector:'[data-page="dashboard"]', page:'dashboard' },
+  { title:'📋 Registro de Negociações', desc:'Liste, filtre e gerencie todas as suas operações. Clique em "+ Nova Operação" para registrar um trade com todos os detalhes.', selector:'[data-page="trades"]', page:'trades' },
+  { title:'📅 Calendário', desc:'Visão mensal do seu desempenho. Clique em qualquer dia para ver o detalhe das operações, notas e screenshots daquele dia.', selector:'[data-page="calendar"]', page:'calendar' },
+  { title:'🔬 Análises', desc:'Performance detalhada por par, sessão, setup, direção e dia da semana. Use para identificar onde você performa melhor.', selector:'[data-page="analytics"]', page:'analytics' },
+  { title:'🧮 Calculadora', desc:'Calcule o tamanho ideal de posição pelo risco %, verifique o R:R de uma operação e simule o crescimento da sua conta.', selector:'[data-page="calculator"]', page:'calculator' },
+  { title:'🔗 Integração MT5', desc:'Conecte seu MetaTrader 5 para enviar trades automaticamente. Baixe o EA, configure e os trades aparecem aqui em tempo real!', selector:'[data-page="mt5integration"]', page:'mt5integration' },
+  { title:'⚙️ Configurações', desc:'Configure capital, limites de risco, metas, sincronização com Supabase, perfil e muito mais. Seu Trader OS, do seu jeito.', selector:'[data-page="settings"]', page:'settings' },
+  { title:'Tudo pronto! 🚀', desc:'Você conheceu as principais funcionalidades do Trader OS. Comece registrando sua primeira operação. Bons trades!', selector:null },
+];
+
+let tourStep = 0;
+
+function startTour() {
+  tourStep = 0;
+  document.getElementById('tour-overlay').classList.remove('hidden');
+  renderTourStep();
+}
+
+function endTour() {
+  document.getElementById('tour-overlay').classList.add('hidden');
+  localStorage.setItem('tros_tour_done', '1');
+}
+
+function tourNext() {
+  tourStep++;
+  if(tourStep >= TOUR_STEPS.length) { endTour(); return; }
+  renderTourStep();
+}
+
+function renderTourStep() {
+  const step = TOUR_STEPS[tourStep];
+  const total = TOUR_STEPS.length;
+
+  document.getElementById('tour-badge').textContent = `Passo ${tourStep+1} de ${total}`;
+  document.getElementById('tour-title').textContent = step.title;
+  document.getElementById('tour-desc').textContent  = step.desc;
+  document.getElementById('tour-next-btn').textContent = tourStep === total-1 ? '✓ Concluir' : 'Próximo →';
+
+  // Dots
+  const dots = document.getElementById('tour-dots');
+  dots.innerHTML = TOUR_STEPS.map((_,i) => `<div class="tour-dot${i===tourStep?' active':''}"></div>`).join('');
+
+  // Navigate to page
+  if(step.page) showPage(step.page, null);
+
+  // Highlight element
+  const hl = document.getElementById('tour-highlight');
+  const card = document.getElementById('tour-card');
+
+  if(step.selector) {
+    const el = document.querySelector(step.selector);
+    if(el) {
+      const r = el.getBoundingClientRect();
+      hl.style.cssText = `position:fixed;left:${r.left-6}px;top:${r.top-6}px;width:${r.width+12}px;height:${r.height+12}px;border-radius:10px;box-shadow:0 0 0 4px var(--green),0 0 0 9999px rgba(5,8,16,0.75);pointer-events:none;transition:all 0.35s cubic-bezier(0.4,0,0.2,1);z-index:9002`;
+
+      // Position card intelligently
+      const cardLeft = Math.min(r.right + 16, window.innerWidth - 316);
+      const cardTop  = Math.max(Math.min(r.top, window.innerHeight - 240), 20);
+      card.style.left = cardLeft + 'px';
+      card.style.top  = cardTop  + 'px';
+      card.style.bottom = 'auto';
+      card.style.right  = 'auto';
+    }
+  } else {
+    hl.style.cssText = 'display:none';
+    card.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9003;background:var(--bg-card2);border:1px solid rgba(0,245,160,0.3);border-radius:14px;padding:20px 22px;width:340px;pointer-events:all;box-shadow:0 20px 60px rgba(0,0,0,0.5)';
+  }
+}
+
+// Auto-start tour for new users
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if(!localStorage.getItem('tros_tour_done') && !localStorage.getItem('trader_os_v3')) {
+      startTour();
+    }
+  }, 2000);
+});
+
+// ════════════════════════════════════════
+//  WIKI / FAQ
+// ════════════════════════════════════════
+function toggleWiki(el) {
+  el.classList.toggle('open');
+}
+
+function filterWiki(q) {
+  const s = q.toLowerCase().trim();
+  document.querySelectorAll('.wiki-item').forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = !s || text.includes(s) ? '' : 'none';
+  });
+  document.querySelectorAll('.wiki-cat').forEach(cat => {
+    const visible = [...cat.querySelectorAll('.wiki-item')].some(i=>i.style.display!=='none');
+    cat.style.display = visible ? '' : 'none';
+  });
+}
+
 </script>
+
+<!-- ═══ TOUR GUIADO ═══ -->
+<div id="tour-overlay" class="hidden">
+  <div class="tour-highlight" id="tour-highlight"></div>
+  <div class="tour-card" id="tour-card">
+    <div class="tour-step-badge" id="tour-badge">Passo 1 de 8</div>
+    <h3 id="tour-title">Bem-vindo ao Trader OS!</h3>
+    <p id="tour-desc">Vamos fazer um tour rápido pelas principais funcionalidades. Leva menos de 2 minutos.</p>
+    <div class="tour-actions">
+      <button class="tour-btn-skip" onclick="endTour()">Pular tour</button>
+      <div class="tour-dots" id="tour-dots"></div>
+      <button class="tour-btn-next" id="tour-next-btn" onclick="tourNext()">Próximo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WIKI / FAQ ═══ -->
+<div class="page" id="page-wiki">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Wiki & Ajuda</h1>
+      <p class="db-sub">Guia completo do Trader OS — encontre respostas para qualquer dúvida</p>
+    </div>
+    <button class="btn-add" onclick="startTour()" style="display:flex;align-items:center;gap:8px;padding:0 20px">
+      <span>🎯</span> Iniciar Tour
+    </button>
+  </div>
+
+  <input class="wiki-search" id="wiki-search" placeholder="🔍  Buscar na wiki..." oninput="filterWiki(this.value)">
+
+  <div id="wiki-content">
+
+    <div class="wiki-cat" data-cat="inicio">
+      <div class="wiki-cat-title">🚀 Primeiros Passos</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Trader OS? <span>+</span></div>
+        <div class="wiki-a">O Trader OS é um diário de trading profissional completo. Ele permite registrar, analisar e melhorar seu desempenho como trader. Você pode registrar operações manualmente, importar via CSV, ou conectar diretamente ao MetaTrader 5 para sincronização automática.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como criar minha primeira conta? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Contas</strong> e clique em <strong>"+ Nova Conta"</strong>. Preencha o nome, tipo (Real/Demo/Prop Firm), capital inicial e cor. Você pode ter múltiplas contas e alternar entre elas pelo header.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como registrar uma operação manualmente? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Negociações</strong> no menu lateral e clique em <strong>"+ Nova Operação"</strong>. Preencha os campos: data, P&L (lucro/perda), par, sessão, direção (compra/venda), setup, preços de entrada e saída, e estado emocional. Clique em Salvar.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O Trader OS funciona sem internet? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS é um PWA (Progressive Web App) com Service Worker. Depois de aberto uma vez, funciona offline. Os dados ficam salvos localmente no seu navegador e sincronizam com a nuvem quando você voltar a ter conexão.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como instalar o app no celular? <span>+</span></div>
+        <div class="wiki-a"><strong>Android:</strong> Abra no Chrome → menu (⋮) → "Adicionar à tela inicial". <strong>iOS:</strong> Abra no Safari → compartilhar (□↑) → "Adicionar à Tela de Início". <strong>Desktop:</strong> Clique no ícone de instalar na barra de endereços do Chrome.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="operacoes">
+      <div class="wiki-cat-title">📋 Operações & Registro</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o R Múltiplo? <span>+</span></div>
+        <div class="wiki-a">O R Múltiplo representa quantas vezes o seu risco inicial você ganhou ou perdeu. Se você arriscou R$10 e ganhou R$20, seu R Múltiplo é <code>+2R</code>. Se perdeu R$10, é <code>-1R</code>. É calculado automaticamente quando você informa o preço de entrada e o Stop Loss.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso adicionar screenshot da operação? <span>+</span></div>
+        <div class="wiki-a">Sim! Ao criar ou editar uma operação, clique na área de Screenshot ou arraste uma imagem. O print fica salvo junto com a operação e aparece no Detalhe do Dia ao clicar no calendário.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o filtro de período? <span>+</span></div>
+        <div class="wiki-a">O filtro de período no topo de cada página (Últimos 7 dias, 30 dias, Mês atual, Ano atual, Tudo) filtra os dados de toda a tela simultaneamente. Ele persiste entre as páginas enquanto você navega.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como excluir múltiplas operações de uma vez? <span>+</span></div>
+        <div class="wiki-a">Na página <strong>Negociações</strong>, marque as checkboxes à esquerda de cada trade que deseja excluir. Uma barra aparecerá no rodapé com a opção de excluir todos os selecionados ou exportá-los.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como importar operações via CSV? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Importar CSV</strong> no menu lateral. Escolha o formato do seu broker (MT4/MT5, MyFXBook, Forex Tester ou Genérico), faça o upload do arquivo e confira o preview antes de confirmar a importação.</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="mt5">
+      <div class="wiki-cat-title">🔗 Integração MT5</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como conectar o MT5 ao Trader OS? <span>+</span></div>
+        <div class="wiki-a">Acesse <strong>Integração MT5</strong> no menu lateral e baixe o arquivo <code>TraderOS.ex5</code>. Copie para a pasta <code>MQL5/Experts/</code> do MT5, adicione a URL do Supabase nas opções de WebRequest e arraste o EA no gráfico. Os trades aparecem automaticamente.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Por que o EA mostra "Erro WebRequest -1"? <span>+</span></div>
+        <div class="wiki-a">A URL do Supabase não foi adicionada nas opções do MT5. Vá em <strong>Ferramentas → Opções → Expert Advisors</strong>, marque "Permitir solicitações WebRequest" e adicione <code>https://slffnyslgmdateaaxceo.supabase.co</code>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O EA envia trades antigos automaticamente? <span>+</span></div>
+        <div class="wiki-a">Não — por padrão o EA só envia trades fechados a partir da ativação. Para importar histórico antigo, certifique-se que o histórico está carregado no MT5 (clique direito na aba Histórico → "Todo o histórico") e delete o arquivo <code>TraderOS_lastTicket.txt</code> da pasta de dados do MT5 para resetar o ponto de partida.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Os trades aparecem em tempo real? <span>+</span></div>
+        <div class="wiki-a">Sim! O Trader OS usa o Supabase Realtime para detectar mudanças no banco de dados instantaneamente. Quando o EA envia um trade, ele aparece no site em menos de 1 segundo sem você precisar atualizar a página ou clicar em "Baixar da Nuvem".</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="analises">
+      <div class="wiki-cat-title">🔬 Análises & Métricas</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Fator de Lucro? <span>+</span></div>
+        <div class="wiki-a">O Fator de Lucro (Profit Factor) é a relação entre o total ganho e o total perdido. Um valor acima de <strong>1.5</strong> indica uma estratégia rentável. Calculado como: <code>Total de Ganhos ÷ Total de Perdas</code>. Valores abaixo de 1 indicam que a estratégia está perdendo dinheiro.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como funciona o Score de Saúde da Conta? <span>+</span></div>
+        <div class="wiki-a">O Score (0-100) é calculado com base em 4 fatores: Win Rate (25pts), R:R médio (25pts), Drawdown atual vs limite (25pts) e Fator de Lucro (25pts). Acima de 80 = Excelente, 60-79 = Bom, 40-59 = Regular, abaixo de 40 = Crítico.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">O que é o Max Drawdown? <span>+</span></div>
+        <div class="wiki-a">É a maior queda do seu capital em relação ao pico anterior. Se sua conta chegou a R$12.000 e depois caiu para R$10.500, seu drawdown foi de R$1.500 (12.5%). Monitore isso para não ultrapassar os limites das prop firms.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como usar os relatórios de PDF? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Resumo Mensal</strong> e clique nos botões de exportação: <strong>PDF Mensal</strong> (período atual), <strong>PDF Anual</strong> (ano corrente), <strong>🗂️ PDF Completo</strong> (todo o histórico com todos os gráficos e métricas) ou <strong>📅 Comparativo Anual</strong> (ano atual vs ano anterior lado a lado).</div>
+      </div>
+    </div>
+
+    <div class="wiki-cat" data-cat="cloud">
+      <div class="wiki-cat-title">☁️ Nuvem & Sincronização</div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Como configurar a sincronização com Supabase? <span>+</span></div>
+        <div class="wiki-a">Vá em <strong>Configurações → Sincronização → Configurações de API</strong>. Insira a URL do seu projeto Supabase e a Anon Key (disponíveis em supabase.com → Settings → API). Clique em Salvar e depois em "Enviar para Nuvem".</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Meus dados são seguros? <span>+</span></div>
+        <div class="wiki-a">Sim. Os dados ficam no seu próprio projeto Supabase, que só você controla. O Trader OS usa Row Level Security (RLS) para garantir que cada usuário acesse apenas seus próprios dados. Faça backups regulares em <strong>Configurações → Backup → Exportar JSON</strong>.</div>
+      </div>
+
+      <div class="wiki-item" onclick="toggleWiki(this)">
+        <div class="wiki-q">Posso usar em múltiplos dispositivos? <span>+</span></div>
+        <div class="wiki-a">Sim! Com o Supabase configurado, seus dados sincronizam automaticamente entre todos os dispositivos onde você fizer login com a mesma conta. Celular, tablet, desktop — tudo em sincronia.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
