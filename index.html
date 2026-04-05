@@ -2510,9 +2510,6 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <div class="sidebar-item" data-page="trades" data-tooltip="Registro de Negociações" onclick="showPage('trades',null)">
     <div class="sidebar-icon">📋</div><div class="sidebar-label">Negociações</div>
   </div>
-  <div class="sidebar-item" data-page="journal" data-tooltip="Trade Journal" onclick="showPage('journal',null)">
-    <div class="sidebar-icon">📓</div><div class="sidebar-label">Trade Journal</div>
-  </div>
   <div class="sidebar-item" data-page="calendar" data-tooltip="Calendário" onclick="showPage('calendar',null)">
     <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
   </div>
@@ -2578,7 +2575,6 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <button class="nav-btn active" onclick="showPage('dashboard',this)">Dashboard</button>
     <button class="nav-btn" onclick="showPage('metas',this)">Metas</button>
     <button class="nav-btn" onclick="showPage('calendar',this)">Calendário</button>
-    <button class="nav-btn" onclick="showPage('journal',this)">Journal</button>
     <button class="nav-btn" onclick="showPage('import',this)">Importar</button>
     <button class="nav-btn" onclick="showPage('reports',this)">Relatórios</button>
     <button class="nav-btn" onclick="showPage('analytics',this)">Análises</button>
@@ -2915,47 +2911,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   </div>
 </div>
 
-<!-- ═══ JOURNAL ═══ -->
-<div class="page" id="page-journal">
-  <!-- Top bar -->
-  <div class="rj-topbar">
-    <div>
-      <h1 class="rj-title">Trade Journal</h1>
-      <p class="rj-sub" id="rj-sub">0 transações</p>
-    </div>
-    <div style="display:flex;gap:9px;align-items:center">
-      <button class="btn-export" onclick="exportCSV()">⬇ Export</button>
-      <button class="btn-add" onclick="openTradeModal()">＋ Novo Trade</button>
-    </div>
-  </div>
-  <div id="journal-period-bar"></div>
 
-  <!-- Filter bar -->
-  <div class="rj-filter-bar">
-    <div class="rj-filters" id="rj-filters">
-      <button class="rj-chip active" onclick="filterJ('all',this)" data-filter="all">Todos os trades</button>
-    </div>
-    <div style="display:flex;gap:9px;align-items:center">
-      <button class="rj-losses-toggle" id="rj-losses-toggle" onclick="toggleLosses(this)">Só perdas</button>
-    </div>
-  </div>
-
-  <!-- Table -->
-  <div class="rj-table-wrap">
-    <div class="rj-thead">
-      <div class="rj-th">Data</div>
-      <div class="rj-th">Par</div>
-      <div class="rj-th">P&amp;L</div>
-      <div class="rj-th">R Múltiplo</div>
-      <div class="rj-th">Trades</div>
-      <div class="rj-th">Humor</div>
-      <div class="rj-th">Setup</div>
-      <div class="rj-th">Notas</div>
-      <div class="rj-th"></div>
-    </div>
-    <div id="journal-list"></div>
-  </div>
-</div>
 
 <!-- ═══ PROFILE ═══ -->
 <div class="page" id="page-profile">
@@ -4863,7 +4819,6 @@ function setPeriod(p) {
   if (!active) return;
   const id = active.id.replace('page-','');
   if (id==='dashboard')   renderDashboard();
-  if (id==='journal')     renderJournal();
   if (id==='trades')      renderTradesPage();
   if (id==='analytics')   renderAnalytics();
   if (id==='reports')     renderReports();
@@ -4913,20 +4868,19 @@ function showPage(name, btn, isMobile=false) {
   if (btn) btn.classList.add('active');
   // sync both navs
   const deskBtns = document.querySelectorAll('.nav-btn');
-  const pages = ['dashboard','metas','calendar','journal','import','reports','analytics','settings'];
+  const pages = ['dashboard','metas','calendar','import','reports','analytics','settings'];
   const idx = pages.indexOf(name);
   if (idx>=0 && deskBtns[idx]) deskBtns[idx].classList.add('active');
   const mBtn = document.getElementById('mnav-'+name);
   if (mBtn) mBtn.classList.add('active');
   closeDropdowns();
   // Inject period filter bar into supported pages
-  const periodPages = ['dashboard','journal','trades','analytics','reports','instruments'];
+  const periodPages = ['dashboard','trades','analytics','reports','instruments'];
   if (periodPages.includes(name)) {
     const barEl = document.getElementById(name+'-period-bar');
     if (barEl) barEl.innerHTML = periodFilterBar();
   }
   if (name==='calendar')  { setTimeout(renderCalendar,  20); }
-  if (name==='journal')     { renderJournal(); }
   if (name==='trades')      { setTimeout(renderTradesPage, 20); }
   if (name==='reports')     { renderReports(); }
   if (name==='settings')    { loadSettings(); }
@@ -5338,7 +5292,6 @@ function saveTrade() {
   renderHeader();
   renderDashboard();
   renderCalendar();
-  renderJournal();
   // Refresh day detail if it's open for same date
   const ddm = document.getElementById('dayDetailModal');
   if(ddm && ddm.style.display!=='none' && currentDayDetail===date) openDayDetail(date);
@@ -5350,7 +5303,7 @@ function saveTrade() {
 function deleteTrade(id, date) {
   if(!confirm('Apagar operação de '+date+'?')) return;
   db.trades[activeId]=(db.trades[activeId]||[]).filter(t=>t.id!==id);
-  persistData(); renderJournal(); renderCalendar(); renderDashboard(); toast('Removido');
+  persistData(); renderCalendar(); renderDashboard(); toast('Removido');
   // If day detail modal is open, refresh it
   const ddm = document.getElementById('dayDetailModal');
   if(ddm && ddm.style.display!=='none') openDayDetail(date);
@@ -5951,99 +5904,8 @@ function renderCalendar() {
 function changeMonth(d){calMonth+=d;if(calMonth<0){calMonth=11;calYear--;}if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
 function goToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();renderCalendar();}
 
-// ════════════════════════════════════════
-//  JOURNAL
-// ════════════════════════════════════════
-function renderJournal() {
-  const barEl = document.getElementById('journal-period-bar');
-  if (barEl) barEl.innerHTML = periodFilterBar();
 
-  const allTrades=[...getFilteredTrades()].sort((a,b)=>b.date<a.date?-1:1);
-  const lossOnly=document.getElementById('rj-losses-toggle')?.classList.contains('active');
 
-  // Build dynamic filters
-  const pairs=[...new Set(allTrades.filter(t=>t.pair).map(t=>t.pair))];
-  const setups=[...new Set(allTrades.filter(t=>t.setup).map(t=>t.setup))];
-  const filtersEl=document.getElementById('rj-filters');
-  if(filtersEl){
-    const current=filtersEl.querySelector('.active')?.dataset.filter||'all';
-    filtersEl.innerHTML=`<button class="rj-chip${current==='all'?' active':''}" onclick="filterJ('all',this)" data-filter="all">Todas</button>`
-      +pairs.map(p=>`<button class="rj-chip pair${current===p?' active':''}" onclick="filterJ('${p}',this)" data-filter="${p}">${p}</button>`).join('')
-      +setups.map(s=>`<button class="rj-chip setup${current===s?' active':''}" onclick="filterJ('${s}',this)" data-filter="${s}">${s}</button>`).join('');
-  }
-
-  // Filter
-  let trades=allTrades;
-  if(jFilter!=='all'){
-    if(jFilter==='wins')        trades=trades.filter(t=>t.pnl>0);
-    else if(jFilter==='losses') trades=trades.filter(t=>t.pnl<0);
-    else if(jFilter==='screenshots') trades=trades.filter(t=>t.screenshot);
-    else trades=trades.filter(t=>t.pair===jFilter||t.setup===jFilter);
-  }
-  if(lossOnly) trades=trades.filter(t=>t.pnl<0);
-
-  const sub=document.getElementById('rj-sub');
-  if(sub) sub.textContent=`${trades.length} operações · ${PERIOD_LABELS[_activePeriod]}`;
-
-  const c=document.getElementById('journal-list');
-  if(!c) return;
-  if(!trades.length){
-    c.innerHTML=`<div class="rj-empty"><div class="rj-empty-icon">📓</div><div class="rj-empty-text">Nenhum registro encontrado</div><div class="rj-empty-sub">Ajuste os filtros ou adicione sua primeira operação</div></div>`;
-    return;
-  }
-
-  const MO=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-
-  // Group by date — one row per day in the table, click opens detail
-  const byDate={};
-  const dateOrder=[];
-  trades.forEach(t=>{
-    if(!byDate[t.date]){byDate[t.date]=[];dateOrder.push(t.date);}
-    byDate[t.date].push(t);
-  });
-
-  c.innerHTML=dateOrder.map(date=>{
-    const ops=byDate[date];
-    const d=new Date(date+'T12:00:00');
-    const dayPnL=ops.reduce((a,t)=>a+t.pnl,0);
-    const totalTrades=ops.reduce((a,t)=>a+(t.trades||1),0);
-    // For single op: show its fields; for multiple: show summary
-    const firstT=ops[0];
-    const allPairs=[...new Set(ops.filter(t=>t.pair).map(t=>t.pair))];
-    const allSetups=[...new Set(ops.filter(t=>t.setup).map(t=>t.setup))];
-    const avgRR=ops.filter(t=>t.rr!=null).length
-      ? ops.filter(t=>t.rr!=null).reduce((a,t)=>a+t.rr,0)/ops.filter(t=>t.rr!=null).length
-      : null;
-    const emo=ops.length===1&&firstT.emotion?firstT.emotion.split(' ')[0]:'';
-    const notes=ops.length===1&&firstT.notes?firstT.notes:'';
-    const rrStr=avgRR!=null?(avgRR>=0?'+'+avgRR.toFixed(1)+'R':avgRR.toFixed(1)+'R'):'—';
-    const rrCls=avgRR!=null?(avgRR>=0?'pos':avgRR<0?'neg':'neu'):'neu';
-    const pnlStr=(dayPnL>=0?'+R$':'-R$')+Math.abs(dayPnL).toFixed(2);
-    const multiTag=ops.length>1?`<span style="font-size:10px;background:rgba(124,92,252,0.15);color:#a78bfa;border-radius:20px;padding:2px 7px;margin-left:6px">${ops.length} ops</span>`:'';
-
-    return `<div class="rj-row" style="cursor:pointer" onclick="openDayDetail('${date}')">
-      <div class="rj-cell"><div class="rj-date"><span class="rj-date-num">${MO[d.getMonth()]} ${d.getDate()}</span><span class="rj-date-day">${DOW[d.getDay()]}</span></div></div>
-      <div class="rj-cell">${allPairs.length?allPairs.map(p=>`<span class="rj-pair-badge">${p}</span>`).join(' '):'<span style="color:rgba(255,255,255,0.2)">—</span>'}${multiTag}</div>
-      <div class="rj-cell"><span class="rj-pnl ${dayPnL>=0?'pos':'neg'}">${pnlStr}</span></div>
-      <div class="rj-cell"><span class="rj-rr ${rrCls}">${rrStr}</span></div>
-      <div class="rj-cell"><span class="rj-trades-num">${totalTrades}</span></div>
-      <div class="rj-cell"><span class="rj-emo">${emo}</span></div>
-      <div class="rj-cell">${allSetups.length?allSetups.map(s=>`<span class="rj-setup-badge">${s}</span>`).join(' '):'<span style="color:rgba(255,255,255,0.2)">—</span>'}</div>
-      <div class="rj-cell" style="min-width:0">${notes?`<span class="rj-notes">${notes}</span>`:`<span style="color:rgba(255,255,255,0.2);font-size:12px">${ops.length>1?ops.length+' operações':'Sem notas'}</span>`}</div>
-      <div class="rj-cell" style="justify-content:center;overflow:visible" onclick="event.stopPropagation()">
-        <button class="rj-menu-btn" onclick="toggleRjMenu(event,'${firstT.id}','${date}')">···</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function filterJ(f, btn){
-  jFilter=f;
-  document.querySelectorAll('.rj-chip').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderJournal();
-}
 
 async function saveProfile() {
   const p = {
@@ -6494,10 +6356,7 @@ function toggleRjMenu(ev, id, date) {
   setTimeout(()=>document.addEventListener('click',function h(){menu.remove();document.removeEventListener('click',h);}),50);
 }
 
-function toggleLosses(btn){
-  btn.classList.toggle('active');
-  renderJournal();
-}
+
 
 
 // ════════════════════════════════════════
