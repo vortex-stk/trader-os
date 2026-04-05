@@ -4388,6 +4388,7 @@ function saveSupabaseConfig() {
         await loadFromCloud();
         updateSyncBadge('synced');
         updateCloudStatusCard(true);
+        startRealtimeSync();
         renderDashboard(); renderHeader();
         toast('✅ Sincronização ativada!');
       } else {
@@ -4556,6 +4557,7 @@ function useDemoMode() {
 }
 
 async function doLogout() {
+  stopRealtimeSync();
   if (sbClient && isCloudMode) await sbClient.auth.signOut();
   currentUser = null;
   isCloudMode = false;
@@ -4724,6 +4726,7 @@ async function launchApp() {
     updateSyncBadge('syncing');
     await loadFromCloud();
     updateSyncBadge('synced');
+    startRealtimeSync();
     const _ued1 = document.getElementById('user-email-display'); if (_ued1) _ued1.textContent = currentUser?.email || 'Cloud';
   } else {
     loadLocal();
@@ -4833,6 +4836,70 @@ async function loadFromCloud() {
   } catch(e) {
     loadLocal(); // fallback
     activeId = localStorage.getItem('trader_os_active') || (db.accounts[0]?.id);
+  }
+}
+
+// ════════════════════════════════════════
+//  REALTIME — atualiza automaticamente
+//  quando o EA do MT5 envia um novo trade
+// ════════════════════════════════════════
+let realtimeChannel = null;
+
+function startRealtimeSync() {
+  if (!sbClient || !currentUser || realtimeChannel) return;
+
+  realtimeChannel = sbClient
+    .channel('trader_os_realtime')
+    .on(
+      'postgres_changes',
+      {
+        event:  'UPDATE',
+        schema: 'public',
+        table:  'trader_os_data',
+        filter: `user_id=eq.${currentUser.id}`
+      },
+      async (payload) => {
+        // Só atualiza se a mudança veio de fora (EA do MT5)
+        // Ignora se foi o próprio site que atualizou (syncToCloud está rodando)
+        if (!payload.new?.payload) return;
+        try {
+          const remoteDb   = JSON.parse(payload.new.payload);
+          const remoteTrades = remoteDb.trades?.[activeId] || [];
+          const localTrades  = db.trades?.[activeId]       || [];
+
+          // Verificar se há trades novos remotos que não existem localmente
+          const localIds  = new Set(localTrades.map(t => t.id));
+          const newTrades = remoteTrades.filter(t => !localIds.has(t.id));
+
+          if (newTrades.length > 0) {
+            // Mesclar os trades novos do MT5 com os locais
+            db.trades[activeId] = [...localTrades, ...newTrades];
+            localStorage.setItem('trader_os_v3', JSON.stringify(db));
+
+            // Atualizar a interface
+            renderDashboard();
+            renderHeader();
+            renderTradesPage();
+            renderCalendar();
+
+            toast(`🔄 ${newTrades.length} trade${newTrades.length > 1 ? 's' : ''} recebido${newTrades.length > 1 ? 's' : ''} do MT5!`);
+          }
+        } catch(e) {
+          console.warn('Realtime parse error:', e);
+        }
+      }
+    )
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Realtime MT5 ativo — atualizações automáticas habilitadas');
+      }
+    });
+}
+
+function stopRealtimeSync() {
+  if (realtimeChannel) {
+    sbClient?.removeChannel(realtimeChannel);
+    realtimeChannel = null;
   }
 }
 
