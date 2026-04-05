@@ -2543,6 +2543,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
   <!-- ⚙️ CONTA -->
   <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
+  <div class="sidebar-item" data-page="mt5integration" data-tooltip="Integração MT5" onclick="showPage('mt5integration',null)">
+    <div class="sidebar-icon">🔗</div><div class="sidebar-label">Integração MT5</div>
+  </div>
   <div class="sidebar-item" data-page="settings" data-tooltip="Configurações" onclick="showPage('settings',null)">
     <div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div>
   </div>
@@ -3250,6 +3253,157 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       </button>
     </div>
   </div>
+</div>
+
+<!-- ═══ MT5 INTEGRATION ═══ -->
+<div class="page" id="page-mt5integration">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Integração MT5</h1>
+      <p class="db-sub">Sincronize seu histórico do MetaTrader 5 automaticamente com o Trader OS</p>
+    </div>
+    <a href="TraderOS.ex5" download="TraderOS.ex5" class="btn-add" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:0 20px">
+      <span>⬇</span> Baixar TraderOS.mq5
+    </a>
+  </div>
+
+  <!-- Banner hero -->
+  <div style="background:linear-gradient(135deg,rgba(0,245,160,0.08),rgba(59,158,255,0.06));border:1px solid rgba(0,245,160,0.2);border-radius:16px;padding:28px 32px;margin-bottom:24px;display:flex;gap:28px;align-items:center">
+    <div style="font-size:52px;flex-shrink:0">🔗</div>
+    <div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-1);margin-bottom:6px">TraderOS.mq5 — Exportador Automático</div>
+      <div style="font-size:13px;color:var(--text-2);line-height:1.7">
+        Um Expert Advisor (EA) para o MetaTrader 5 que detecta automaticamente cada trade fechado
+        e envia os dados diretamente para o seu Trader OS — incluindo par, direção, preço de entrada,
+        saída, SL, TP e R Múltiplo calculado. Funciona em segundo plano sem interferir no seu trading.
+      </div>
+    </div>
+  </div>
+
+  <!-- O que ele preenche -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">O que é preenchido automaticamente</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+      ${[
+        ['📅','Data','Extraída do fechamento do trade'],
+        ['💰','P&L','Lucro/Perda + swap + comissão'],
+        ['📊','Par','XAUUSDm → XAU/USD formatado'],
+        ['↕️','Direção','Compra ou Venda automático'],
+        ['🏷️','Categoria','FX, Índices ou Cripto'],
+        ['⏰','Sessão','Tokyo, London ou New York'],
+        ['📍','Preço Entrada','Deal de abertura da posição'],
+        ['🎯','Preço Saída','Deal de fechamento'],
+        ['🛡️','Stop Loss','Extraído da ordem ou comentário'],
+        ['✅','Take Profit','Extraído da ordem ou comentário'],
+        ['📐','R Múltiplo','Calculado com SL e TP automaticamente'],
+      ].map(([icon,label,desc])=>`
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:10px;align-items:flex-start">
+          <span style="font-size:18px;flex-shrink:0">${icon}</span>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--text-1);margin-bottom:2px">${label}</div>
+            <div style="font-size:11px;color:var(--text-3);line-height:1.5">${desc}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Passos de instalação -->
+  <div style="font-size:13px;font-weight:700;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Como instalar</div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+
+    <!-- Passo 1 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#050810;flex-shrink:0">1</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:6px">Baixar o arquivo</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:10px">Clique no botão <strong style="color:var(--green)">⬇ Baixar TraderOS.ex5</strong> no canto superior direito desta página.</div>
+      </div>
+    </div>
+
+    <!-- Passo 2 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#050810;flex-shrink:0">2</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:6px">Copiar para a pasta de Experts</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:10px">
+          No MetaTrader 5, vá em <strong style="color:var(--text-1)">Arquivo → Abrir pasta de dados</strong> e navegue até:
+        </div>
+        <div style="background:var(--bg-deep);border:1px solid var(--border-md);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green)">MQL5 / Experts / TraderOS.mq5</div>
+      </div>
+    </div>
+
+    <!-- Passo 3 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#050810;flex-shrink:0">3</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:6px">Compilar no MetaEditor</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7">
+          Abra o <strong style="color:var(--text-1)">MetaEditor (F4)</strong>, localize o arquivo em <em>Experts</em> na árvore lateral, dê duplo clique e pressione <strong style="color:var(--text-1)">F7</strong> para compilar. Deve aparecer <strong style="color:var(--green)">0 erros, 0 avisos</strong>.
+        </div>
+      </div>
+    </div>
+
+    <!-- Passo 4 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#050810;flex-shrink:0">4</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:6px">Permitir requisições Web</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7;margin-bottom:10px">
+          No MT5 vá em <strong style="color:var(--text-1)">Ferramentas → Opções → Expert Advisors</strong>, marque <strong style="color:var(--amber)">✅ Permitir solicitações WebRequest para URLs listadas</strong> e adicione:
+        </div>
+        <div style="background:var(--bg-deep);border:1px solid var(--border-md);border-radius:8px;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue)" id="mt5-supabase-url">https://slffnyslgmdateaaxceo.supabase.co</div>
+      </div>
+    </div>
+
+    <!-- Passo 5 -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:flex;gap:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#050810;flex-shrink:0">5</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:6px">Aplicar no gráfico e pronto!</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.7">
+          Arraste o <strong style="color:var(--text-1)">TraderOS</strong> da aba Navegador para qualquer gráfico (ex: XAUUSD M5). Na aba <strong style="color:var(--text-1)">Comum</strong>, marque <strong style="color:var(--amber)">✅ Permitir solicitações WebRequest</strong>. Clique OK — o EA começa a monitorar automaticamente. Cada trade fechado aparece aqui no Trader OS em segundos.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Aviso importante -->
+  <div style="background:rgba(255,181,71,0.07);border:1px solid rgba(255,181,71,0.2);border-radius:12px;padding:18px 22px;display:flex;gap:14px;align-items:flex-start;margin-bottom:24px">
+    <span style="font-size:20px;flex-shrink:0">⚠️</span>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:4px">Importante — Importar histórico antigo</div>
+      <div style="font-size:12px;color:var(--text-2);line-height:1.7">
+        O EA exporta apenas trades fechados <strong>a partir do momento em que é ativado</strong>. Para importar trades antigos do MT5, o EA também funciona em modo importação: basta deixá-lo rodando no gráfico com o histórico carregado (clique direito na aba Histórico → Todo o histórico). Trades duplicados são ignorados automaticamente.
+      </div>
+    </div>
+  </div>
+
+  <!-- Como funciona o fluxo -->
+  <div style="font-size:13px;font-weight:700;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px">Como funciona</div>
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:32px">
+    <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;row-gap:12px">
+      ${[
+        ['🖥️','MT5 fecha um trade'],
+        ['→',null],
+        ['🔍','EA detecta automaticamente'],
+        ['→',null],
+        ['📦','Formata os dados'],
+        ['→',null],
+        ['☁️','Envia ao Supabase'],
+        ['→',null],
+        ['✅','Aparece no Trader OS'],
+      ].map(([icon,label])=> label === null
+        ? `<div style="font-size:20px;color:var(--text-4);padding:0 8px">→</div>`
+        : `<div style="background:var(--bg-card2);border:1px solid var(--border-md);border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:120px">
+            <div style="font-size:24px;margin-bottom:6px">${icon}</div>
+            <div style="font-size:11px;color:var(--text-2);font-weight:600">${label}</div>
+           </div>`
+      ).join('')}
+    </div>
+  </div>
+
 </div>
 
 <!-- ═══ SETTINGS ═══ -->
@@ -4868,7 +5022,7 @@ function showPage(name, btn, isMobile=false) {
   if (btn) btn.classList.add('active');
   // sync both navs
   const deskBtns = document.querySelectorAll('.nav-btn');
-  const pages = ['dashboard','metas','calendar','import','reports','analytics','settings'];
+  const pages = ['dashboard','metas','calendar','import','reports','analytics','settings','mt5integration'];
   const idx = pages.indexOf(name);
   if (idx>=0 && deskBtns[idx]) deskBtns[idx].classList.add('active');
   const mBtn = document.getElementById('mnav-'+name);
