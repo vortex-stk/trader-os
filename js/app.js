@@ -970,3 +970,105 @@ window.TROS = {
 
 if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
 else boot();
+
+// ════════════════════════════════════════
+//  TOUR GUIADO
+// ════════════════════════════════════════
+const TOUR_STEPS = [
+  { title:'Bem-vindo ao Trader OS!', desc:'Vamos fazer um tour rapido pelas principais funcionalidades. Clique em Proximo para comecar.', selector:null },
+  { title:'Dashboard', desc:'Aqui voce ve todos os KPIs: P&L, Win Rate, Fator de Lucro, Drawdown e Curva de Equity em tempo real.', selector:'[data-page="dashboard"]', page:'dashboard' },
+  { title:'Registro de Negociacoes', desc:'Liste, filtre e gerencie todas as operacoes. Clique em + Nova Operacao para registrar com todos os detalhes.', selector:'[data-page="trades"]', page:'trades' },
+  { title:'Calendario', desc:'Visao mensal do desempenho. Clique em qualquer dia para ver detalhes, notas e screenshots.', selector:'[data-page="calendar"]', page:'calendar' },
+  { title:'Analises', desc:'Performance por par, sessao, setup e direcao. Identifique onde voce performa melhor.', selector:'[data-page="analytics"]', page:'analytics' },
+  { title:'Calculadora', desc:'Tamanho ideal de posicao, R:R e simulador de crescimento da conta.', selector:'[data-page="calculator"]', page:'calculator' },
+  { title:'Integracao MT5', desc:'Baixe o EA e conecte o MetaTrader 5. Os trades aparecem aqui em tempo real automaticamente!', selector:'[data-page="mt5integration"]', page:'mt5integration' },
+  { title:'Configuracoes', desc:'Capital, limites de risco, metas, sincronizacao com Supabase, perfil e muito mais.', selector:'[data-page="settings"]', page:'settings' },
+  { title:'Tudo pronto!', desc:'Voce conheceu as principais funcionalidades. Comece registrando sua primeira operacao. Bons trades!', selector:null },
+];
+
+let _tourStep = 0;
+
+window.startTour = function() {
+  _tourStep = 0;
+  const ov = document.getElementById('tour-overlay');
+  if(ov) ov.classList.remove('hidden');
+  renderTourStep();
+};
+
+window.endTour = function() {
+  const ov = document.getElementById('tour-overlay');
+  if(ov) ov.classList.add('hidden');
+  localStorage.setItem('tros_tour_done','1');
+};
+
+window.tourNext = function() {
+  _tourStep++;
+  if(_tourStep >= TOUR_STEPS.length){ endTour(); return; }
+  renderTourStep();
+};
+
+function renderTourStep() {
+  const step  = TOUR_STEPS[_tourStep];
+  const total = TOUR_STEPS.length;
+  const badge = document.getElementById('tour-badge');
+  const title = document.getElementById('tour-title');
+  const desc  = document.getElementById('tour-desc');
+  const btn   = document.getElementById('tour-next-btn');
+  const dots  = document.getElementById('tour-dots');
+  if(badge) badge.textContent = 'Passo '+(_tourStep+1)+' de '+total;
+  if(title) title.textContent = step.title;
+  if(desc)  desc.textContent  = step.desc;
+  if(btn)   btn.textContent   = _tourStep===total-1 ? 'Concluir' : 'Proximo';
+  if(dots)  dots.innerHTML    = TOUR_STEPS.map((_,i)=>'<div class="tour-dot'+(i===_tourStep?' active':'')+'"></div>').join('');
+
+  if(step.page && window.navigateTo) navigateTo(step.page);
+
+  const hl   = document.getElementById('tour-highlight');
+  const card = document.getElementById('tour-card');
+  if(!hl || !card) return;
+
+  if(step.selector) {
+    const el = document.querySelector(step.selector);
+    if(el) {
+      const r = el.getBoundingClientRect();
+      hl.style.cssText = 'position:fixed;left:'+(r.left-6)+'px;top:'+(r.top-6)+'px;width:'+(r.width+12)+'px;height:'+(r.height+12)+'px;border-radius:10px;box-shadow:0 0 0 4px #00F5A0,0 0 0 9999px rgba(5,8,16,0.8);pointer-events:none;z-index:9002;transition:all 0.35s';
+      const cl = Math.min(r.right+16, window.innerWidth-316);
+      const ct = Math.max(Math.min(r.top, window.innerHeight-240), 20);
+      card.style.cssText = 'position:fixed;left:'+cl+'px;top:'+ct+'px;z-index:9003;pointer-events:all;transition:all 0.35s';
+    }
+  } else {
+    hl.style.cssText   = 'display:none';
+    card.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9003;pointer-events:all';
+  }
+}
+
+// Auto-start para novos usuarios
+setTimeout(function() {
+  if(!localStorage.getItem('tros_tour_done') && !localStorage.getItem('trader_os_v3')) {
+    if(window.startTour) startTour();
+  }
+}, 2500);
+
+// ════════════════════════════════════════
+//  WIKI / FAQ
+// ════════════════════════════════════════
+window.toggleWiki = function(el) { el.classList.toggle('open'); };
+
+window.filterWiki = function(q) {
+  const s = q.toLowerCase().trim();
+  document.querySelectorAll('.wiki-item').forEach(function(item) {
+    item.style.display = (!s || item.textContent.toLowerCase().includes(s)) ? '' : 'none';
+  });
+  document.querySelectorAll('.wiki-cat').forEach(function(cat) {
+    const vis = Array.from(cat.querySelectorAll('.wiki-item')).some(function(i){ return i.style.display !== 'none'; });
+    cat.style.display = vis ? '' : 'none';
+  });
+};
+
+window.scrollToWikiCat = function(id) {
+  if(window.navigateTo) navigateTo('wiki');
+  setTimeout(function() {
+    const el = document.getElementById('wiki-cat-'+id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 150);
+};
