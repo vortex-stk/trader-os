@@ -2401,6 +2401,67 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .wiki-a { display:none;padding:0 16px 14px;font-size:12px;color:var(--text-2);line-height:1.7;border-top:1px solid var(--border); }
 .wiki-item.open .wiki-a { display:block; }
 .wiki-a code { background:var(--bg-deep);border:1px solid var(--border-md);border-radius:4px;padding:1px 6px;font-family:var(--font-mono);font-size:11px;color:var(--green); }
+
+/* ═══════════════════════════════════════
+   PROP FIRM MODE
+═══════════════════════════════════════ */
+.pf-hero { background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(59,158,255,0.08)); border:1px solid rgba(124,92,252,0.25); border-radius:16px; padding:24px 28px; margin-bottom:20px; display:flex; gap:20px; align-items:center; }
+.pf-firm-logo { width:56px; height:56px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:900; color:#fff; flex-shrink:0; }
+.pf-overall-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:0.05em; }
+.pf-overall-badge.active  { background:rgba(59,158,255,0.15); color:var(--blue); border:1px solid rgba(59,158,255,0.3); }
+.pf-overall-badge.warning { background:rgba(255,181,71,0.15);  color:var(--amber); border:1px solid rgba(255,181,71,0.3); }
+.pf-overall-badge.passed  { background:rgba(0,245,160,0.15);   color:var(--green); border:1px solid rgba(0,245,160,0.3); }
+.pf-overall-badge.failed  { background:rgba(255,61,107,0.15);  color:var(--red);   border:1px solid rgba(255,61,107,0.3); }
+
+.pf-phases { display:flex; gap:0; margin-bottom:20px; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+.pf-phase { flex:1; padding:16px; text-align:center; border-right:1px solid var(--border); cursor:pointer; transition:all 0.2s; background:var(--bg-card); }
+.pf-phase:last-child { border-right:none; }
+.pf-phase.active-phase { background:rgba(124,92,252,0.12); }
+.pf-phase.done-phase   { background:rgba(0,245,160,0.07); }
+.pf-phase.locked-phase { opacity:0.45; cursor:default; }
+.pf-phase-num  { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; margin:0 auto 8px; }
+.pf-phase.active-phase .pf-phase-num { background:var(--purple); color:#fff; }
+.pf-phase.done-phase   .pf-phase-num { background:var(--green);  color:#050810; }
+.pf-phase.locked-phase .pf-phase-num { background:var(--border-hi); color:var(--text-4); }
+.pf-phase-name { font-size:12px; font-weight:700; color:var(--text-1); margin-bottom:2px; }
+.pf-phase-sub  { font-size:10px; color:var(--text-3); }
+
+.pf-rule-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px; margin-bottom:20px; }
+.pf-rule-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; transition:border 0.2s; }
+.pf-rule-card.ok       { border-color:rgba(0,245,160,0.2); }
+.pf-rule-card.warning  { border-color:rgba(255,181,71,0.3); }
+.pf-rule-card.violated { border-color:rgba(255,61,107,0.3); background:rgba(255,61,107,0.04); }
+.pf-rule-card.achieved { border-color:rgba(0,245,160,0.3); background:rgba(0,245,160,0.04); }
+.pf-rule-label { font-size:11px; color:var(--text-3); font-weight:600; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+.pf-rule-val   { font-size:22px; font-weight:800; font-family:var(--font-mono); color:var(--text-1); margin-bottom:4px; }
+.pf-rule-limit { font-size:11px; color:var(--text-3); margin-bottom:10px; }
+.pf-rule-bar   { height:5px; background:var(--bg-hover); border-radius:3px; overflow:hidden; }
+.pf-rule-fill  { height:100%; border-radius:3px; transition:width 0.5s; }
+.pf-badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; }
+.pf-badge.ok       { background:rgba(0,245,160,0.15);  color:var(--green); }
+.pf-badge.warning  { background:rgba(255,181,71,0.15); color:var(--amber); }
+.pf-badge.violated { background:rgba(255,61,107,0.15); color:var(--red);   }
+.pf-badge.achieved { background:rgba(0,245,160,0.15);  color:var(--green); }
+.pf-badge.pending  { background:rgba(59,158,255,0.15); color:var(--blue);  }
+
+.pf-firm-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-bottom:20px; }
+.pf-firm-btn  { background:var(--bg-card); border:1px solid var(--border); border-radius:10px; padding:14px 12px; text-align:center; cursor:pointer; transition:all 0.2s; }
+.pf-firm-btn:hover  { border-color:var(--purple); background:var(--purple-bg); }
+.pf-firm-btn.active { border-color:var(--purple); background:var(--purple-bg); }
+.pf-firm-btn .firm-logo { font-size:22px; margin-bottom:6px; }
+.pf-firm-btn .firm-name { font-size:12px; font-weight:700; color:var(--text-1); margin-bottom:2px; }
+.pf-firm-btn .firm-detail { font-size:10px; color:var(--text-3); }
+
+.pf-timeline { display:flex; flex-direction:column; gap:0; }
+.pf-tl-item { display:flex; gap:16px; padding-bottom:20px; position:relative; }
+.pf-tl-item:not(:last-child)::before { content:''; position:absolute; left:15px; top:32px; bottom:0; width:2px; background:var(--border); }
+.pf-tl-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.pf-tl-dot.done   { background:rgba(0,245,160,0.15); border:2px solid var(--green); }
+.pf-tl-dot.active { background:rgba(124,92,252,0.15); border:2px solid var(--purple); }
+.pf-tl-dot.locked { background:var(--bg-card); border:2px solid var(--border); }
+.pf-tl-content { flex:1; padding-top:4px; }
+.pf-tl-title { font-size:14px; font-weight:700; color:var(--text-1); margin-bottom:2px; }
+.pf-tl-sub   { font-size:12px; color:var(--text-3); }
 </style>
 </head>
 <!-- ════════════════════════════════
@@ -2557,6 +2618,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   </div>
   <div class="sidebar-item" data-page="calculator" data-tooltip="Calculadora de Margem" onclick="showPage('calculator',null)">
     <div class="sidebar-icon">🧮</div><div class="sidebar-label">Calculadora</div>
+  </div>
+  <div class="sidebar-item" data-page="propfirm" data-tooltip="Prop Firm Mode" onclick="showPage('propfirm',null)">
+    <div class="sidebar-icon">🏆</div><div class="sidebar-label">Prop Firm</div>
   </div>
 
   <!-- 📈 PERCEPÇÕES -->
@@ -3358,6 +3422,175 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   </div>
 </div>
 
+
+<!-- ═══ PROP FIRM MODE ═══ -->
+<div class="page" id="page-propfirm">
+  <div class="db-topbar">
+    <div>
+      <h1 class="db-title">Prop Firm Mode</h1>
+      <p class="db-sub" id="pf-sub-title">Acompanhe seu desafio em tempo real</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-export" onclick="showPFSetup()" style="border-color:rgba(124,92,252,0.4);color:var(--purple)">⚙️ Configurar</button>
+      <button class="btn-add" onclick="renderPropFirmPage()">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <!-- Setup panel (shown when not configured) -->
+  <div id="pf-setup-panel">
+    <div style="text-align:center;padding:20px 0 28px">
+      <div style="font-size:48px;margin-bottom:12px">🏆</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-1);margin-bottom:6px">Configure seu desafio de Prop Firm</div>
+      <div style="font-size:13px;color:var(--text-3);max-width:420px;margin:0 auto">Selecione sua prop firm, defina o capital e o Trader OS monitora todas as regras automaticamente.</div>
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Escolha sua Prop Firm</div>
+    <div class="pf-firm-grid" id="pf-firm-selector">
+      <div class="pf-firm-btn" onclick="selectFirm('ftmo')" id="pfbtn-ftmo">
+        <div class="firm-logo">🔵</div>
+        <div class="firm-name">FTMO</div>
+        <div class="firm-detail">5% DD · 10% meta</div>
+      </div>
+      <div class="pf-firm-btn" onclick="selectFirm('topstep')" id="pfbtn-topstep">
+        <div class="firm-logo">🟢</div>
+        <div class="firm-name">Topstep</div>
+        <div class="firm-detail">3% DD · Trailing</div>
+      </div>
+      <div class="pf-firm-btn" onclick="selectFirm('the5ers')" id="pfbtn-the5ers">
+        <div class="firm-logo">🟡</div>
+        <div class="firm-name">The5%ers</div>
+        <div class="firm-detail">4% DD · 8% meta</div>
+      </div>
+      <div class="pf-firm-btn" onclick="selectFirm('myforexfunds')" id="pfbtn-myforexfunds">
+        <div class="firm-logo">🟠</div>
+        <div class="firm-name">MyForexFunds</div>
+        <div class="firm-detail">5% DD · 8% meta</div>
+      </div>
+      <div class="pf-firm-btn" onclick="selectFirm('hft')" id="pfbtn-hft">
+        <div class="firm-logo">🔴</div>
+        <div class="firm-name">HFT Challenge</div>
+        <div class="firm-detail">5% DD · 10% meta</div>
+      </div>
+      <div class="pf-firm-btn" onclick="selectFirm('custom')" id="pfbtn-custom">
+        <div class="firm-logo">⚙️</div>
+        <div class="firm-name">Customizado</div>
+        <div class="firm-detail">Suas regras</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px" id="pf-config-fields">
+      <div>
+        <label class="cfg-label">Capital do Desafio (R$)</label>
+        <input class="sinp" id="pf-capital" type="number" placeholder="100000" value="100000" style="width:100%">
+      </div>
+      <div>
+        <label class="cfg-label">Fase Atual</label>
+        <select class="sinp" id="pf-phase-select" style="width:100%">
+          <option value="1">Fase 1 — Desafio</option>
+          <option value="2">Fase 2 — Verificação</option>
+          <option value="3">Funded — Conta Financiada</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Custom rules (shown only when custom selected) -->
+    <div id="pf-custom-rules" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:14px">Regras Personalizadas</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label class="cfg-label">Meta de Lucro (%)</label><input class="sinp" id="pf-profit-target" type="number" placeholder="10" value="10" style="width:100%"></div>
+        <div><label class="cfg-label">Perda Diária Máx (%)</label><input class="sinp" id="pf-daily-loss" type="number" placeholder="5" value="5" style="width:100%"></div>
+        <div><label class="cfg-label">Perda Total Máx (%)</label><input class="sinp" id="pf-total-loss" type="number" placeholder="10" value="10" style="width:100%"></div>
+        <div><label class="cfg-label">Dias Mínimos</label><input class="sinp" id="pf-min-days" type="number" placeholder="10" value="10" style="width:100%"></div>
+        <div style="grid-column:1/-1;display:flex;align-items:center;gap:10px">
+          <input type="checkbox" id="pf-trailing" style="width:16px;height:16px">
+          <label for="pf-trailing" style="font-size:13px;color:var(--text-2);cursor:pointer">Trailing Drawdown (limite se move com o pico)</label>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-add" onclick="savePFConfig()" style="width:100%;padding:14px;font-size:14px">🚀 Iniciar Monitoramento</button>
+  </div>
+
+  <!-- Main dashboard panel (shown when configured) -->
+  <div id="pf-dashboard-panel" style="display:none">
+
+    <!-- Hero banner -->
+    <div class="pf-hero" id="pf-hero">
+      <div class="pf-firm-logo" id="pf-firm-logo">🏆</div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px" id="pf-firm-label">FTMO</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="pf-overall-badge active" id="pf-overall-badge">Em Progresso</span>
+          <span style="font-size:13px;color:var(--text-2)" id="pf-phase-label">Fase 1 — Desafio</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:28px;font-weight:900;font-family:var(--font-mono)" id="pf-pnl-big">+R$0,00</div>
+        <div style="font-size:11px;color:var(--text-3)">P&L Acumulado</div>
+        <div style="font-size:12px;margin-top:2px" id="pf-balance-label">Saldo: R$0,00</div>
+      </div>
+    </div>
+
+    <!-- Phases timeline -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Jornada Prop Firm</div>
+    <div class="pf-phases" id="pf-phases-bar">
+      <div class="pf-phase active-phase" id="pf-ph-1">
+        <div class="pf-phase-num">1</div>
+        <div class="pf-phase-name">Fase 1</div>
+        <div class="pf-phase-sub">Desafio</div>
+      </div>
+      <div class="pf-phase locked-phase" id="pf-ph-2">
+        <div class="pf-phase-num">2</div>
+        <div class="pf-phase-name">Fase 2</div>
+        <div class="pf-phase-sub">Verificação</div>
+      </div>
+      <div class="pf-phase locked-phase" id="pf-ph-3">
+        <div class="pf-phase-num">✓</div>
+        <div class="pf-phase-name">Funded</div>
+        <div class="pf-phase-sub">Conta Financiada</div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div id="pf-alerts-area" style="margin-bottom:16px"></div>
+
+    <!-- Rule cards -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Regras do Desafio</div>
+    <div class="pf-rule-grid" id="pf-rule-grid"></div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px" id="pf-stats-grid"></div>
+
+    <!-- Consistency rule -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px" id="pf-consistency-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--text-1)">📊 Regra de Consistência</div>
+        <span class="pf-badge pending" id="pf-cons-badge">Calculando...</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:10px">O melhor dia não pode representar mais de 50% do lucro total — regra adotada por muitas prop firms.</div>
+      <div class="pf-rule-bar"><div class="pf-rule-fill" id="pf-cons-bar" style="width:0%;background:var(--green)"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text-3)">
+        <span id="pf-cons-pct">0% do lucro no melhor dia</span>
+        <span>Limite: 50%</span>
+      </div>
+    </div>
+
+    <!-- Daily P&L chart -->
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:20px">
+      <div style="font-size:13px;font-weight:700;color:var(--text-1);margin-bottom:14px">📈 P&L Diário do Desafio</div>
+      <div style="position:relative;height:140px"><canvas id="pf-daily-chart" style="position:absolute;inset:0;width:100%!important;height:100%!important"></canvas></div>
+    </div>
+
+    <!-- Trading log -->
+    <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">📋 Últimas Operações do Desafio</div>
+    <div id="pf-trade-log" style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden"></div>
+
+    <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn-export" onclick="showPFSetup()">⚙️ Reconfigurar</button>
+      <button class="btn-export" onclick="exportPFReport()" style="border-color:rgba(0,245,160,0.4);color:var(--green)">📄 Exportar Relatório</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ WIKI / FAQ ═══ -->
 <div class="page" id="page-wiki">
@@ -5075,6 +5308,7 @@ function setPeriod(p) {
   if (!active) return;
   const id = active.id.replace('page-','');
   if (id==='dashboard')   renderDashboard();
+  if (id==='propfirm')    renderPropFirmPage();
 
   if (id==='trades')      renderTradesPage();
   if (id==='analytics')   renderAnalytics();
@@ -5125,7 +5359,7 @@ function showPage(name, btn, isMobile=false) {
   if (btn) btn.classList.add('active');
   // sync both navs
   const deskBtns = document.querySelectorAll('.nav-btn');
-  const pages = ['dashboard','metas','calendar','import','reports','analytics','settings','mt5integration','wiki'];
+  const pages = ['dashboard','metas','calendar','import','reports','analytics','settings','mt5integration','wiki','propfirm'];
   const idx = pages.indexOf(name);
   if (idx>=0 && deskBtns[idx]) deskBtns[idx].classList.add('active');
   const mBtn = document.getElementById('mnav-'+name);
@@ -5138,6 +5372,7 @@ function showPage(name, btn, isMobile=false) {
     if (barEl) barEl.innerHTML = periodFilterBar();
   }
   if (name==='calendar')  { setTimeout(renderCalendar,  20); }
+  if (name==='propfirm')  { setTimeout(renderPropFirmPage, 20); }
 
   if (name==='trades')      { setTimeout(renderTradesPage, 20); }
   if (name==='reports')     { renderReports(); }
@@ -9691,6 +9926,307 @@ function updateSWStatus(msg, color) {
   const el = document.getElementById('pwa-sw-status');
   if (el) el.innerHTML = `<span style="color:${color};font-weight:600">${msg}</span>`;
 }
+
+
+// ════════════════════════════════════════
+//  PROP FIRM MODE
+// ════════════════════════════════════════
+var PF_FIRMS = {
+  ftmo:         { name:'FTMO',          logo:'🔵', color:'#0062FF', maxDailyLoss:0.05, maxTotalLoss:0.10, profitTarget:0.10, minDays:10, trailing:false, phases:[{name:'Fase 1',target:0.10,days:10},{name:'Fase 2',target:0.05,days:10},{name:'Funded',target:null,days:0}] },
+  topstep:      { name:'Topstep',       logo:'🟢', color:'#00AA55', maxDailyLoss:0.03, maxTotalLoss:0.06, profitTarget:0.06, minDays:5,  trailing:true,  phases:[{name:'Combine',target:0.06,days:5},{name:'Funded',target:null,days:0}] },
+  the5ers:      { name:'The5%ers',      logo:'🟡', color:'#F5A623', maxDailyLoss:0.04, maxTotalLoss:0.08, profitTarget:0.08, minDays:0,  trailing:false, phases:[{name:'Fase 1',target:0.08,days:0},{name:'Funded',target:null,days:0}] },
+  myforexfunds: { name:'MyForexFunds',  logo:'🟠', color:'#FF6600', maxDailyLoss:0.05, maxTotalLoss:0.12, profitTarget:0.08, minDays:5,  trailing:false, phases:[{name:'Avaliação',target:0.08,days:5},{name:'Funded',target:null,days:0}] },
+  hft:          { name:'HFT Challenge', logo:'🔴', color:'#CC2244', maxDailyLoss:0.05, maxTotalLoss:0.10, profitTarget:0.10, minDays:0,  trailing:false, phases:[{name:'Desafio',target:0.10,days:0},{name:'Funded',target:null,days:0}] },
+  custom:       { name:'Customizado',   logo:'⚙️', color:'#7C5CFC', maxDailyLoss:0.05, maxTotalLoss:0.10, profitTarget:0.10, minDays:10, trailing:false, phases:[{name:'Fase 1',target:0.10,days:10},{name:'Funded',target:null,days:0}] },
+};
+
+var _pfConfig = null;
+var _pfChart  = null;
+
+function loadPFConfig() {
+  try { _pfConfig = JSON.parse(localStorage.getItem('tros_pf_config')||'null'); } catch(e){ _pfConfig=null; }
+  return _pfConfig;
+}
+
+function savePFConfig() {
+  var firm    = document.getElementById('pf-firm-selector') ? _pfSelectedFirm : 'custom';
+  var capital = parseFloat(document.getElementById('pf-capital')?.value||'100000');
+  var phase   = parseInt(document.getElementById('pf-phase-select')?.value||'1');
+  if(!firm || isNaN(capital) || capital <= 0) { toast('Preencha todos os campos!', true); return; }
+
+  var preset = PF_FIRMS[firm] || PF_FIRMS.custom;
+  var cfg = {
+    firm:     firm,
+    firmName: preset.name,
+    capital:  capital,
+    phase:    phase,
+    trailing: firm==='custom' ? document.getElementById('pf-trailing')?.checked : preset.trailing,
+    profitTarget:  firm==='custom' ? capital * (parseFloat(document.getElementById('pf-profit-target')?.value||'10')/100) : capital * preset.profitTarget,
+    maxDailyLoss:  firm==='custom' ? capital * (parseFloat(document.getElementById('pf-daily-loss')?.value||'5')/100)   : capital * preset.maxDailyLoss,
+    maxTotalLoss:  firm==='custom' ? capital * (parseFloat(document.getElementById('pf-total-loss')?.value||'10')/100)  : capital * preset.maxTotalLoss,
+    minDays:       firm==='custom' ? parseInt(document.getElementById('pf-min-days')?.value||'10')                       : preset.minDays,
+    savedAt: new Date().toISOString(),
+  };
+  localStorage.setItem('tros_pf_config', JSON.stringify(cfg));
+  _pfConfig = cfg;
+  toast('✅ Desafio configurado!');
+  renderPropFirmPage();
+}
+
+var _pfSelectedFirm = null;
+
+function selectFirm(key) {
+  _pfSelectedFirm = key;
+  document.querySelectorAll('.pf-firm-btn').forEach(function(b){ b.classList.remove('active'); });
+  var btn = document.getElementById('pfbtn-'+key);
+  if(btn) btn.classList.add('active');
+  var customRules = document.getElementById('pf-custom-rules');
+  if(customRules) customRules.style.display = key==='custom' ? 'block' : 'none';
+}
+
+function showPFSetup() {
+  var setup = document.getElementById('pf-setup-panel');
+  var dash  = document.getElementById('pf-dashboard-panel');
+  if(setup) setup.style.display = 'block';
+  if(dash)  dash.style.display  = 'none';
+  // Pre-select current firm if configured
+  if(_pfConfig) {
+    selectFirm(_pfConfig.firm||'ftmo');
+    var capEl = document.getElementById('pf-capital');
+    if(capEl) capEl.value = _pfConfig.capital||100000;
+    var phEl  = document.getElementById('pf-phase-select');
+    if(phEl)  phEl.value  = _pfConfig.phase||1;
+  }
+}
+
+function renderPropFirmPage() {
+  var cfg = loadPFConfig();
+  var setup = document.getElementById('pf-setup-panel');
+  var dash  = document.getElementById('pf-dashboard-panel');
+  if(!cfg) {
+    if(setup) setup.style.display = 'block';
+    if(dash)  dash.style.display  = 'none';
+    return;
+  }
+  if(setup) setup.style.display = 'none';
+  if(dash)  dash.style.display  = 'block';
+
+  var trades  = getTrades();
+  var capital = cfg.capital || 100000;
+  var today   = new Date().toISOString().slice(0,10);
+  var firm    = PF_FIRMS[cfg.firm] || PF_FIRMS.custom;
+
+  // ── Calculations ──
+  var totalPnL  = trades.reduce(function(a,t){ return a+t.pnl; },0);
+  var balance   = capital + totalPnL;
+  var dailyPnL  = trades.filter(function(t){ return t.date===today; }).reduce(function(a,t){ return a+t.pnl; },0);
+  var tradingDays = new Set(trades.map(function(t){ return t.date; })).size;
+
+  // Drawdown calculation
+  var maxDD = 0;
+  if(cfg.trailing) {
+    var peak=capital, cum=capital;
+    [...trades].sort(function(a,b){ return a.date<b.date?-1:1; }).forEach(function(t){
+      cum+=t.pnl; if(cum>peak)peak=cum; var dd=peak-cum; if(dd>maxDD)maxDD=dd;
+    });
+  } else {
+    maxDD = Math.max(0, -totalPnL);
+  }
+
+  // Consistency
+  var totalProfit = trades.filter(function(t){ return t.pnl>0; }).reduce(function(a,t){ return a+t.pnl; },0);
+  var maxDayProfit = trades.length ? Math.max.apply(null, trades.map(function(t){ return t.pnl; })) : 0;
+  var consPct = totalProfit>0 ? (maxDayProfit/totalProfit*100) : 0;
+
+  // ── Status evaluation ──
+  var dailyViolated = dailyPnL <= -cfg.maxDailyLoss;
+  var totalViolated = maxDD >= cfg.maxTotalLoss;
+  var profitAchieved = totalPnL >= cfg.profitTarget;
+  var daysAchieved  = tradingDays >= cfg.minDays;
+
+  var dailyPct = cfg.maxDailyLoss > 0 ? Math.abs(Math.min(0,dailyPnL))/cfg.maxDailyLoss*100 : 0;
+  var totalPct = cfg.maxTotalLoss > 0 ? maxDD/cfg.maxTotalLoss*100 : 0;
+  var profitPct= cfg.profitTarget > 0 ? Math.max(0,totalPnL)/cfg.profitTarget*100 : 0;
+  var daysPct  = cfg.minDays > 0 ? tradingDays/cfg.minDays*100 : 100;
+
+  var overallStatus = totalViolated||dailyViolated ? 'failed' :
+                      (profitAchieved&&daysAchieved) ? 'passed' :
+                      (dailyPct>75||totalPct>75) ? 'warning' : 'active';
+
+  var statusLabels = {active:'🟦 Em Progresso',warning:'⚠️ Atenção',passed:'✅ Aprovado!',failed:'❌ Reprovado'};
+
+  // ── Update hero ──
+  var logoEl = document.getElementById('pf-firm-logo');
+  if(logoEl){ logoEl.textContent=firm.logo; logoEl.style.background=firm.color+'33'; }
+  var firmLbl=document.getElementById('pf-firm-label'); if(firmLbl) firmLbl.textContent=cfg.firmName+' · Capital R$'+capital.toLocaleString('pt-BR');
+  var badge=document.getElementById('pf-overall-badge');
+  if(badge){ badge.textContent=statusLabels[overallStatus]||overallStatus; badge.className='pf-overall-badge '+overallStatus; }
+  var phaseLbl=document.getElementById('pf-phase-label');
+  if(phaseLbl){ var phases=['','Fase 1 — Desafio','Fase 2 — Verificação','Funded — Conta Financiada']; phaseLbl.textContent=phases[cfg.phase]||'Fase 1'; }
+  var pnlBig=document.getElementById('pf-pnl-big');
+  if(pnlBig){ pnlBig.textContent=(totalPnL>=0?'+':'')+'R$'+Math.abs(totalPnL).toFixed(2); pnlBig.style.color=totalPnL>=0?'var(--green)':'var(--red)'; }
+  var balLbl=document.getElementById('pf-balance-label');
+  if(balLbl) balLbl.textContent='Saldo: R$'+balance.toFixed(2);
+
+  // ── Update phases bar ──
+  var phaseStates=['','active-phase','locked-phase','locked-phase'];
+  if(cfg.phase>=2) phaseStates=['','done-phase','active-phase','locked-phase'];
+  if(cfg.phase>=3) phaseStates=['','done-phase','done-phase','active-phase'];
+  if(profitAchieved&&daysAchieved&&!totalViolated&&!dailyViolated&&cfg.phase<3) phaseStates[cfg.phase]='done-phase';
+  [1,2,3].forEach(function(i){
+    var ph=document.getElementById('pf-ph-'+i);
+    if(ph) ph.className='pf-phase '+phaseStates[i];
+  });
+
+  // ── Alerts ──
+  var alerts=[];
+  if(totalViolated) alerts.push({type:'danger',msg:'🚨 CONTA REPROVADA — Drawdown máximo atingido. Pare de operar.'});
+  if(dailyViolated) alerts.push({type:'danger',msg:'⛔ LIMITE DIÁRIO ATINGIDO — Não abra mais trades hoje.'});
+  if(!totalViolated&&totalPct>75) alerts.push({type:'warning',msg:'⚠️ Drawdown em '+maxDD.toFixed(2)+' de '+cfg.maxTotalLoss.toFixed(2)+'. Cuidado com o limite total.'});
+  if(!dailyViolated&&dailyPct>75) alerts.push({type:'warning',msg:'⚠️ Perda diária em R$'+Math.abs(dailyPnL).toFixed(2)+'. Restam R$'+(cfg.maxDailyLoss-Math.abs(Math.min(0,dailyPnL))).toFixed(2)+'.'});
+  if(profitAchieved&&daysAchieved&&!totalViolated&&!dailyViolated) alerts.push({type:'success',msg:'🎉 PARABÉNS! Todos os critérios atingidos. Solicite a próxima fase!'});
+  else if(profitAchieved&&!totalViolated) alerts.push({type:'success',msg:'✅ Meta de lucro atingida! Aguardando '+Math.max(0,cfg.minDays-tradingDays)+' dia(s) mínimo(s).'});
+
+  var alertsArea=document.getElementById('pf-alerts-area');
+  if(alertsArea) alertsArea.innerHTML=alerts.map(function(a){
+    var colors={danger:'var(--red)',warning:'var(--amber)',success:'var(--green)'};
+    var bgs={danger:'rgba(255,61,107,0.08)',warning:'rgba(255,181,71,0.08)',success:'rgba(0,245,160,0.08)'};
+    return '<div style="background:'+bgs[a.type]+';border:1px solid '+colors[a.type]+'33;border-radius:10px;padding:12px 16px;margin-bottom:8px;font-size:13px;font-weight:600;color:'+colors[a.type]+'">'+a.msg+'</div>';
+  }).join('');
+
+  // ── Rule cards ──
+  var rules=[
+    {label:'Meta de Lucro',   val:totalPnL,    limit:cfg.profitTarget,  pct:Math.min(100,profitPct), status:profitAchieved?'achieved':totalViolated||dailyViolated?'violated':'pending', flip:false},
+    {label:'Perda Diária',    val:dailyPnL,    limit:-cfg.maxDailyLoss, pct:Math.min(100,dailyPct),  status:dailyViolated?'violated':dailyPct>75?'warning':'ok',                        flip:true},
+    {label:cfg.trailing?'Trailing Drawdown':'Drawdown Total', val:-maxDD, limit:-cfg.maxTotalLoss, pct:Math.min(100,totalPct), status:totalViolated?'violated':totalPct>75?'warning':'ok', flip:true},
+    {label:'Dias de Trading', val:tradingDays, limit:cfg.minDays,        pct:Math.min(100,daysPct),  status:daysAchieved?'achieved':'pending',                                           flip:false, unit:' dias'},
+  ];
+
+  var ruleColors={ok:'var(--green)',warning:'var(--amber)',violated:'var(--red)',achieved:'var(--green)',pending:'var(--blue)'};
+  var ruleBadges={ok:'✅ OK',warning:'⚠️ Atenção',violated:'❌ Violado',achieved:'✅ Atingido',pending:'🔄 Pendente'};
+  var grid=document.getElementById('pf-rule-grid');
+  if(grid) grid.innerHTML=rules.map(function(r){
+    var c=ruleColors[r.status]||'var(--text-3)';
+    var isNum=typeof r.val==='number';
+    var display=isNum ? (r.val>=0?'+':'')+fmtSign(r.val) : r.val+(r.unit||'');
+    if(r.unit) display=r.val+r.unit;
+    var limitDisplay=isNum&&!r.unit ? fmtSign(r.limit) : (r.limit+(r.unit||''));
+    return '<div class="pf-rule-card '+r.status+'">'
+      +'<div class="pf-rule-label">'+r.label+'<span class="pf-badge '+r.status+'">'+ruleBadges[r.status]+'</span></div>'
+      +'<div class="pf-rule-val" style="color:'+c+'">'+display+'</div>'
+      +'<div class="pf-rule-limit">Limite: '+limitDisplay+'</div>'
+      +'<div class="pf-rule-bar"><div class="pf-rule-fill" style="width:'+r.pct+'%;background:'+c+'"></div></div>'
+      +'<div style="font-size:10px;color:var(--text-3);margin-top:4px">'+r.pct.toFixed(0)+'% utilizado</div>'
+      +'</div>';
+  }).join('');
+
+  // ── Stats grid ──
+  var statsGrid=document.getElementById('pf-stats-grid');
+  if(statsGrid) statsGrid.innerHTML=[
+    ['💰 Saldo Atual','R$'+balance.toFixed(2),totalPnL>=0?'var(--green)':'var(--red)'],
+    ['📅 Dias Operados',tradingDays+' / '+cfg.minDays,'var(--blue)'],
+    ['📊 Operações',trades.length,'var(--text-1)'],
+    ['🎯 Falta p/ Meta','R$'+Math.max(0,cfg.profitTarget-totalPnL).toFixed(2),'var(--green)'],
+  ].map(function(s){ return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px"><div style="font-size:11px;color:var(--text-3);margin-bottom:4px">'+s[0]+'</div><div style="font-size:16px;font-weight:800;color:'+s[2]+'">'+s[1]+'</div></div>'; }).join('');
+
+  // ── Consistency card ──
+  var consBadge=document.getElementById('pf-cons-badge');
+  var consBar  =document.getElementById('pf-cons-bar');
+  var consPctEl=document.getElementById('pf-cons-pct');
+  if(consBadge){
+    var consOk=consPct<=50;
+    consBadge.textContent=consOk?'✅ OK':'⚠️ Atenção';
+    consBadge.className='pf-badge '+(consOk?'ok':'warning');
+  }
+  if(consBar)   consBar.style.width=Math.min(100,consPct)+'%'; consBar&&(consBar.style.background=consPct>50?'var(--amber)':'var(--green)');
+  if(consPctEl) consPctEl.textContent=consPct.toFixed(1)+'% do lucro no melhor dia';
+
+  // ── Daily chart ──
+  var byDate={};
+  trades.sort(function(a,b){return a.date<b.date?-1:1;}).forEach(function(t){byDate[t.date]=(byDate[t.date]||0)+t.pnl;});
+  var dates=Object.keys(byDate).slice(-30);
+  var vals=dates.map(function(d){return byDate[d];});
+  var ctx=document.getElementById('pf-daily-chart');
+  if(ctx){
+    if(_pfChart){ try{_pfChart.destroy();}catch(e){} }
+    _pfChart=new Chart(ctx.getContext('2d'),{
+      type:'bar',
+      data:{labels:dates.map(function(d){return d.slice(5);}),datasets:[{data:vals,backgroundColor:vals.map(function(v){return v>=0?'rgba(0,245,160,0.7)':'rgba(255,61,107,0.7)';}),borderRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'rgba(255,255,255,0.3)',font:{size:9}}},y:{ticks:{color:'rgba(255,255,255,0.3)',callback:function(v){return 'R$'+v;}},grid:{color:'rgba(255,255,255,0.05)'}}}}
+    });
+  }
+
+  // ── Trade log ──
+  var log=document.getElementById('pf-trade-log');
+  if(log){
+    var recent=[...trades].sort(function(a,b){return b.date<a.date?-1:1;}).slice(0,10);
+    if(!recent.length){ log.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-3)">Nenhuma operação registrada</div>'; }
+    else {
+      log.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12px">'
+        +'<thead><tr style="background:var(--bg-card2)"><th style="padding:8px 14px;text-align:left;color:var(--text-3);font-size:10px;font-weight:700">Data</th><th style="padding:8px 14px;text-align:left;color:var(--text-3);font-size:10px;font-weight:700">Par</th><th style="padding:8px 14px;text-align:left;color:var(--text-3);font-size:10px;font-weight:700">Direção</th><th style="padding:8px 14px;text-align:right;color:var(--text-3);font-size:10px;font-weight:700">P&L</th><th style="padding:8px 14px;text-align:right;color:var(--text-3);font-size:10px;font-weight:700">R:R</th></tr></thead>'
+        +'<tbody>'+recent.map(function(t,i){
+          var dir=t.direction==='buy'||t.direction==='COMPRA'?'<span style="color:var(--green)">▲ COMPRA</span>':'<span style="color:var(--red)">▼ VENDA</span>';
+          return '<tr style="border-top:1px solid var(--border)'+( i%2?' background:rgba(255,255,255,0.01)':'')+'">'
+            +'<td style="padding:8px 14px;color:var(--text-2)">'+t.date+'</td>'
+            +'<td style="padding:8px 14px;font-weight:700;color:var(--text-1)">'+(t.pair||'—')+'</td>'
+            +'<td style="padding:8px 14px">'+(t.direction?dir:'<span style="color:var(--text-4)">—</span>')+'</td>'
+            +'<td style="padding:8px 14px;text-align:right;font-weight:800;font-family:var(--font-mono);color:'+(t.pnl>=0?'var(--green)':'var(--red)')+'">'+(t.pnl>=0?'+':'')+'R$'+Math.abs(t.pnl).toFixed(2)+'</td>'
+            +'<td style="padding:8px 14px;text-align:right;color:var(--text-2)">'+(t.rr!=null?t.rr+'R':'—')+'</td>'
+            +'</tr>';
+        }).join('')+'</tbody></table>';
+    }
+  }
+}
+
+function exportPFReport() {
+  var cfg=loadPFConfig();
+  if(!cfg){toast('Configure o desafio primeiro',true);return;}
+  var trades=getTrades();
+  var capital=cfg.capital||100000;
+  var totalPnL=trades.reduce(function(a,t){return a+t.pnl;},0);
+  var wins=trades.filter(function(t){return t.pnl>0;});
+  var wr=trades.length?wins.length/trades.length*100:0;
+  var days=new Set(trades.map(function(t){return t.date;})).size;
+  var firm=PF_FIRMS[cfg.firm]||PF_FIRMS.custom;
+  var now=new Date();
+  var profitPct=Math.min(100,Math.max(0,totalPnL)/cfg.profitTarget*100);
+
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:740px;margin:0 auto}.hdr{border-bottom:3px solid '+firm.color+';padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.card{background:#f8f8f8;border-radius:8px;padding:12px;border:1px solid #eee;text-align:center}.lbl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.val{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.bar-wrap{background:#eee;border-radius:20px;height:10px;margin:6px 0 4px;overflow:hidden}.bar{height:100%;border-radius:20px}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}@media print{body{padding:16px}}</style></head><body>'
+  +'<div class="hdr"><div><h1 style="font-size:20px;font-weight:900;margin:0">'+firm.logo+' '+cfg.firmName+' — Relatório do Desafio</h1><p style="margin:4px 0 0;font-size:12px;color:#777">'+['','Fase 1 — Desafio','Fase 2 — Verificação','Funded'][cfg.phase]||'Fase 1'+'  ·  Capital: R$'+capital.toLocaleString('pt-BR')+'</p></div>'
+  +'<div style="text-align:right"><div style="background:'+(totalPnL>=0?'#00875A':'#CC2244')+';color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:4px">'+(totalPnL>=(cfg.profitTarget*0.9)?'META ATINGIDA':'EM PROGRESSO')+'</div>'
+  +'<div style="font-size:11px;color:#777">'+now.toLocaleDateString('pt-BR')+'</div></div></div>'
+  +'<div class="sec">Progresso das Regras</div>'
+  +'<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>Meta de Lucro</span><span style="color:'+(totalPnL>=cfg.profitTarget?'#00875A':'#555')+'">'+(totalPnL>=0?'+':'')+'R$'+totalPnL.toFixed(2)+' / R$'+cfg.profitTarget.toFixed(2)+'</span></div><div class="bar-wrap"><div class="bar" style="width:'+Math.min(100,profitPct)+'%;background:'+firm.color+'"></div></div></div>'
+  +'<div class="grid">'
+  +'<div class="card"><div class="lbl">P&L Total</div><div class="val '+(totalPnL>=0?'pos':'neg')+'">'+(totalPnL>=0?'+':'')+'R$'+Math.abs(totalPnL).toFixed(2)+'</div></div>'
+  +'<div class="card"><div class="lbl">Win Rate</div><div class="val">'+wr.toFixed(1)+'%</div></div>'
+  +'<div class="card"><div class="lbl">Dias Operados</div><div class="val">'+days+' / '+cfg.minDays+'</div></div>'
+  +'<div class="card"><div class="lbl">Operações</div><div class="val">'+trades.length+'</div></div>'
+  +'<div class="card"><div class="lbl">Progresso Meta</div><div class="val '+( profitPct>=100?'pos':'neg')+'">'+profitPct.toFixed(0)+'%</div></div>'
+  +'<div class="card"><div class="lbl">Saldo Atual</div><div class="val">R$'+(capital+totalPnL).toFixed(2)+'</div></div>'
+  +'</div>'
+  +'<div class="sec">Últimas Operações</div>'
+  +'<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#111;color:#fff"><th style="padding:6px 10px;text-align:left">Data</th><th style="padding:6px 10px;text-align:left">Par</th><th style="padding:6px 10px;text-align:left">Direção</th><th style="padding:6px 10px;text-align:left">Setup</th><th style="padding:6px 10px;text-align:right">R:R</th><th style="padding:6px 10px;text-align:right">P&L</th></tr></thead><tbody>'
+  +[...trades].sort(function(a,b){return b.date<a.date?-1:1;}).slice(0,20).map(function(t,i){
+    return '<tr style="'+(i%2?'background:#fafafa':'')+';border-bottom:1px solid #f0f0f0">'
+      +'<td style="padding:5px 10px">'+t.date+'</td><td style="padding:5px 10px;font-weight:700">'+(t.pair||'—')+'</td>'
+      +'<td style="padding:5px 10px;color:'+(t.direction==='buy'||t.direction==='COMPRA'?'#00875A':'#CC2244')+'">'+(t.direction==='buy'||t.direction==='COMPRA'?'▲ COMPRA':'▼ VENDA')+'</td>'
+      +'<td style="padding:5px 10px">'+(t.setup||'—')+'</td>'
+      +'<td style="padding:5px 10px;text-align:right">'+(t.rr!=null?t.rr+'R':'—')+'</td>'
+      +'<td style="padding:5px 10px;text-align:right;font-weight:700;color:'+(t.pnl>=0?'#00875A':'#CC2244')+'">'+(t.pnl>=0?'+':'')+'R$'+Math.abs(t.pnl).toFixed(2)+'</td>'
+      +'</tr>';
+  }).join('')+'</tbody></table>'
+  +'<div class="ft">TRADER OS · '+cfg.firmName+' · '+now.toLocaleDateString('pt-BR')+'</div></body></html>';
+
+  var w=window.open('','_blank');
+  if(!w){toast('Popup bloqueado',true);return;}
+  w.document.write(html);w.document.close();
+  setTimeout(function(){w.print();},600);
+  toast('📄 Relatório do desafio gerado!');
+}
+
+// Hook renderPropFirmPage into showPage
+var _origShowPage = typeof showPage === 'function' ? showPage : null;
 
 // ════════════════════════════════════════
 //  TOUR GUIADO
