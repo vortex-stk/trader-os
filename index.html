@@ -2781,11 +2781,11 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
           </div>
           <span class="pd-item-arrow">›</span>
         </div>
-        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();toast('2FA em breve!')">
+        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();open2FAModal()">
           <div class="pd-item-icon">🛡️</div>
           <div style="flex:1">
             <div class="pd-item-label">Autenticação 2FA</div>
-            <div class="pd-item-sub" id="pd-2fa-sub">Em breve</div>
+            <div class="pd-item-sub" id="pd-2fa-sub">Inativo</div>
           </div>
           <span style="font-size:10px;background:rgba(255,181,71,0.15);border:1px solid rgba(255,181,71,0.3);color:#FFB547;border-radius:20px;padding:2px 7px;font-weight:700">BETA</span>
         </div>
@@ -4026,7 +4026,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
                 <div style="font-size:13px;font-weight:600">Autenticação 2FA</div>
                 <div style="font-size:11px;color:var(--text-3);margin-top:2px">Camada extra de segurança</div>
               </div>
-              <span style="background:rgba(255,181,71,0.12);border:1px solid rgba(255,181,71,0.3);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;color:#FFB547">EM BREVE</span>
+              <button id="btn-2fa-toggle" onclick="open2FAModal()" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--purple);cursor:pointer">Configurar →</button>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
               <div>
@@ -4711,6 +4711,20 @@ async function doLogin() {
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     clearTimeout(loginTimeout);
     if (error) throw error;
+    // Check if user has 2FA enabled
+    const assuranceRes = await sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
+    const nextLevel = assuranceRes.data?.nextLevel;
+    const currentLevel = assuranceRes.data?.currentLevel;
+    if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
+      // 2FA required — find the TOTP factor and challenge
+      const factorsRes = await sbClient.auth.mfa.listFactors();
+      const totpFactor = (factorsRes.data?.totp || []).find(f => f.status === 'verified');
+      if (totpFactor) {
+        if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
+        tfa_challengeLogin(data.user, totpFactor.id);
+        return;
+      }
+    }
     currentUser = data.user;
     isCloudMode = true;
     await launchApp();
@@ -10228,6 +10242,192 @@ function exportPFReport() {
 // Hook renderPropFirmPage into showPage
 var _origShowPage = typeof showPage === 'function' ? showPage : null;
 
+
+// ════════════════════════════════════════
+//  AUTENTICAÇÃO 2FA (TOTP via Supabase MFA)
+// ════════════════════════════════════════
+var _tfaFactorId  = null;
+var _tfaChallengeId = null;
+var _tfaPendingUser = null;
+
+// ── Abrir modal ──────────────────────────────
+function open2FAModal() {
+  var modal = document.getElementById('twoFAModal');
+  if(modal) modal.style.display = 'flex';
+  tfa_showStatus();
+}
+
+function close2FAModal() {
+  var modal = document.getElementById('twoFAModal');
+  if(modal) modal.style.display = 'none';
+}
+
+// ── Mostrar status atual ─────────────────────
+async function tfa_showStatus() {
+  tfa_showStep('status');
+  if(!sbClient || !currentUser) return;
+  try {
+    var res = await sbClient.auth.mfa.listFactors();
+    var factors = (res.data && res.data.totp) || [];
+    var active = factors.filter(function(f){ return f.status === 'verified'; });
+    var badge = document.getElementById('tfa-status-badge');
+    var btnEnable  = document.getElementById('btn-tfa-enable');
+    var btnDisable = document.getElementById('btn-tfa-disable');
+    var pdSub = document.getElementById('pd-2fa-sub');
+    if(active.length > 0) {
+      _tfaFactorId = active[0].id;
+      if(badge) badge.innerHTML = '<span style="background:rgba(0,245,160,0.12);border:1px solid rgba(0,245,160,0.3);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--green)">✅ 2FA Ativo</span>';
+      if(btnEnable)  btnEnable.style.display  = 'none';
+      if(btnDisable) btnDisable.style.display = 'block';
+      if(pdSub) pdSub.textContent = 'Ativo';
+      var btn2fa = document.getElementById('btn-2fa-toggle');
+      if(btn2fa){ btn2fa.textContent='Gerenciar →'; btn2fa.style.color='var(--green)'; btn2fa.style.borderColor='rgba(0,245,160,0.3)'; }
+    } else {
+      _tfaFactorId = null;
+      if(badge) badge.innerHTML = '<span style="background:rgba(255,181,71,0.1);border:1px solid rgba(255,181,71,0.3);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--amber)">⚠️ 2FA Inativo</span>';
+      if(btnEnable)  btnEnable.style.display  = 'block';
+      if(btnDisable) btnDisable.style.display = 'none';
+      if(pdSub) pdSub.textContent = 'Inativo';
+    }
+  } catch(e) {
+    console.warn('2FA status error:', e);
+  }
+}
+
+// ── Iniciar cadastro do 2FA ──────────────────
+async function tfa_startEnroll() {
+  if(!sbClient) { toast('Faça login na nuvem primeiro', true); return; }
+  try {
+    var res = await sbClient.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Trader OS' });
+    if(res.error) throw res.error;
+    _tfaFactorId = res.data.id;
+    var qrUri = res.data.totp.qr_code;
+    var secret = res.data.totp.secret;
+
+    // Show QR Code using a free QR API
+    var qrContainer = document.getElementById('tfa-qr-img');
+    if(qrContainer) {
+      var img = document.createElement('img');
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(qrUri);
+      img.style.cssText = 'border-radius:8px;width:180px;height:180px';
+      img.alt = 'QR Code 2FA';
+      qrContainer.innerHTML = '';
+      qrContainer.appendChild(img);
+    }
+    var secretEl = document.getElementById('tfa-secret-key');
+    if(secretEl) secretEl.textContent = secret;
+
+    tfa_showStep('qr');
+  } catch(e) {
+    toast('Erro ao iniciar 2FA: ' + e.message, true);
+  }
+}
+
+// ── Verificar código e ativar ────────────────
+async function tfa_verifyEnroll() {
+  var code = (document.getElementById('tfa-verify-code')?.value || '').trim();
+  if(code.length !== 6) { tfa_setError('verify', 'Digite os 6 dígitos do código'); return; }
+  tfa_setError('verify', '');
+  try {
+    // Challenge
+    var chalRes = await sbClient.auth.mfa.challenge({ factorId: _tfaFactorId });
+    if(chalRes.error) throw chalRes.error;
+    // Verify
+    var verRes = await sbClient.auth.mfa.verify({
+      factorId:    _tfaFactorId,
+      challengeId: chalRes.data.id,
+      code:        code,
+    });
+    if(verRes.error) throw verRes.error;
+    toast('✅ 2FA ativado com sucesso!');
+    close2FAModal();
+    tfa_showStatus();
+  } catch(e) {
+    tfa_setError('verify', 'Código inválido. Verifique o app e tente novamente.');
+  }
+}
+
+// ── Iniciar desativação ──────────────────────
+function tfa_startDisable() { tfa_showStep('disable'); }
+
+async function tfa_confirmDisable() {
+  var code = (document.getElementById('tfa-disable-code')?.value || '').trim();
+  if(code.length !== 6) { tfa_setError('disable', 'Digite os 6 dígitos'); return; }
+  tfa_setError('disable', '');
+  try {
+    var chalRes = await sbClient.auth.mfa.challenge({ factorId: _tfaFactorId });
+    if(chalRes.error) throw chalRes.error;
+    var verRes = await sbClient.auth.mfa.verify({
+      factorId:    _tfaFactorId,
+      challengeId: chalRes.data.id,
+      code:        code,
+    });
+    if(verRes.error) throw verRes.error;
+    // Unenroll
+    var unRes = await sbClient.auth.mfa.unenroll({ factorId: _tfaFactorId });
+    if(unRes.error) throw unRes.error;
+    _tfaFactorId = null;
+    toast('2FA desativado.');
+    tfa_showStatus();
+  } catch(e) {
+    tfa_setError('disable', 'Código inválido ou erro ao desativar.');
+  }
+}
+
+// ── Verificação no login (quando 2FA ativo) ──
+async function tfa_challengeLogin(user, factorId) {
+  _tfaPendingUser = user;
+  _tfaFactorId    = factorId;
+  open2FAModal();
+  tfa_showStep('verify-login');
+}
+
+async function tfa_verifyLogin() {
+  var code = (document.getElementById('tfa-login-code')?.value || '').trim();
+  if(code.length !== 6) { tfa_setError('login', 'Digite os 6 dígitos'); return; }
+  tfa_setError('login', '');
+  try {
+    var chalRes = await sbClient.auth.mfa.challenge({ factorId: _tfaFactorId });
+    if(chalRes.error) throw chalRes.error;
+    var verRes = await sbClient.auth.mfa.verify({
+      factorId:    _tfaFactorId,
+      challengeId: chalRes.data.id,
+      code:        code,
+    });
+    if(verRes.error) throw verRes.error;
+    close2FAModal();
+    currentUser  = _tfaPendingUser;
+    isCloudMode  = true;
+    _tfaPendingUser = null;
+    await launchApp();
+  } catch(e) {
+    tfa_setError('login', 'Código inválido. Tente novamente.');
+  }
+}
+
+// ── Utilitários ──────────────────────────────
+function tfa_showStep(step) {
+  var steps = ['status','qr','verify-login','disable'];
+  steps.forEach(function(s) {
+    var el = document.getElementById('tfa-step-' + s);
+    if(el) el.style.display = (s === step) ? 'block' : 'none';
+  });
+}
+
+function tfa_setError(ctx, msg) {
+  var ids = { verify:'tfa-verify-error', login:'tfa-login-error', disable:'tfa-disable-error' };
+  var el = document.getElementById(ids[ctx]);
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+function copyTFASecret() {
+  var el = document.getElementById('tfa-secret-key');
+  if(!el) return;
+  navigator.clipboard?.writeText(el.textContent).then(function(){ toast('Chave copiada!'); });
+}
+
 // ════════════════════════════════════════
 //  TOUR GUIADO
 // ════════════════════════════════════════
@@ -10336,5 +10536,67 @@ window.addEventListener('load', () => {
   }
 });
 </script>
+<!-- ═══ MODAL 2FA ═══ -->
+<div class="modal-overlay" id="twoFAModal" style="display:none;position:fixed;inset:0;background:rgba(5,8,16,0.85);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--bg-card2);border:1px solid var(--border-md);border-radius:16px;padding:28px 28px;max-width:420px;width:100%;position:relative">
+    <button onclick="close2FAModal()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:var(--text-3);font-size:20px;cursor:pointer;line-height:1">✕</button>
+
+    <!-- Step 1: Status / Activate -->
+    <div id="tfa-step-status">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:36px;margin-bottom:10px">🔐</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-1);margin-bottom:6px">Autenticação em 2 Fatores</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.6">Proteja sua conta com um código gerado pelo Google Authenticator, Authy ou qualquer app TOTP.</div>
+      </div>
+      <div id="tfa-status-badge" style="text-align:center;margin-bottom:20px"></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button id="btn-tfa-enable" onclick="tfa_startEnroll()" class="btn-add" style="width:100%;padding:12px;font-size:14px">📱 Ativar 2FA</button>
+        <button id="btn-tfa-disable" onclick="tfa_startDisable()" style="display:none;width:100%;padding:12px;font-size:14px;background:rgba(255,61,107,0.08);border:1px solid rgba(255,61,107,0.3);border-radius:10px;color:var(--red);font-weight:700;cursor:pointer">🗑️ Desativar 2FA</button>
+      </div>
+    </div>
+
+    <!-- Step 2: QR Code scan -->
+    <div id="tfa-step-qr" style="display:none">
+      <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:6px">Passo 1 — Escaneie o QR Code</div>
+      <div style="font-size:12px;color:var(--text-2);margin-bottom:16px;line-height:1.6">Abra o Google Authenticator, Authy ou qualquer app TOTP e escaneie o código abaixo.</div>
+      <div id="tfa-qr-container" style="text-align:center;margin-bottom:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px">
+        <div id="tfa-qr-img" style="margin-bottom:10px"></div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px">Ou insira a chave manualmente:</div>
+        <div id="tfa-secret-key" style="font-family:var(--font-mono);font-size:12px;color:var(--green);word-break:break-all;background:var(--bg-deep);padding:8px;border-radius:6px;cursor:pointer" onclick="copyTFASecret()" title="Clique para copiar"></div>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:8px">Passo 2 — Confirme com o código</div>
+      <input id="tfa-verify-code" class="sinp" type="text" maxlength="6" placeholder="000000" inputmode="numeric" style="width:100%;text-align:center;font-size:20px;font-family:var(--font-mono);letter-spacing:0.2em;margin-bottom:12px" oninput="this.value=this.value.replace(/\D/g,'')">
+      <div id="tfa-verify-error" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none"></div>
+      <button onclick="tfa_verifyEnroll()" class="btn-add" style="width:100%;padding:12px;font-size:14px">✅ Verificar e Ativar</button>
+      <button onclick="tfa_showStatus()" style="width:100%;margin-top:8px;padding:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text-2);cursor:pointer;font-size:13px">← Voltar</button>
+    </div>
+
+    <!-- Step 3: Verify on login -->
+    <div id="tfa-step-verify-login" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:36px;margin-bottom:10px">📱</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-1);margin-bottom:6px">Verificação em 2 Etapas</div>
+        <div style="font-size:13px;color:var(--text-2)">Abra seu app autenticador e insira o código de 6 dígitos.</div>
+      </div>
+      <input id="tfa-login-code" class="sinp" type="text" maxlength="6" placeholder="000000" inputmode="numeric" style="width:100%;text-align:center;font-size:24px;font-family:var(--font-mono);letter-spacing:0.3em;margin-bottom:12px" oninput="this.value=this.value.replace(/\D/g,'')">
+      <div id="tfa-login-error" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none"></div>
+      <button onclick="tfa_verifyLogin()" class="btn-add" style="width:100%;padding:13px;font-size:14px">🔓 Verificar</button>
+    </div>
+
+    <!-- Step 4: Disable confirm -->
+    <div id="tfa-step-disable" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:36px;margin-bottom:10px">⚠️</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-1);margin-bottom:6px">Desativar 2FA</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:1.6">Digite o código do seu app autenticador para confirmar a desativação.</div>
+      </div>
+      <input id="tfa-disable-code" class="sinp" type="text" maxlength="6" placeholder="000000" inputmode="numeric" style="width:100%;text-align:center;font-size:20px;font-family:var(--font-mono);letter-spacing:0.2em;margin-bottom:12px" oninput="this.value=this.value.replace(/\D/g,'')">
+      <div id="tfa-disable-error" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none"></div>
+      <button onclick="tfa_confirmDisable()" style="width:100%;padding:12px;font-size:14px;background:rgba(255,61,107,0.12);border:1px solid rgba(255,61,107,0.3);border-radius:10px;color:var(--red);font-weight:700;cursor:pointer">Confirmar Desativação</button>
+      <button onclick="tfa_showStatus()" style="width:100%;margin-top:8px;padding:10px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text-2);cursor:pointer;font-size:13px">← Cancelar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
