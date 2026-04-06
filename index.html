@@ -15,6 +15,7 @@
 <meta name="description" content="Diário de trading profissional para traders de forex e prop firms">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -2781,7 +2782,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
           </div>
           <span class="pd-item-arrow">›</span>
         </div>
-        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();open2FAModal()">
+        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();showPage('settings',null);setTimeout(function(){switchCfgTab('seguranca',document.querySelector('[onclick*=seguranca]'));},200)">
           <div class="pd-item-icon">🛡️</div>
           <div style="flex:1">
             <div class="pd-item-label">Autenticação 2FA</div>
@@ -3744,6 +3745,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
         <button class="cfg-tab" onclick="switchCfgTab('perfil',this)">
           <span>👤</span> Perfil
         </button>
+        <button class="cfg-tab" onclick="switchCfgTab('seguranca',this)">
+          <span>🔒</span> Segurança
+        </button>
         <button class="cfg-tab" onclick="switchCfgTab('notificacoes',this)">
           <span>🔔</span> Notificações
         </button>
@@ -4010,34 +4014,126 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
             </div>
           </div>
         </div>
+        <button class="cfg-save-btn" onclick="saveCfgProfile()">💾 Salvar Perfil</button>
+      </div>
+
+      <!-- ── ABA SEGURANÇA ── -->
+      <div id="cfg-panel-seguranca" class="cfg-panel" style="display:none">
+
+        <!-- Status card -->
         <div class="cfg-card">
-          <div class="cfg-card-title">🔒 Segurança</div>
-          <div class="cfg-card-desc">Gerencie acesso e autenticação</div>
+          <div class="cfg-card-title">🛡️ Status da Conta</div>
+          <div class="cfg-card-desc">Informações de acesso e proteção</div>
           <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
-              <div>
-                <div style="font-size:13px;font-weight:600">Alterar Senha</div>
-                <div style="font-size:11px;color:var(--text-3);margin-top:2px">Enviar link de redefinição por e-mail</div>
-              </div>
-              <button onclick="pdResetPassword()" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;color:var(--purple);font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer">Redefinir →</button>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
-              <div>
-                <div style="font-size:13px;font-weight:600">Autenticação 2FA</div>
-                <div style="font-size:11px;color:var(--text-3);margin-top:2px">Camada extra de segurança</div>
-              </div>
-              <button id="btn-2fa-toggle" onclick="open2FAModal()" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:var(--purple);cursor:pointer">Configurar →</button>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
-              <div>
-                <div style="font-size:13px;font-weight:600">Último acesso</div>
-                <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="cfg-last-login">—</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(0,245,160,0.04);border:1px solid rgba(0,245,160,0.15);border-radius:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:20px">✅</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text-1)">Sessão Ativa</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="cfg-last-login">—</div>
+                </div>
               </div>
               <span style="font-size:11px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.2);border-radius:20px;padding:4px 10px;color:var(--green);font-weight:700">● Online</span>
             </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div>
+                <div style="font-size:13px;font-weight:600">E-mail da conta</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="sec-email-display">—</div>
+              </div>
+              <span style="font-size:11px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.2);border-radius:20px;padding:4px 10px;color:var(--green);font-weight:700">Verificado</span>
+            </div>
           </div>
         </div>
-        <button class="cfg-save-btn" onclick="saveCfgProfile()">💾 Salvar Perfil</button>
+
+        <!-- Senha -->
+        <div class="cfg-card">
+          <div class="cfg-card-title">🔑 Senha</div>
+          <div class="cfg-card-desc">Altere sua senha de acesso</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+            <div>
+              <div style="font-size:13px;font-weight:600">Alterar Senha</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:2px">Um link de redefinição será enviado ao seu e-mail</div>
+            </div>
+            <button onclick="pdResetPassword()" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;color:var(--purple);font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer">Enviar link →</button>
+          </div>
+        </div>
+
+        <!-- 2FA Card completo -->
+        <div class="cfg-card">
+          <div class="cfg-card-title">📱 Autenticação em 2 Fatores (2FA)</div>
+          <div class="cfg-card-desc">Adicione uma camada extra de segurança com Google Authenticator, Authy ou qualquer app TOTP</div>
+
+          <!-- Status 2FA inline -->
+          <div id="sec-2fa-status-area" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:24px" id="sec-2fa-icon">⚠️</span>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text-1)" id="sec-2fa-label">2FA Inativo</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="sec-2fa-desc">Sua conta está protegida apenas por senha</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button id="sec-btn-enable-2fa" onclick="sec_startEnroll()" style="background:linear-gradient(135deg,var(--green),var(--cyan));border:none;border-radius:8px;color:#050810;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer">Ativar →</button>
+                <button id="sec-btn-disable-2fa" onclick="sec_startDisable()" style="display:none;background:rgba(255,61,107,0.08);border:1px solid rgba(255,61,107,0.3);border-radius:8px;color:var(--red);font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer">Desativar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enroll panel (QR) -->
+          <div id="sec-2fa-enroll" style="display:none;background:var(--bg-card);border:1px solid var(--border-md);border-radius:12px;padding:20px">
+            <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:4px">Passo 1 — Escaneie o QR Code</div>
+            <div style="font-size:12px;color:var(--text-2);margin-bottom:16px">Abra o Google Authenticator ou Authy e escaneie o código abaixo.</div>
+            <div style="text-align:center;margin-bottom:16px;background:#fff;border-radius:10px;padding:16px;display:inline-block;width:100%">
+              <div id="sec-qr-canvas" style="display:flex;justify-content:center;margin-bottom:10px"></div>
+              <div style="font-size:10px;color:#666;margin-bottom:6px">Ou insira a chave manualmente:</div>
+              <div id="sec-secret-key" onclick="sec_copySecret()" title="Clique para copiar" style="font-family:monospace;font-size:11px;color:#333;word-break:break-all;background:#f5f5f5;padding:8px;border-radius:6px;cursor:pointer;border:1px solid #ddd"></div>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--text-1);margin-bottom:8px">Passo 2 — Confirme com o código</div>
+            <input id="sec-verify-code" class="sinp" type="text" maxlength="6" placeholder="000000" inputmode="numeric" style="width:100%;text-align:center;font-size:22px;font-family:var(--font-mono);letter-spacing:0.25em;margin-bottom:10px" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <div id="sec-verify-error" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none"></div>
+            <div style="display:flex;gap:8px">
+              <button onclick="sec_verifyEnroll()" class="btn-add" style="flex:1;padding:12px">✅ Verificar e Ativar</button>
+              <button onclick="sec_cancelEnroll()" style="padding:12px 16px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text-2);cursor:pointer;font-size:13px">Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Disable panel -->
+          <div id="sec-2fa-disable" style="display:none;background:rgba(255,61,107,0.05);border:1px solid rgba(255,61,107,0.2);border-radius:12px;padding:20px">
+            <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:4px">Desativar 2FA</div>
+            <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Digite o código do app autenticador para confirmar.</div>
+            <input id="sec-disable-code" class="sinp" type="text" maxlength="6" placeholder="000000" inputmode="numeric" style="width:100%;text-align:center;font-size:22px;font-family:var(--font-mono);letter-spacing:0.25em;margin-bottom:10px" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <div id="sec-disable-error" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none"></div>
+            <div style="display:flex;gap:8px">
+              <button onclick="sec_confirmDisable()" style="flex:1;padding:12px;background:rgba(255,61,107,0.12);border:1px solid rgba(255,61,107,0.3);border-radius:10px;color:var(--red);font-weight:700;cursor:pointer">Confirmar Desativação</button>
+              <button onclick="sec_cancelDisable()" style="padding:12px 16px;background:none;border:1px solid var(--border);border-radius:10px;color:var(--text-2);cursor:pointer;font-size:13px">Cancelar</button>
+            </div>
+          </div>
+
+          <!-- How it works info -->
+          <div style="margin-top:16px;background:rgba(59,158,255,0.06);border:1px solid rgba(59,158,255,0.15);border-radius:10px;padding:14px 16px">
+            <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:6px">Como funciona o 2FA?</div>
+            <div style="font-size:11px;color:var(--text-2);line-height:1.7">Após ativar, no próximo login você precisará inserir um código de 6 dígitos gerado pelo app autenticador no celular. O código muda a cada 30 segundos e é único para sua conta.</div>
+          </div>
+        </div>
+
+        <!-- Sessões ativas -->
+        <div class="cfg-card">
+          <div class="cfg-card-title">🖥️ Sessões Ativas</div>
+          <div class="cfg-card-desc">Dispositivos com acesso à sua conta</div>
+          <div style="padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">💻</span>
+              <div>
+                <div style="font-size:13px;font-weight:600">Sessão atual</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px" id="sec-current-browser">Navegador</div>
+              </div>
+            </div>
+            <span style="font-size:11px;background:rgba(0,245,160,0.08);border:1px solid rgba(0,245,160,0.2);border-radius:20px;padding:4px 10px;color:var(--green);font-weight:700">● Ativo agora</span>
+          </div>
+          <button onclick="doLogout()" style="margin-top:10px;width:100%;padding:10px;background:rgba(255,61,107,0.06);border:1px solid rgba(255,61,107,0.2);border-radius:8px;color:var(--red);font-size:12px;font-weight:700;cursor:pointer">Encerrar Sessão Atual</button>
+        </div>
+
       </div>
 
       <!-- ── ABA NOTIFICAÇÕES ── -->
@@ -9180,11 +9276,12 @@ function showInstrumentDetail(pair) {
 
 function switchCfgTab(tab, btn) {
   document.querySelectorAll('.cfg-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.cfg-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cfg-panel').forEach(p => { p.classList.remove('active'); if(p.id === 'cfg-panel-seguranca') p.style.display='none'; });
   if (btn) btn.classList.add('active');
   const panel = document.getElementById('cfg-panel-' + tab);
   if (panel) panel.classList.add('active');
   if (tab === 'metas')       renderMetasProgress();
+  if (tab === 'seguranca')    { document.getElementById('cfg-panel-seguranca').style.display='block'; setTimeout(loadSecurityTab,50); }
   if (tab === 'contas')      renderSettingsAccounts();
   if (tab === 'sync')        { updateCloudStatusCard(isCloudMode); loadSyncStatus(); }
   if (tab === 'perfil')      loadCfgProfileTab();
@@ -10304,15 +10401,26 @@ async function tfa_startEnroll() {
     var qrUri = res.data.totp.qr_code;
     var secret = res.data.totp.secret;
 
-    // Show QR Code using a free QR API
+    // Generate QR Code inline using qrcode.js (no external API needed)
     var qrContainer = document.getElementById('tfa-qr-img');
     if(qrContainer) {
-      var img = document.createElement('img');
-      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(qrUri);
-      img.style.cssText = 'border-radius:8px;width:180px;height:180px';
-      img.alt = 'QR Code 2FA';
       qrContainer.innerHTML = '';
-      qrContainer.appendChild(img);
+      qrContainer.style.cssText = 'display:flex;justify-content:center;align-items:center;padding:8px';
+      if(typeof QRCode !== 'undefined') {
+        new QRCode(qrContainer, {
+          text:         qrUri,
+          width:        180,
+          height:       180,
+          colorDark:    '#000000',
+          colorLight:   '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        // Fallback: show the URI as a link
+        qrContainer.innerHTML = '<div style="font-size:11px;color:var(--text-3);word-break:break-all;padding:8px">' +
+          '<div style="margin-bottom:8px;color:var(--amber)">⚠️ QR Code indisponível</div>' +
+          '<div>Copie a chave abaixo e insira manualmente no app.</div></div>';
+      }
     }
     var secretEl = document.getElementById('tfa-secret-key');
     if(secretEl) secretEl.textContent = secret;
@@ -10426,6 +10534,187 @@ function copyTFASecret() {
   var el = document.getElementById('tfa-secret-key');
   if(!el) return;
   navigator.clipboard?.writeText(el.textContent).then(function(){ toast('Chave copiada!'); });
+}
+
+
+// ════════════════════════════════════════
+//  PÁGINA DE SEGURANÇA — 2FA INLINE
+// ════════════════════════════════════════
+var _secFactorId    = null;
+var _secChallengeId = null;
+
+// Called when switching to seguranca tab
+function loadSecurityTab() {
+  // Fill email
+  var emailEl = document.getElementById('sec-email-display');
+  if(emailEl && currentUser) emailEl.textContent = currentUser.email || '—';
+  // Fill browser info
+  var browserEl = document.getElementById('sec-current-browser');
+  if(browserEl) {
+    var ua = navigator.userAgent;
+    var browser = ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : 'Navegador';
+    var os = ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Linux') ? 'Linux' : ua.includes('Android') ? 'Android' : 'iOS';
+    browserEl.textContent = browser + ' · ' + os;
+  }
+  sec_loadStatus();
+}
+
+async function sec_loadStatus() {
+  if(!sbClient || !currentUser) return;
+  try {
+    var res = await sbClient.auth.mfa.listFactors();
+    var factors = (res.data && res.data.totp) || [];
+    var active = factors.filter(function(f){ return f.status === 'verified'; });
+    var icon  = document.getElementById('sec-2fa-icon');
+    var label = document.getElementById('sec-2fa-label');
+    var desc  = document.getElementById('sec-2fa-desc');
+    var btnEn = document.getElementById('sec-btn-enable-2fa');
+    var btnDi = document.getElementById('sec-btn-disable-2fa');
+    var pd2fa = document.getElementById('pd-2fa-sub');
+    var btn2fa= document.getElementById('btn-2fa-toggle');
+    if(active.length > 0) {
+      _secFactorId = active[0].id;
+      if(icon)  icon.textContent  = '✅';
+      if(label) { label.textContent = '2FA Ativo'; label.style.color = 'var(--green)'; }
+      if(desc)  desc.textContent  = 'Conta protegida com autenticador TOTP';
+      if(btnEn) btnEn.style.display = 'none';
+      if(btnDi) btnDi.style.display = 'block';
+      if(pd2fa) pd2fa.textContent = 'Ativo';
+      if(btn2fa){ btn2fa.textContent='Gerenciar →'; btn2fa.style.color='var(--green)'; }
+    } else {
+      _secFactorId = null;
+      if(icon)  icon.textContent  = '⚠️';
+      if(label) { label.textContent = '2FA Inativo'; label.style.color = 'var(--amber)'; }
+      if(desc)  desc.textContent  = 'Sua conta está protegida apenas por senha';
+      if(btnEn) btnEn.style.display = 'block';
+      if(btnDi) btnDi.style.display = 'none';
+      if(pd2fa) pd2fa.textContent = 'Inativo';
+      if(btn2fa){ btn2fa.textContent='Configurar →'; btn2fa.style.color='var(--purple)'; }
+    }
+  } catch(e) { console.warn('sec_loadStatus error:', e); }
+}
+
+async function sec_startEnroll() {
+  if(!sbClient) { toast('Faça login na nuvem primeiro', true); return; }
+  // AUTO-CLEANUP: remove any pending (unverified) factors before creating new one
+  try {
+    var listRes = await sbClient.auth.mfa.listFactors();
+    var pending = ((listRes.data && listRes.data.totp) || []).filter(function(f){ return f.status !== 'verified'; });
+    for(var i=0; i<pending.length; i++) {
+      await sbClient.auth.mfa.unenroll({ factorId: pending[i].id });
+    }
+  } catch(e) { /* ignore cleanup errors */ }
+
+  try {
+    var res = await sbClient.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Trader OS' });
+    if(res.error) throw res.error;
+    _secFactorId = res.data.id;
+    var qrUri  = res.data.totp.qr_code;
+    var secret = res.data.totp.secret;
+    // Render QR Code
+    var canvas = document.getElementById('sec-qr-canvas');
+    if(canvas) {
+      canvas.innerHTML = '';
+      if(typeof QRCode !== 'undefined') {
+        new QRCode(canvas, { text:qrUri, width:180, height:180, colorDark:'#000', colorLight:'#fff', correctLevel: QRCode.CorrectLevel.M });
+      }
+    }
+    var secEl = document.getElementById('sec-secret-key');
+    if(secEl) secEl.textContent = secret;
+    // Show enroll panel
+    document.getElementById('sec-2fa-enroll').style.display  = 'block';
+    document.getElementById('sec-2fa-disable').style.display = 'none';
+    document.getElementById('sec-2fa-status-area').style.display = 'none';
+    var codeEl = document.getElementById('sec-verify-code');
+    if(codeEl) { codeEl.value = ''; codeEl.focus(); }
+    sec_setError('verify', '');
+  } catch(e) {
+    toast('Erro ao iniciar 2FA: ' + e.message, true);
+  }
+}
+
+async function sec_verifyEnroll() {
+  var code = (document.getElementById('sec-verify-code')?.value || '').replace(/\D/g,'');
+  if(code.length !== 6) { sec_setError('verify', 'Digite os 6 dígitos do código'); return; }
+  sec_setError('verify', '');
+  try {
+    var chalRes = await sbClient.auth.mfa.challenge({ factorId: _secFactorId });
+    if(chalRes.error) throw chalRes.error;
+    var verRes = await sbClient.auth.mfa.verify({ factorId: _secFactorId, challengeId: chalRes.data.id, code: code });
+    if(verRes.error) throw verRes.error;
+    toast('✅ 2FA ativado com sucesso!');
+    sec_cancelEnroll();
+    sec_loadStatus();
+  } catch(e) {
+    sec_setError('verify', 'Código inválido. Verifique o app e tente novamente.');
+  }
+}
+
+function sec_cancelEnroll() {
+  document.getElementById('sec-2fa-enroll').style.display  = 'none';
+  document.getElementById('sec-2fa-status-area').style.display = 'block';
+}
+
+function sec_startDisable() {
+  document.getElementById('sec-2fa-disable').style.display = 'block';
+  document.getElementById('sec-2fa-status-area').style.display = 'none';
+  var el = document.getElementById('sec-disable-code');
+  if(el) { el.value=''; el.focus(); }
+  sec_setError('disable','');
+}
+
+function sec_cancelDisable() {
+  document.getElementById('sec-2fa-disable').style.display = 'none';
+  document.getElementById('sec-2fa-status-area').style.display = 'block';
+}
+
+async function sec_confirmDisable() {
+  var code = (document.getElementById('sec-disable-code')?.value || '').replace(/\D/g,'');
+  if(code.length !== 6) { sec_setError('disable','Digite os 6 dígitos'); return; }
+  sec_setError('disable','');
+  try {
+    var chalRes = await sbClient.auth.mfa.challenge({ factorId: _secFactorId });
+    if(chalRes.error) throw chalRes.error;
+    var verRes = await sbClient.auth.mfa.verify({ factorId: _secFactorId, challengeId: chalRes.data.id, code: code });
+    if(verRes.error) throw verRes.error;
+    var unRes = await sbClient.auth.mfa.unenroll({ factorId: _secFactorId });
+    if(unRes.error) throw unRes.error;
+    _secFactorId = null;
+    toast('2FA desativado.');
+    sec_cancelDisable();
+    sec_loadStatus();
+  } catch(e) {
+    sec_setError('disable','Código inválido. Tente novamente.');
+  }
+}
+
+function sec_copySecret() {
+  var el = document.getElementById('sec-secret-key');
+  if(!el) return;
+  navigator.clipboard?.writeText(el.textContent).then(function(){ toast('Chave copiada!'); });
+}
+
+function sec_setError(ctx, msg) {
+  var ids = { verify:'sec-verify-error', disable:'sec-disable-error' };
+  var el = document.getElementById(ids[ctx]);
+  if(!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+
+// Also fix tfa_startEnroll to auto-cleanup pending factors
+var _orig_tfa_startEnroll = typeof tfa_startEnroll === 'function' ? tfa_startEnroll : null;
+async function tfa_startEnroll() {
+  if(!sbClient) { toast('Faça login na nuvem primeiro', true); return; }
+  // AUTO-CLEANUP pending factors
+  try {
+    var listRes = await sbClient.auth.mfa.listFactors();
+    var pending = ((listRes.data && listRes.data.totp) || []).filter(function(f){ return f.status !== 'verified'; });
+    for(var i=0; i<pending.length; i++) {
+      await sbClient.auth.mfa.unenroll({ factorId: pending[i].id });
+    }
+  } catch(e) {}
+  if(_orig_tfa_startEnroll) return _orig_tfa_startEnroll();
 }
 
 // ════════════════════════════════════════
