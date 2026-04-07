@@ -15,7 +15,7 @@
 <meta name="description" content="Diário de trading profissional para traders de forex e prop firms">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -10365,8 +10365,12 @@ async function tfa_showStatus() {
   if(!sbClient || !currentUser) return;
   try {
     var res = await sbClient.auth.mfa.listFactors();
-    var factors = (res.data && res.data.totp) || [];
-    var active = factors.filter(function(f){ return f.status === 'verified'; });
+    var factors = [];
+    if(res && res.data) {
+      if(Array.isArray(res.data.totp)) factors = factors.concat(res.data.totp);
+      if(Array.isArray(res.data.all)) factors = res.data.all; // newer Supabase versions
+    }
+    var active = factors.filter(function(f){ return f && f.status === 'verified' && f.factor_type === 'totp'; });
     var badge = document.getElementById('tfa-status-badge');
     var btnEnable  = document.getElementById('btn-tfa-enable');
     var btnDisable = document.getElementById('btn-tfa-disable');
@@ -10401,26 +10405,23 @@ async function tfa_startEnroll() {
     var qrUri = res.data.totp.qr_code;
     var secret = res.data.totp.secret;
 
-    // Generate QR Code inline using qrcode.js (no external API needed)
+    // Generate QR Code inline
     var qrContainer = document.getElementById('tfa-qr-img');
     if(qrContainer) {
       qrContainer.innerHTML = '';
-      qrContainer.style.cssText = 'display:flex;justify-content:center;align-items:center;padding:8px';
-      if(typeof QRCode !== 'undefined') {
-        new QRCode(qrContainer, {
-          text:         qrUri,
-          width:        180,
-          height:       180,
-          colorDark:    '#000000',
-          colorLight:   '#ffffff',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } else {
-        // Fallback: show the URI as a link
-        qrContainer.innerHTML = '<div style="font-size:11px;color:var(--text-3);word-break:break-all;padding:8px">' +
-          '<div style="margin-bottom:8px;color:var(--amber)">⚠️ QR Code indisponível</div>' +
-          '<div>Copie a chave abaixo e insira manualmente no app.</div></div>';
-      }
+      try {
+        if(typeof QRCode !== 'undefined' && typeof QRCode.toDataURL === 'function') {
+          QRCode.toDataURL(qrUri, { width:180, margin:1 }, function(err, url) {
+            if(!err && url) {
+              var img = document.createElement('img');
+              img.src = url; img.style.cssText = 'width:180px;height:180px;border-radius:4px';
+              qrContainer.innerHTML = ''; qrContainer.appendChild(img);
+            }
+          });
+        } else if(typeof QRCode !== 'undefined') {
+          new QRCode(qrContainer, { text:qrUri, width:180, height:180, colorDark:'#000', colorLight:'#fff' });
+        }
+      } catch(e) { qrContainer.innerHTML = '<div style="color:var(--amber);font-size:12px">Use a chave manual abaixo</div>'; }
     }
     var secretEl = document.getElementById('tfa-secret-key');
     if(secretEl) secretEl.textContent = secret;
@@ -10563,8 +10564,12 @@ async function sec_loadStatus() {
   if(!sbClient || !currentUser) return;
   try {
     var res = await sbClient.auth.mfa.listFactors();
-    var factors = (res.data && res.data.totp) || [];
-    var active = factors.filter(function(f){ return f.status === 'verified'; });
+    var factors = [];
+    if(res && res.data) {
+      if(Array.isArray(res.data.totp)) factors = factors.concat(res.data.totp);
+      if(Array.isArray(res.data.all)) factors = res.data.all; // newer Supabase versions
+    }
+    var active = factors.filter(function(f){ return f && f.status === 'verified' && f.factor_type === 'totp'; });
     var icon  = document.getElementById('sec-2fa-icon');
     var label = document.getElementById('sec-2fa-label');
     var desc  = document.getElementById('sec-2fa-desc');
@@ -10601,24 +10606,29 @@ async function sec_startEnroll() {
   var btnEn = document.getElementById('sec-btn-enable-2fa');
   if(btnEn) { btnEn.disabled=true; btnEn.textContent='Preparando...'; }
 
-  // AUTO-CLEANUP: remove ALL non-verified factors (any name) before creating new
+  // AUTO-CLEANUP: remove ALL non-verified factors before creating new
   try {
     var listRes = await sbClient.auth.mfa.listFactors();
-    var allFactors = ((listRes.data && listRes.data.totp) || []);
+    var allFactors = [];
+    if(listRes && listRes.data) {
+      if(Array.isArray(listRes.data.totp)) allFactors = allFactors.concat(listRes.data.totp);
+      if(Array.isArray(listRes.data.phone)) allFactors = allFactors.concat(listRes.data.phone);
+      if(Array.isArray(listRes.data.all)) allFactors = allFactors.concat(listRes.data.all);
+    }
     for(var i=0; i<allFactors.length; i++) {
-      if(allFactors[i].status !== 'verified') {
-        try { await sbClient.auth.mfa.unenroll({ factorId: allFactors[i].id }); } catch(e) {}
+      if(allFactors[i] && allFactors[i].status !== 'verified') {
+        try { await sbClient.auth.mfa.unenroll({ factorId: allFactors[i].id }); } catch(ignoreErr) {}
       }
     }
-  } catch(e) {}
+  } catch(cleanupErr) { console.warn('2FA cleanup warning:', cleanupErr); }
 
   if(btnEn) { btnEn.disabled=false; btnEn.textContent='Ativar →'; }
 
   try {
-    // Use timestamp in name to avoid "already exists" edge cases
-    var friendlyName = 'Trader OS ' + Date.now();
+    var friendlyName = 'TraderOS-' + Date.now();
     var res = await sbClient.auth.mfa.enroll({ factorType: 'totp', friendlyName: friendlyName });
     if(res.error) throw res.error;
+    if(!res.data || !res.data.totp) throw new Error('Resposta inválida do servidor');
     _secFactorId = res.data.id;
     var qrUri  = res.data.totp.qr_code;
     var secret = res.data.totp.secret;
@@ -10626,8 +10636,29 @@ async function sec_startEnroll() {
     var canvas = document.getElementById('sec-qr-canvas');
     if(canvas) {
       canvas.innerHTML = '';
-      if(typeof QRCode !== 'undefined') {
-        new QRCode(canvas, { text:qrUri, width:180, height:180, colorDark:'#000', colorLight:'#fff', correctLevel: QRCode.CorrectLevel.M });
+      try {
+        if(typeof QRCode !== 'undefined') {
+          // Try npm qrcode library (QRCode.toDataURL)
+          if(typeof QRCode.toDataURL === 'function') {
+            QRCode.toDataURL(qrUri, { width:180, margin:1 }, function(err, url) {
+              if(!err && url) {
+                var img = document.createElement('img');
+                img.src = url;
+                img.style.cssText = 'width:180px;height:180px;border-radius:4px';
+                canvas.innerHTML = '';
+                canvas.appendChild(img);
+              }
+            });
+          } else {
+            // Try qrcodejs library (new QRCode)
+            new QRCode(canvas, { text:qrUri, width:180, height:180, colorDark:'#000', colorLight:'#fff' });
+          }
+        } else {
+          throw new Error('QRCode library not loaded');
+        }
+      } catch(qrErr) {
+        // Fallback: show a clickable link to open the URI
+        canvas.innerHTML = '<div style="padding:12px;text-align:center"><div style="font-size:13px;color:#555;margin-bottom:8px">Use a chave abaixo para cadastrar manualmente no app</div></div>';
       }
     }
     var secEl = document.getElementById('sec-secret-key');
