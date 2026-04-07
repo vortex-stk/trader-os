@@ -10716,12 +10716,43 @@ function sec_setError(ctx, msg) {
 // tfa_startEnroll from old modal now redirects to security page
 async function tfa_startEnroll() {
   close2FAModal();
+  navigateToSecurity();
+}
+
+
+// ════════════════════════════════════════
+//  NAVEGAÇÃO SEGURA PARA SEGURANÇA
+// ════════════════════════════════════════
+function navigateToSecurity(startEnroll) {
   showPage('settings', null);
-  setTimeout(function(){
-    var btn = document.querySelector('[onclick*=seguranca]');
-    switchCfgTab('seguranca', btn);
-    setTimeout(sec_startEnroll, 300);
-  }, 250);
+  setTimeout(function() {
+    // Hide all panels
+    document.querySelectorAll('.cfg-panel').forEach(function(p) {
+      p.classList.remove('active');
+      if(p.id === 'cfg-panel-seguranca') p.style.display = 'none';
+    });
+    // Remove active from all tabs
+    document.querySelectorAll('.cfg-tab').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    // Show security panel
+    var panel = document.getElementById('cfg-panel-seguranca');
+    if(panel) panel.style.display = 'block';
+    // Activate the security tab button
+    document.querySelectorAll('.cfg-tab').forEach(function(b) {
+      if(b.textContent && b.textContent.trim().indexOf('Segurança') >= 0) {
+        b.classList.add('active');
+      }
+    });
+    // Load security data
+    if(typeof loadSecurityTab === 'function') loadSecurityTab();
+    // Auto-start enroll if requested
+    if(startEnroll) {
+      setTimeout(function() {
+        if(typeof sec_startEnroll === 'function') sec_startEnroll();
+      }, 400);
+    }
+  }, 150);
 }
 
 // ════════════════════════════════════════
@@ -10846,7 +10877,7 @@ window.addEventListener('load', () => {
       </div>
       <div id="tfa-status-badge" style="text-align:center;margin-bottom:20px"></div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <button id="btn-tfa-enable" onclick="close2FAModal();showPage('settings',null);setTimeout(function(){var btn=document.querySelector('[onclick*=seguranca]');switchCfgTab('seguranca',btn);setTimeout(sec_startEnroll,300);},250)" class="btn-add" style="width:100%;padding:12px;font-size:14px">📱 Ativar 2FA</button>
+        <button id="btn-tfa-enable" onclick="close2FAModal();navigateToSecurity()" class="btn-add" style="width:100%;padding:12px;font-size:14px">📱 Ativar 2FA</button>
         <button id="btn-tfa-disable" onclick="tfa_startDisable()" style="display:none;width:100%;padding:12px;font-size:14px;background:rgba(255,61,107,0.08);border:1px solid rgba(255,61,107,0.3);border-radius:10px;color:var(--red);font-weight:700;cursor:pointer">🗑️ Desativar 2FA</button>
       </div>
     </div>
