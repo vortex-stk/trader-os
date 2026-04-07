@@ -10596,17 +10596,28 @@ async function sec_loadStatus() {
 
 async function sec_startEnroll() {
   if(!sbClient) { toast('Faça login na nuvem primeiro', true); return; }
-  // AUTO-CLEANUP: remove any pending (unverified) factors before creating new one
+  
+  // Show loading state
+  var btnEn = document.getElementById('sec-btn-enable-2fa');
+  if(btnEn) { btnEn.disabled=true; btnEn.textContent='Preparando...'; }
+
+  // AUTO-CLEANUP: remove ALL non-verified factors (any name) before creating new
   try {
     var listRes = await sbClient.auth.mfa.listFactors();
-    var pending = ((listRes.data && listRes.data.totp) || []).filter(function(f){ return f.status !== 'verified'; });
-    for(var i=0; i<pending.length; i++) {
-      await sbClient.auth.mfa.unenroll({ factorId: pending[i].id });
+    var allFactors = ((listRes.data && listRes.data.totp) || []);
+    for(var i=0; i<allFactors.length; i++) {
+      if(allFactors[i].status !== 'verified') {
+        try { await sbClient.auth.mfa.unenroll({ factorId: allFactors[i].id }); } catch(e) {}
+      }
     }
-  } catch(e) { /* ignore cleanup errors */ }
+  } catch(e) {}
+
+  if(btnEn) { btnEn.disabled=false; btnEn.textContent='Ativar →'; }
 
   try {
-    var res = await sbClient.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Trader OS' });
+    // Use timestamp in name to avoid "already exists" edge cases
+    var friendlyName = 'Trader OS ' + Date.now();
+    var res = await sbClient.auth.mfa.enroll({ factorType: 'totp', friendlyName: friendlyName });
     if(res.error) throw res.error;
     _secFactorId = res.data.id;
     var qrUri  = res.data.totp.qr_code;
@@ -10702,19 +10713,15 @@ function sec_setError(ctx, msg) {
   el.style.display = msg ? 'block' : 'none';
 }
 
-// Also fix tfa_startEnroll to auto-cleanup pending factors
-var _orig_tfa_startEnroll = typeof tfa_startEnroll === 'function' ? tfa_startEnroll : null;
+// tfa_startEnroll from old modal now redirects to security page
 async function tfa_startEnroll() {
-  if(!sbClient) { toast('Faça login na nuvem primeiro', true); return; }
-  // AUTO-CLEANUP pending factors
-  try {
-    var listRes = await sbClient.auth.mfa.listFactors();
-    var pending = ((listRes.data && listRes.data.totp) || []).filter(function(f){ return f.status !== 'verified'; });
-    for(var i=0; i<pending.length; i++) {
-      await sbClient.auth.mfa.unenroll({ factorId: pending[i].id });
-    }
-  } catch(e) {}
-  if(_orig_tfa_startEnroll) return _orig_tfa_startEnroll();
+  close2FAModal();
+  showPage('settings', null);
+  setTimeout(function(){
+    var btn = document.querySelector('[onclick*=seguranca]');
+    switchCfgTab('seguranca', btn);
+    setTimeout(sec_startEnroll, 300);
+  }, 250);
 }
 
 // ════════════════════════════════════════
@@ -10839,7 +10846,7 @@ window.addEventListener('load', () => {
       </div>
       <div id="tfa-status-badge" style="text-align:center;margin-bottom:20px"></div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        <button id="btn-tfa-enable" onclick="tfa_startEnroll()" class="btn-add" style="width:100%;padding:12px;font-size:14px">📱 Ativar 2FA</button>
+        <button id="btn-tfa-enable" onclick="close2FAModal();showPage('settings',null);setTimeout(function(){var btn=document.querySelector('[onclick*=seguranca]');switchCfgTab('seguranca',btn);setTimeout(sec_startEnroll,300);},250)" class="btn-add" style="width:100%;padding:12px;font-size:14px">📱 Ativar 2FA</button>
         <button id="btn-tfa-disable" onclick="tfa_startDisable()" style="display:none;width:100%;padding:12px;font-size:14px;background:rgba(255,61,107,0.08);border:1px solid rgba(255,61,107,0.3);border-radius:10px;color:var(--red);font-weight:700;cursor:pointer">🗑️ Desativar 2FA</button>
       </div>
     </div>
