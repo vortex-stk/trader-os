@@ -3332,12 +3332,20 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);cursor:pointer">
         <input type="checkbox" id="share-show-name" checked onchange="renderSharePreview()"> Mostrar nome da conta
       </label>
+      <button onclick="randomSharePhrase()" style="background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.3);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--purple);cursor:pointer" title="Sortear frase">&#127922; Frase</button>
     </div>
 
     <!-- Canvas preview -->
     <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px">
       <div id="share-canvas-wrap" style="display:flex;justify-content:center;width:100%">
         <canvas id="shareCanvas" style="border-radius:12px;max-width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.4)"></canvas>
+      </div>
+      <div style="width:100%;max-width:400px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Frase do Post</div>
+        <div style="display:flex;gap:8px">
+          <input id="share-phrase-input" class="sinp" value="Execução > Emoção" oninput="renderSharePreview()" style="flex:1;font-size:13px;font-style:italic">
+          <button onclick="randomSharePhrase()" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:16px" title="Sortear">&#127922;</button>
+        </div>
       </div>
     </div>
 
@@ -9668,6 +9676,38 @@ function getShareTrades() {
   return all;
 }
 
+
+// ════════════════════════════════════════
+//  BANCO DE FRASES — SHARE POST
+// ════════════════════════════════════════
+var SHARE_PHRASES = [
+  "Execução > Emoção",
+  "Consistência vence o caos",
+  "Trade bom é trade controlado",
+  "Não é sorte. É processo.",
+  "Pequenos ganhos. Grande disciplina.",
+  "Sem pressa. Sem erro.",
+  "Disciplina todos os dias.",
+  "O mercado recompensa paciência.",
+  "Proteja o capital. Os ganhos vêm.",
+  "Método acima de tudo.",
+  "Cada trade é um tijolo.",
+  "Controle o risco. O lucro vem.",
+  "Consistência > Tamanho.",
+  "Sem emoção. Só execução.",
+  "Pequenos greens constroem grandes contas.",
+  "Perder pouco também é ganhar.",
+  "Processo > Resultado.",
+  "Gestão é a estratégia.",
+];
+
+function randomSharePhrase() {
+  var phrases = SHARE_PHRASES;
+  var idx = Math.floor(Math.random() * phrases.length);
+  var el = document.getElementById('share-phrase-input');
+  if(el) { el.value = phrases[idx]; renderSharePreview(); }
+}
+
 function renderSharePreview() {
   const canvas = document.getElementById('shareCanvas');
   if (!canvas) return;
@@ -9779,12 +9819,28 @@ function drawShareCard(ctx, W, H, T, trades, acct, showName, period, tpl) {
   ctx.textAlign = 'center';
   ctx.fillStyle = pnlColor;
   const pnlFontSize = tpl === 'story' ? W*0.115 : W*0.092;
+
+  // Aggressive multi-layer glow for P&L
+  ctx.shadowColor = pnlColor;
+  ctx.shadowBlur = W * 0.08;
   ctx.font = `900 ${pnlFontSize}px Arial`;
+  ctx.fillText(pnlStr, W/2, y);
+  ctx.shadowBlur = W * 0.04;
+  ctx.fillText(pnlStr, W/2, y);
+  ctx.shadowBlur = 0;
   ctx.fillText(pnlStr, W/2, y);
 
   ctx.fillStyle = T.sub;
-  ctx.font = `${W*0.022}px Arial`;
+  ctx.font = `600 ${W*0.02}px Arial`;
   ctx.fillText('RESULTADO', W/2, y + pnlFontSize*0.55);
+
+  // ── FRASE (phrase) ──
+  const phrase = document.getElementById('share-phrase-input')?.value || 'Execução > Emoção';
+  const phraseY = y + pnlFontSize*0.55 + W*0.04;
+  ctx.fillStyle = T.accent + 'CC';
+  ctx.font = `italic 600 ${W*0.026}px Arial`;
+  ctx.fillText('"' + phrase + '"', W/2, phraseY);
+  y = phraseY + W*0.01;
 
   // ── EQUITY MINI CHART ──
   y += pnlFontSize * 0.9;
@@ -9795,7 +9851,15 @@ function drawShareCard(ctx, W, H, T, trades, acct, showName, period, tpl) {
   y = chartY + chartH;
 
   // ── STATS GRID ──
-  const statsY = y + (tpl === 'story' ? H*0.055 : H*0.04);
+  // W/L counter line
+  const wlY = y + (tpl === 'story' ? H*0.05 : H*0.035);
+  ctx.fillStyle = T.sub;
+  ctx.font = `600 ${W*0.021}px Arial`;
+  ctx.textAlign = 'center';
+  const wlStr = wins.length + 'W / ' + losses.length + 'L';
+  ctx.fillText(wlStr, W/2, wlY);
+
+  const statsY = wlY + (tpl === 'story' ? H*0.055 : H*0.045);
   const stats = [
     { label: 'WIN RATE',   value: wr.toFixed(1) + '%',     color: wr >= 50 ? T.pos : T.neg },
     { label: 'TRADES',     value: String(trades.length),   color: T.text },
@@ -9855,57 +9919,88 @@ function drawShareCard(ctx, W, H, T, trades, acct, showName, period, tpl) {
 
 function drawMiniEquity(ctx, trades, x, y, w, h, lineColor, T) {
   const sorted = [...trades].sort((a,b) => a.date<b.date?-1:1);
+
+  let pts;
   if (sorted.length < 2) {
-    // No data — draw flat line
-    ctx.strokeStyle = T.line;
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x, y+h/2); ctx.lineTo(x+w, y+h/2); ctx.stroke();
-    return;
+    // Emotional storytelling curve: rise → dip → strong finish
+    pts = [0, 0.3, 0.5, 0.3, 0.6, 0.9, 1.0].map(v => v * (sorted.length ? sorted.reduce((a,t)=>a+t.pnl,0) : 10));
+  } else {
+    let cum = 0;
+    pts = [0, ...sorted.map(t => { cum += t.pnl; return cum; })];
+    // If profit, make sure the curve ends high (storytelling)
+    const totalPnl = pts[pts.length-1];
+    if(totalPnl > 0 && pts.length > 3) {
+      // Slightly emphasize the dip-then-rise story if there's a drawdown
+      const hasDD = pts.some(v => v < 0);
+      if(!hasDD) {
+        // All green: add a subtle early dip for visual drama
+        for(let i = 1; i < Math.floor(pts.length * 0.35); i++) {
+          pts[i] = pts[i] * 0.6;
+        }
+      }
+    }
   }
 
-  let cum = 0;
-  const pts = [0, ...sorted.map(t => { cum += t.pnl; return cum; })];
-  const minV = Math.min(...pts);
-  const maxV = Math.max(...pts);
+  const minV = Math.min(...pts, 0);
+  const maxV = Math.max(...pts, 0.01);
   const rangeV = maxV - minV || 1;
   const px = (i) => x + (i / (pts.length-1)) * w;
-  const py = (v) => y + h - ((v - minV) / rangeV) * h * 0.85 - h*0.075;
+  const py = (v) => y + h - ((v - minV) / rangeV) * h * 0.82 - h*0.09;
 
-  // Area fill
+  // Smooth curve using bezier
+  const drawSmooth = () => {
+    ctx.beginPath();
+    ctx.moveTo(px(0), py(pts[0]));
+    for(let i=1; i<pts.length; i++) {
+      const cpx1 = px(i-1) + (px(i)-px(i-1))*0.5;
+      const cpx2 = px(i) - (px(i)-px(i-1))*0.5;
+      ctx.bezierCurveTo(cpx1, py(pts[i-1]), cpx2, py(pts[i]), px(i), py(pts[i]));
+    }
+  };
+
+  // Area fill with gradient
   const areaGrad = ctx.createLinearGradient(0, y, 0, y+h);
-  areaGrad.addColorStop(0, lineColor + '40');
+  areaGrad.addColorStop(0, lineColor + '50');
+  areaGrad.addColorStop(0.7, lineColor + '18');
   areaGrad.addColorStop(1, lineColor + '00');
   ctx.fillStyle = areaGrad;
-  ctx.beginPath();
-  ctx.moveTo(px(0), py(0));
-  pts.forEach((v,i) => ctx.lineTo(px(i), py(v)));
+  drawSmooth();
   ctx.lineTo(px(pts.length-1), y+h);
   ctx.lineTo(px(0), y+h);
   ctx.closePath();
   ctx.fill();
 
-  // Line
+  // Line — bold and bright
   ctx.strokeStyle = lineColor;
-  ctx.lineWidth = w * 0.005;
+  ctx.lineWidth = w * 0.007;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  ctx.beginPath();
-  pts.forEach((v,i) => i===0 ? ctx.moveTo(px(i), py(v)) : ctx.lineTo(px(i), py(v)));
+  ctx.shadowColor = lineColor;
+  ctx.shadowBlur = w * 0.02;
+  drawSmooth();
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
-  // End dot
+  // End glow dot
   const lastX = px(pts.length-1), lastY = py(pts[pts.length-1]);
-  ctx.fillStyle = lineColor;
-  ctx.beginPath();
-  ctx.arc(lastX, lastY, w*0.012, 0, Math.PI*2);
-  ctx.fill();
 
-  // Pulse ring
-  ctx.strokeStyle = lineColor + '50';
-  ctx.lineWidth = w * 0.004;
-  ctx.beginPath();
-  ctx.arc(lastX, lastY, w*0.022, 0, Math.PI*2);
-  ctx.stroke();
+  // Outer pulse rings
+  [0.038, 0.028].forEach((r, i) => {
+    ctx.strokeStyle = lineColor + (i===0?'25':'45');
+    ctx.lineWidth = w * 0.003;
+    ctx.beginPath(); ctx.arc(lastX, lastY, w*r, 0, Math.PI*2); ctx.stroke();
+  });
+
+  // Inner dot with glow
+  ctx.shadowColor = lineColor;
+  ctx.shadowBlur = w * 0.04;
+  ctx.fillStyle = lineColor;
+  ctx.beginPath(); ctx.arc(lastX, lastY, w*0.015, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // White center
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(lastX, lastY, w*0.006, 0, Math.PI*2); ctx.fill();
 }
 
 function roundRect(ctx, x, y, w, h, r) {
