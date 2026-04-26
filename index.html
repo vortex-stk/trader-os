@@ -7087,13 +7087,12 @@ function toggleSidebarCollapse() {
   try { localStorage.setItem('tros_sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
 }
 
-// Restaura estado do sidebar ao carregar
+// Sempre inicia sidebar expandida (ignora localStorage)
 (function restoreSidebarState() {
   try {
-    if (localStorage.getItem('tros_sidebar_collapsed') === '1') {
-      const sidebar = document.getElementById('main-sidebar');
-      if (sidebar) sidebar.classList.add('collapsed');
-    }
+    localStorage.removeItem('tros_sidebar_collapsed');
+    const sidebar = document.getElementById('main-sidebar');
+    if (sidebar) sidebar.classList.remove('collapsed');
   } catch(e) {}
 })();
 
