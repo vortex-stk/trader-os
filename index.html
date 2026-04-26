@@ -13,8 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="Trader OS">
 <link rel="apple-touch-icon" href="/assets/icon-192.png">
 <meta name="description" content="Diário de trading profissional para traders de forex e prop firms">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/redesign.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,56 +23,49 @@
    APEX TRADE · DESIGN SYSTEM
 ═══════════════════════════════════════ */
 :root {
-  /* ── Nova paleta: azul-marinho profundo estilo "Design Flow" ── */
-  --bg-deep:    #0D1117;
-  --bg-base:    #161B27;
-  --bg-card:    #1C2238;
-  --bg-card2:   #20263E;
-  --bg-hover:   #252C46;
-  --border:     rgba(255,255,255,0.07);
-  --border-md:  rgba(255,255,255,0.13);
-  --border-hi:  rgba(255,255,255,0.22);
+  --bg-deep:    #050810;
+  --bg-base:    #080C18;
+  --bg-card:    #0C1220;
+  --bg-card2:   #101628;
+  --bg-hover:   #141C30;
+  --border:     rgba(255,255,255,0.06);
+  --border-md:  rgba(255,255,255,0.10);
+  --border-hi:  rgba(255,255,255,0.16);
 
-  /* Roxo-índigo como cor primária */
-  --green:      #6366F1;
-  --green-dim:  #4F52CC;
-  --green-glow: rgba(99,102,241,0.25);
-  --green-bg:   rgba(99,102,241,0.14);
+  --green:      #00F5A0;
+  --green-dim:  #00C880;
+  --green-glow: rgba(0,245,160,0.18);
+  --green-bg:   rgba(0,245,160,0.06);
+  --red:        #FF3D6B;
+  --red-bg:     rgba(255,61,107,0.08);
+  --amber:      #FFB547;
+  --amber-bg:   rgba(255,181,71,0.08);
+  --purple:     #7C5CFC;
+  --purple-dim: #5A3FD4;
+  --purple-bg:  rgba(124,92,252,0.12);
+  --blue:       #3B9EFF;
+  --blue-bg:    rgba(59,158,255,0.10);
+  --cyan:       #22D3EE;
 
-  /* Positivo = esmeralda */
-  --pos:        #10B981;
-  --pos-bg:     rgba(16,185,129,0.12);
+  --text-1:    #F0F6FF;
+  --text-2:    #8A96B0;
+  --text-3:    #4A5470;
+  --text-4:    #2A3050;
 
-  --red:        #F43F5E;
-  --red-bg:     rgba(244,63,94,0.10);
-  --amber:      #F59E0B;
-  --amber-bg:   rgba(245,158,11,0.10);
-  --purple:     #A855F7;
-  --purple-dim: #9333EA;
-  --purple-bg:  rgba(168,85,247,0.13);
-  --blue:       #3B82F6;
-  --blue-bg:    rgba(59,130,246,0.12);
-  --cyan:       #06B6D4;
+  --font-ui:   'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  --text-1:    #E8EDF8;
-  --text-2:    #8892B8;
-  --text-3:    #4B5480;
-  --text-4:    #2B3160;
+  --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+  --nav-h: 64px;
+  --sidebar-w: 240px;
 
-  --font-ui:   'Plus Jakarta Sans', 'Outfit', sans-serif;
-  --font-mono: 'DM Mono', 'JetBrains Mono', monospace;
+  --shadow-sm:  0 2px 12px rgba(0,0,0,0.4);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.5);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.6);
+  --glow-green: 0 0 30px rgba(0,245,160,0.15);
+  --glow-purple:0 0 40px rgba(124,92,252,0.15);
 
-  --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 24px;
-  --nav-h: 62px;
-  --sidebar-w: 210px;
-
-  --shadow-sm:  0 2px 16px rgba(0,0,0,0.5);
-  --shadow-md:  0 8px 32px rgba(0,0,0,0.6);
-  --shadow-lg:  0 20px 60px rgba(0,0,0,0.7);
-  --glow-green: 0 0 30px rgba(99,102,241,0.20);
-  --glow-purple:0 0 40px rgba(168,85,247,0.18);
-
-  /* accent alias */
+  /* accent alias (for period chips, etc.) */
   --accent: var(--green);
 }
 
@@ -462,8 +454,8 @@ body::after {
   position: sticky; top: 0;
   height: 100vh;
   overflow-y: auto; overflow-x: hidden;
-  border-right: 1px solid rgba(99,102,241,0.12);
-  background: #10142A;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  background: var(--bg-base);
   padding: 0 0 24px;
   display: flex; flex-direction: column; gap: 0;
   transition: width 0.25s cubic-bezier(.4,0,.2,1);
@@ -530,11 +522,10 @@ body::after {
   font-size: 13.5px; font-weight: 500; color: var(--text-2);
   cursor: pointer; transition: all 0.18s; border: 1px solid transparent;
 }
-.sidebar-item:hover { color: var(--text-1); background: rgba(255,255,255,0.05); }
+.sidebar-item:hover { color: var(--text-1); background: rgba(255,255,255,0.04); }
 .sidebar-item.active {
-  color: #C7D2FE; background: rgba(99,102,241,0.18);
-  border-color: rgba(99,102,241,0.30);
-  font-weight: 600;
+  color: var(--green); background: var(--green-bg);
+  border-color: rgba(0,245,160,0.12);
 }
 .sidebar-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink:0; }
 .sidebar-label { flex: 1; }
@@ -1207,19 +1198,19 @@ body::after {
 }
 header {
   position:sticky; top:0; z-index:400; height:var(--nav-h);
-  background:#0D1117; backdrop-filter:blur(24px) saturate(1.8);
-  border-bottom:1px solid rgba(99,102,241,0.15);
-  display:flex; align-items:center; padding:0 22px; gap:12px;
+  background:rgba(5,8,16,0.92); backdrop-filter:blur(32px) saturate(1.6);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; gap:12px;
   flex-shrink:0;
 }
 .logo { display:flex; align-items:center; gap:10px; flex-shrink:0; margin-right:28px; }
 .logo-mark {
   width:34px; height:34px;
-  background:linear-gradient(135deg,#6366F1,#A855F7);
+  background:linear-gradient(135deg,var(--green),var(--cyan));
   border-radius:10px; display:flex; align-items:center; justify-content:center;
-  font-size:15px; font-weight:900; color:#fff; box-shadow:0 0 18px rgba(99,102,241,0.35);
+  font-size:15px; font-weight:900; color:#050810; box-shadow:var(--glow-green);
 }
-.logo-text { font-size:15px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(90deg,#C7D2FE,#E9D5FF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.logo-text { font-size:15px; font-weight:900; letter-spacing:0.08em; background:linear-gradient(90deg,var(--green),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .desk-nav { display:none; }
 .nav-btn {
   padding:8px 14px; border-radius:var(--r-sm); font-size:13px; font-weight:500;
@@ -1227,7 +1218,7 @@ header {
   transition:all 0.18s; white-space:nowrap;
 }
 .nav-btn:hover { color:var(--text-1); background:rgba(255,255,255,0.05); }
-.nav-btn.active { color:#A5B4FC; background:rgba(99,102,241,0.14); font-weight:600; }
+.nav-btn.active { color:var(--green); background:var(--green-bg); font-weight:600; }
 .hdr-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
 .sync-badge { display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:10px; color:var(--text-3); }
 .sync-dot { width:6px; height:6px; border-radius:50%; background:var(--text-4); flex-shrink:0; }
@@ -1917,43 +1908,35 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 /* ── 5 KPI CARDS ── */
 .db-kpi-row {
   display:grid; grid-template-columns:repeat(6,1fr);
-  gap:14px; margin-bottom:16px;
+  gap:12px; margin-bottom:12px;
 }
 .db-kpi-card {
-  background: linear-gradient(145deg, #1C2238, #18203A);
-  border:1px solid rgba(255,255,255,0.08); isolation:isolate; position:relative; z-index:1;
-  border-radius:16px; padding:20px 18px 16px;
+  background:var(--bg-card); border:1px solid var(--border); isolation:isolate; position:relative; z-index:1;
+  border-radius:12px; padding:18px 16px 14px;
   overflow:hidden;
   transition:border-color 0.2s, transform 0.18s, box-shadow 0.18s;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
-.db-kpi-card:hover { border-color:rgba(99,102,241,0.35); transform:translateY(-3px); box-shadow:0 8px 30px rgba(0,0,0,0.5), 0 0 20px rgba(99,102,241,0.08); }
-.db-kpi-card::after {
-  content:''; position:absolute; top:-20px; right:-20px;
-  width:80px; height:80px; border-radius:50%;
-  background:radial-gradient(circle, rgba(99,102,241,0.10) 0%, transparent 70%);
-  pointer-events:none;
-}
-.db-kpi-top-line { position:absolute; top:0; left:0; right:0; height:2px; border-radius:16px 16px 0 0; }
+.db-kpi-card:hover { border-color:rgba(255,255,255,0.14); transform:translateY(-2px); }
+.db-kpi-top-line { position:absolute; top:0; left:0; right:0; height:2px; border-radius:12px 12px 0 0; }
 .db-kpi-tag {
-  font-size:9.5px; letter-spacing:0.20em; text-transform:uppercase;
-  color:#3D4670; font-weight:700; margin-bottom:12px;
+  font-size:9px; letter-spacing:0.2em; text-transform:uppercase;
+  color:var(--text-3); font-weight:700; margin-bottom:12px;
 }
 .db-kpi-val {
   font-family:var(--font-mono); font-size:22px; font-weight:700;
-  line-height:1; margin-bottom:8px; color:#E8EDF8;
+  line-height:1; margin-bottom:8px; color:#fff;
 }
-.db-kpi-val.g { color:#34D399; }
-.db-kpi-val.r { color:#FB7185; }
-.db-kpi-val.b { color:#60A5FA; }
-.db-kpi-val.o { color:#FBBF24; }
-.db-kpi-val.p { color:#C084FC; }
+.db-kpi-val.g { color:#00F5A0; }
+.db-kpi-val.r { color:#FF5B70; }
+.db-kpi-val.b { color:#5BB4FF; }
+.db-kpi-val.o { color:#FFB547; }
+.db-kpi-val.p { color:#A78BFA; }
 .db-kpi-sub {
-  font-size:11px; color:#3D4670;
+  font-size:11px; color:rgba(255,255,255,0.35);
   display:flex; align-items:center; gap:5px; line-height:1.4;
 }
-.db-kpi-sub.up   { color:#34D399; }
-.db-kpi-sub.down { color:#FB7185; }
+.db-kpi-sub.up   { color:#00F5A0; }
+.db-kpi-sub.down { color:#FF5B70; }
 
 /* ── MAIN GRID ── */
 .db-main-grid {
@@ -1963,11 +1946,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* Equity card */
 .db-equity-card {
-  background: linear-gradient(145deg, #1C2238, #18203A);
-  border:1px solid rgba(255,255,255,0.08); isolation:isolate; position:relative; z-index:1;
-  border-radius:16px; padding:24px 22px 18px;
+  background:var(--bg-card); border:1px solid var(--border); isolation:isolate; position:relative; z-index:1;
+  border-radius:12px; padding:22px 22px 16px;
   min-width:0; overflow:hidden;
-  box-shadow:0 4px 24px rgba(0,0,0,0.4);
 }
 .db-eq-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; gap:12px; flex-wrap:wrap; }
 .db-eq-title  { font-size:16px; font-weight:800; color:var(--text-1); }
@@ -1979,22 +1960,20 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   color:var(--text-3); cursor:pointer; transition:all 0.15s;
   font-family:var(--font-ui);
 }
-.eq-filter.active { background:rgba(99,102,241,0.16); border-color:rgba(99,102,241,0.45); color:#A5B4FC; }
+.eq-filter.active { background:rgba(0,245,160,0.1); border-color:rgba(0,245,160,0.35); color:#00F5A0; }
 .eq-filter:hover  { color:#fff; border-color:rgba(255,255,255,0.2); }
 
 .db-eq-stats { display:flex; gap:32px; margin-bottom:18px; }
-.eq-stat-val { display:block; font-family:var(--font-mono); font-size:22px; font-weight:700; letter-spacing:-0.01em; color:#E8EDF8; }
-.eq-stat-val.g { color:#34D399; }
-.eq-stat-val.r { color:#FB7185; }
-.eq-stat-lbl { display:block; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:#3D4670; margin-top:4px; font-weight:700; }
+.eq-stat-val { display:block; font-family:var(--font-mono); font-size:22px; font-weight:700; letter-spacing:-0.01em; color:var(--text-1); }
+.eq-stat-val.g { color:#00F5A0; }
+.eq-stat-val.r { color:#FF5B70; }
+.eq-stat-lbl { display:block; font-size:9px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(255,255,255,0.28); margin-top:4px; font-weight:700; }
 
 /* Desempenho card */
 .db-perf-card {
-  background: linear-gradient(145deg, #1C2238, #18203A);
-  border:1px solid rgba(255,255,255,0.08); isolation:isolate; position:relative; z-index:1;
-  border-radius:16px; padding:24px 20px;
+  background:var(--bg-card); border:1px solid var(--border); isolation:isolate; position:relative; z-index:1;
+  border-radius:12px; padding:22px 20px;
   display:flex; flex-direction:column; gap:18px;
-  box-shadow:0 4px 24px rgba(0,0,0,0.4);
 }
 .db-perf-title { font-size:15px; font-weight:800; color:var(--text-1); }
 .db-donut-wrap { display:flex; align-items:center; gap:16px; }
@@ -2008,31 +1987,28 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.05);
 }
 .db-perf-row:last-child { border-bottom:none; }
-.db-perf-key { font-size:12px; color:#4B5480; }
-.db-perf-val { font-family:var(--font-mono); font-size:13px; font-weight:700; color:#E8EDF8; }
-.db-perf-val.g { color:#34D399; }
-.db-perf-val.r { color:#FB7185; }
-.db-perf-val.b { color:#60A5FA; }
-.db-perf-val.y { color:#FBBF24; }
-.db-perf-val.p { color:#C084FC; }
+.db-perf-key { font-size:12px; color:rgba(255,255,255,0.45); }
+.db-perf-val { font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--text-1); }
+.db-perf-val.g { color:#00F5A0; }
+.db-perf-val.r { color:#FF5B70; }
+.db-perf-val.b { color:#5BB4FF; }
+.db-perf-val.y { color:#FFB547; }
+.db-perf-val.p { color:#A78BFA; }
 
 /* ── BOTTOM 3 ── */
-.db-bottom-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.db-bottom-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
 .db-bottom-card {
-  background: linear-gradient(145deg, #1C2238, #18203A);
-  border:1px solid rgba(255,255,255,0.08); isolation:isolate; position:relative; z-index:1;
-  border-radius:16px; padding:20px 18px 16px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.4);
+  background:var(--bg-card); border:1px solid var(--border); isolation:isolate; position:relative; z-index:1;
+  border-radius:12px; padding:18px 18px 14px;
 }
-.db-bottom-card:hover { border-color:rgba(99,102,241,0.25); }
 .db-bottom-title { font-size:14px; font-weight:800; color:var(--text-1); margin-bottom:3px; }
 .db-bottom-sub   { font-size:10px; color:var(--text-3); margin-bottom:14px; }
 
 /* Drawdown stats */
 .db-dd-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:14px; }
-.dd-stat { text-align:center; background:rgba(0,0,0,0.30); border-radius:10px; padding:10px 6px; border:1px solid rgba(255,255,255,0.05); }
+.dd-stat { text-align:center; background:rgba(0,0,0,0.25); border-radius:8px; padding:10px 6px; }
 .dd-stat-val { font-family:var(--font-mono); font-size:15px; font-weight:700; }
-.dd-stat-lbl { font-size:9px; text-transform:uppercase; letter-spacing:0.12em; color:#3D4670; margin-top:3px; font-weight:700; }
+.dd-stat-lbl { font-size:9px; text-transform:uppercase; letter-spacing:0.12em; color:rgba(255,255,255,0.28); margin-top:3px; font-weight:700; }
 
 /* Session bars */
 .db-session-bars { display:flex; flex-direction:column; gap:14px; margin-top:4px; }
@@ -2611,62 +2587,62 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
   <!-- Topo: logo + botão colapso -->
   <div class="sb-top" onclick="toggleSidebarCollapse()">
-    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366F1,#A855F7);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 0 20px rgba(99,102,241,0.4);">T</div>
+    <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#050810;flex-shrink:0;">Ax</div>
     <span class="sb-logo-text">TRADER OS</span>
   </div>
 
   <!-- 📊 NEGOCIAÇÃO -->
   <div class="sidebar-section-label">Negociação</div>
   <div class="sidebar-item active" data-page="dashboard" data-tooltip="Painel" onclick="showPage('dashboard',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="2" y="2" width="7" height="7" rx="1.5" fill="currentColor" opacity=".9"/><rect x="11" y="2" width="7" height="7" rx="1.5" fill="currentColor" opacity=".5"/><rect x="2" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity=".5"/><rect x="11" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity=".5"/></svg><div class="sidebar-label">Painel</div>
+    <div class="sidebar-icon">📊</div><div class="sidebar-label">Painel</div>
   </div>
   <div class="sidebar-item" data-page="trades" data-tooltip="Registro de Negociações" onclick="showPage('trades',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M4 5h12M4 9h12M4 13h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="2" y="2" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/></svg><div class="sidebar-label">Negociações</div>
+    <div class="sidebar-icon">📋</div><div class="sidebar-label">Negociações</div>
   </div>
   <div class="sidebar-item" data-page="calendar" data-tooltip="Calendário" onclick="showPage('calendar',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="2" y="4" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M6 2v3M14 2v3M2 8h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Calendário</div>
+    <div class="sidebar-icon">📅</div><div class="sidebar-label">Calendário</div>
   </div>
   <div class="sidebar-item" data-page="reports" data-tooltip="Resumo Mensal" onclick="showPage('reports',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M3 15l4-5 3 3 4-6 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="sidebar-label">Resumo Mensal</div>
+    <div class="sidebar-icon">📈</div><div class="sidebar-label">Resumo Mensal</div>
   </div>
   <div class="sidebar-item" data-page="import" data-tooltip="Importar CSV" onclick="showPage('import',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><div class="sidebar-label">Importar CSV</div>
+    <div class="sidebar-icon">📥</div><div class="sidebar-label">Importar CSV</div>
   </div>
 
   <!-- 🎯 PLANEJAMENTO -->
   <div class="sidebar-section-label" style="margin-top:6px">Planejamento</div>
   <div class="sidebar-item" data-page="metas" data-tooltip="Alvos e Metas" onclick="showPage('metas',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="3.5" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1" fill="currentColor"/></svg><div class="sidebar-label">Alvos</div>
+    <div class="sidebar-icon">🎯</div><div class="sidebar-label">Alvos</div>
   </div>
   <div class="sidebar-item" data-page="risk" data-tooltip="Alertas de Risco" onclick="showPage('risk',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 3L2.5 16.5h15L10 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 9v3M10 14h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Alertas de Risco</div>
+    <div class="sidebar-icon">🚨</div><div class="sidebar-label">Alertas de Risco</div>
   </div>
   <div class="sidebar-item" data-page="calculator" data-tooltip="Calculadora de Margem" onclick="showPage('calculator',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 7h6M7 11h2M11 11h2M7 15h2M11 15h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Calculadora</div>
+    <div class="sidebar-icon">🧮</div><div class="sidebar-label">Calculadora</div>
   </div>
   <div class="sidebar-item" data-page="propfirm" data-tooltip="Prop Firm Mode" onclick="showPage('propfirm',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 2l2.4 5h5.2l-4.2 3.1 1.6 5L10 12.1 5 15.1l1.6-5L2.4 7h5.2L10 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><div class="sidebar-label">Prop Firm</div>
+    <div class="sidebar-icon">🏆</div><div class="sidebar-label">Prop Firm</div>
   </div>
 
   <!-- 📈 PERCEPÇÕES -->
   <div class="sidebar-section-label" style="margin-top:6px">Percepções</div>
   <div class="sidebar-item" data-page="analytics" data-tooltip="Análises" onclick="showPage('analytics',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M3 14l4-5 3 3 4-6 3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Análises</div>
+    <div class="sidebar-icon">🔬</div><div class="sidebar-label">Análises</div>
   </div>
   <div class="sidebar-item" data-page="instruments" data-tooltip="Instrumentos Topo" onclick="showPage('instruments',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 2l2.4 5h5.2l-4.2 3.1 1.6 5L10 12.1 5 15.1l1.6-5L2.4 7h5.2L10 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><div class="sidebar-label">Instrumentos</div>
+    <div class="sidebar-icon">🏆</div><div class="sidebar-label">Instrumentos</div>
   </div>
 
   <!-- ⚙️ CONTA -->
   <div class="sidebar-section-label" style="margin-top:6px">Conta</div>
   <div class="sidebar-item" data-page="wiki" data-tooltip="Wiki e Ajuda" onclick="showPage('wiki',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M10 9.5V14M10 7h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Wiki &amp; Ajuda</div>
+    <div class="sidebar-icon">❓</div><div class="sidebar-label">Wiki &amp; Ajuda</div>
   </div>
   <div class="sidebar-item" data-page="mt5integration" data-tooltip="Integração MT5" onclick="showPage('mt5integration',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M13 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM4.9 4.9l1.4 1.4M13.7 13.7l1.4 1.4M10 3v2M10 15v2M17 10h-2M5 10H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Integração MT5</div>
+    <div class="sidebar-icon">🔗</div><div class="sidebar-label">Integração MT5</div>
   </div>
   <div class="sidebar-item" data-page="settings" data-tooltip="Configurações" onclick="showPage('settings',null)">
-    <svg class="sidebar-svg" viewBox="0 0 20 20" fill="none" width="18" height="18"><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M10 3v2M10 15v2M3 10h2M15 10h2M5.5 5.5l1.4 1.4M13.1 13.1l1.4 1.4M14.5 5.5l-1.4 1.4M6.9 13.1l-1.4 1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><div class="sidebar-label">Configurações</div>
+    <div class="sidebar-icon">⚙️</div><div class="sidebar-label">Configurações</div>
   </div>
 
   <!-- Card conta ativa -->
@@ -2683,7 +2659,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 <header>
   <div style="position:relative" id="acctSwitcherWrap">
     <div class="acct-trigger" onclick="toggleDropdown('acctDD')">
-      <div class="acct-dot" id="hdr-dot" style="background:#10B981"></div>
+      <div class="acct-dot" id="hdr-dot" style="background:#00e5a0"></div>
       <span class="acct-name" id="hdr-name">—</span>
       <span class="acct-bal" id="hdr-bal">—</span>
     </div>
@@ -2711,11 +2687,12 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <span id="user-email-display" style="display:none;font-size:11px;color:var(--text-2)"></span>
     <div class="hdr-bal-pill" id="hdr-bal-pill" style="display:none">
       <span style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;font-weight:700">Saldo</span>
-      <span id="hdr-bal-live" style="font-family:var(--mono);font-size:12px;font-weight:700;color:#A5B4FC">—</span>
+      <span id="hdr-bal-live" style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
     </div>
     <span class="hdr-clock" id="clock"></span>
     <button id="theme-toggle-btn" onclick="quickToggleTheme()" title="Alternar tema claro/escuro"
-      class="hdr-icon-btn">🌙</button>
+      style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:16px;color:var(--text-2);transition:all .15s"
+      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🌙</button>
     <div class="profile-card-btn" onclick="toggleProfileDropdown(event)" id="profile-card-btn" title="Meu Perfil">
       <div class="pcb-avatar" id="pcb-avatar">JR</div>
       <div class="pcb-info">
