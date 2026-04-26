@@ -2470,12 +2470,12 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 /* ── Novo Header ── */
 .hdr-search-center {
   position:absolute; left:50%; transform:translateX(-50%);
-  width:380px; max-width:40vw;
+  width:280px;
 }
 .hdr-search {
-  display:flex; align-items:center; gap:10px; position:relative;
-  background:rgba(255,255,255,0.06); border:1px solid var(--border-md);
-  border-radius:24px; padding:10px 20px; transition:all 0.25s;
+  display:flex; align-items:center; gap:9px; position:relative;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border-md);
+  border-radius:22px; padding:8px 16px; transition:all 0.25s;
   width:100%;
 }
 .hdr-search:focus-within {
@@ -2524,6 +2524,16 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .pcb-info { display:flex !important; flex-direction:column; gap:1px; }
 .pcb-name { display:block !important; font-size:13px; font-weight:700; color:var(--text-1); line-height:1.3; white-space:nowrap; }
 .pcb-sub  { display:block !important; font-size:10px; color:var(--text-3); line-height:1.3; white-space:nowrap; }
+
+
+/* Sync dentro do dropdown de perfil */
+.pd-sync-row {
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  margin-top:8px; font-size:11px; color:var(--text-3);
+}
+.pd-sync-row .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--text-4); flex-shrink:0; }
+.pd-sync-row .sync-dot.synced  { background:var(--green); box-shadow:0 0 6px var(--green); }
+.pd-sync-row .sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
 
 /* Sync dentro do perfil */
 .pcb-sync { display:flex; align-items:center; gap:4px; font-size:9px; color:var(--text-3); margin-top:2px; }
@@ -2763,7 +2773,6 @@ header { isolation: isolate; }
   <div style="flex:1"></div>
 
   <div class="hdr-right">
-    <span class="hdr-clock" id="clock"></span>
     <!-- Sino -->
     <button class="hdr-icon-btn" title="Notificações">
       <svg viewBox="0 0 20 20" fill="none" width="17" height="17"><path d="M10 2a6 6 0 0 0-6 6c0 2.8-.8 4.2-1.6 5.2h15.2C16.8 12.2 16 10.8 16 8a6 6 0 0 0-6-6zM8.5 17.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -2781,10 +2790,6 @@ header { isolation: isolate; }
       <div class="pcb-info">
         <div class="pcb-name" id="pcb-name">Trader</div>
         <div class="pcb-sub" id="pcb-sub">Conta Principal</div>
-        <div class="pcb-sync">
-          <div class="sync-dot" id="sync-dot"></div>
-          <span id="sync-text">local</span>
-        </div>
       </div>
     </div>
 
@@ -2807,6 +2812,11 @@ header { isolation: isolate; }
           <span id="pd-session-time">Sessão ativa</span>
         </div>
         <div class="pd-plan-badge" id="pd-plan-badge">✦ Plano Gratuito</div>
+        <!-- Sincronização dentro do dropdown -->
+        <div class="pd-sync-row">
+          <div class="sync-dot synced" id="sync-dot"></div>
+          <span id="sync-text">sincronizado</span>
+        </div>
       </div>
 
       <!-- BARRA DE USO -->
