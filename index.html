@@ -444,6 +444,7 @@ body::after {
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  min-height: 100vh;
   overflow-x: hidden;
 }
 
@@ -1199,86 +1200,12 @@ body::after {
   flex-shrink:0;
 }
 header {
-  position:sticky !important; top:0 !important; z-index:400; height:var(--nav-h) !important;
-  background:rgba(5,8,16,0.95) !important; backdrop-filter:blur(32px) saturate(1.6);
-  border-bottom:1px solid var(--border) !important;
-  display:flex !important; align-items:center !important; padding:0 20px; gap:12px;
-  flex-shrink:0 !important;
-  margin-bottom:0 !important;
+  position:sticky; top:0; z-index:400; height:var(--nav-h);
+  background:rgba(5,8,16,0.92); backdrop-filter:blur(32px) saturate(1.6);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 20px; gap:12px;
+  flex-shrink:0;
 }
-
-/* ── Barra de busca ── */
-.hdr-search {
-  display:flex; align-items:center; gap:9px;
-  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
-  border-radius:20px; padding:8px 16px;
-  width:200px; transition:all 0.2s;
-}
-.hdr-search:focus-within, .hdr-search:hover {
-  border-color:var(--border-hi); background:rgba(255,255,255,0.07); width:240px;
-}
-.hdr-search-icon { color:var(--text-3); flex-shrink:0; }
-.hdr-search-input {
-  background:none; border:none; outline:none;
-  font-size:12px; color:var(--text-2); font-family:var(--font-ui);
-  width:100%; cursor:text;
-}
-.hdr-search-input::placeholder { color:var(--text-3); }
-
-/* ── Ícones do lado direito ── */
-.hdr-right { display:flex; align-items:center; gap:8px; }
-.hdr-icon-btn {
-  width:36px; height:36px; border-radius:50%;
-  background:rgba(255,255,255,0.05); border:1px solid var(--border);
-  color:var(--text-2); display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:15px; transition:all 0.18s; flex-shrink:0;
-}
-.hdr-icon-btn:hover {
-  background:var(--green-bg); border-color:rgba(0,245,160,0.25); color:var(--green);
-}
-#theme-toggle-btn { font-size:16px; }
-
-/* ── Sync badge ── */
-.sync-badge {
-  display:flex; align-items:center; gap:5px;
-  background:rgba(0,0,0,0.3); border:1px solid var(--border);
-  border-radius:20px; padding:4px 10px; font-size:10px; color:var(--text-3);
-}
-.sync-dot { width:6px; height:6px; border-radius:50%; background:var(--text-4); flex-shrink:0; }
-.sync-dot.synced  { background:var(--green); box-shadow:0 0 6px var(--green); }
-.sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
-@keyframes pulseAnim { 0%{box-shadow:0 0 0 0 rgba(255,181,71,0.6)}70%{box-shadow:0 0 0 8px rgba(255,181,71,0)}100%{box-shadow:0 0 0 0 rgba(255,181,71,0)} }
-
-/* ── Clock ── */
-.hdr-clock { font-family:var(--font-mono); font-size:11px; color:var(--text-3); }
-
-/* ── Profile card ── */
-.profile-card-btn {
-  display:flex; align-items:center; gap:10px;
-  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
-  border-radius:20px; padding:5px 14px 5px 5px;
-  cursor:pointer; transition:all 0.18s;
-}
-.profile-card-btn:hover {
-  border-color:rgba(0,245,160,0.25); background:rgba(0,245,160,0.04);
-}
-.pcb-avatar {
-  width:34px; height:34px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,var(--purple),var(--blue));
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:800; color:#fff; letter-spacing:0.05em;
-  outline:2px solid rgba(124,92,252,0.5); outline-offset:2px;
-  transition:all 0.18s;
-}
-.profile-card-btn:hover .pcb-avatar {
-  outline-color:rgba(0,245,160,0.6); box-shadow:0 0 12px rgba(0,245,160,0.2);
-}
-.pcb-info { display:flex; flex-direction:column; gap:1px; }
-.pcb-name { font-size:12px; font-weight:700; color:var(--text-1); line-height:1.2; }
-.pcb-sub  { font-size:10px; color:var(--text-3); line-height:1.2; }
-.pcb-flag { font-size:18px; flex-shrink:0; }
-
-.hdr-bal-pill { display:none !important; }
 .logo { display:flex; align-items:center; gap:10px; flex-shrink:0; margin-right:28px; }
 .logo-mark {
   width:34px; height:34px;
@@ -1295,7 +1222,42 @@ header {
 }
 .nav-btn:hover { color:var(--text-1); background:rgba(255,255,255,0.05); }
 .nav-btn.active { color:var(--green); background:var(--green-bg); font-weight:600; }
+.hdr-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
+.sync-badge { display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:10px; color:var(--text-3); }
+.sync-dot { width:6px; height:6px; border-radius:50%; background:var(--text-4); flex-shrink:0; }
+.sync-dot.synced { background:var(--green); box-shadow:0 0 6px var(--green); }
+.sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
+@keyframes pulseAnim { 0%{box-shadow:0 0 0 0 rgba(255,181,71,0.6)}70%{box-shadow:0 0 0 8px rgba(255,181,71,0)}100%{box-shadow:0 0 0 0 rgba(255,181,71,0)} }
+.profile-card-btn {
+  display:flex; align-items:center;
+  background:none; border:none; padding:0;
+  cursor:pointer; transition:all 0.18s;
+  position:relative;
+}
+.profile-card-btn:hover .pcb-avatar {
+  outline-color:rgba(0,245,160,0.7);
+  box-shadow:0 0 14px rgba(0,245,160,0.25);
+}
+.pcb-avatar {
+  width:38px; height:38px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,#7C5CFC,#3B9EFF);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:800; color:var(--text-1); letter-spacing:0.05em;
+  outline:2px solid rgba(124,92,252,0.6); outline-offset:2px;
+  transition:all 0.18s;
+}
+/* mantém os elementos ocultos no header mas acessíveis ao JS */
+.pcb-info { display:none; }
+.pcb-name { display:none; }
+.pcb-sub  { display:none; }
+
 .hdr-bal-pill { display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:20px; padding:4px 12px; }
+.hdr-clock { font-family:var(--font-mono); font-size:11px; color:var(--text-3); }
+
+/* Account switcher */
+.acct-trigger { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border-md); border-radius:var(--r-sm); padding:7px 12px; cursor:pointer; transition:all 0.18s; }
+.acct-trigger:hover { border-color:var(--border-hi); background:rgba(255,255,255,0.07); }
+.acct-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .acct-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; }
 .acct-bal  { font-family:var(--font-mono); font-size:11px; color:var(--green); }
 .acct-dropdown { display:none; position:absolute; top:calc(var(--nav-h) + 6px); left:24px; background:linear-gradient(145deg,#0c1220,#080c18); border:1px solid var(--border-md); border-radius:var(--r-md); padding:8px; min-width:280px; z-index:600; box-shadow:0 24px 64px rgba(0,0,0,0.7),var(--glow-purple); }
@@ -1312,7 +1274,7 @@ header {
 .user-btn:hover { border-color:var(--purple); box-shadow:0 0 12px rgba(124,92,252,0.3); }
 /* ── Profile Dropdown (estilo Chrome) ── */
 .profile-dropdown {
-  display:none; position:fixed;
+  display:none; position:absolute;
   top:calc(var(--nav-h) + 10px); right:16px;
   width:280px; z-index:700;
   background:linear-gradient(160deg,#0e1525,#080c18);
@@ -1480,10 +1442,7 @@ header {
 .sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--r-sm); font-size:13px; font-weight:500; color:var(--text-2); cursor:pointer; transition:all 0.18s; border:1px solid transparent; }
 .sidebar-item:hover { color:var(--text-1); background:rgba(255,255,255,0.04); }
 .sidebar-item.active { color:var(--green); background:var(--green-bg); border-color:rgba(0,245,160,0.12); }
-.sidebar-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-.sidebar-icon svg { color: var(--text-2); transition: color 0.18s; }
-.sidebar-item:hover .sidebar-icon svg { color: var(--text-1); }
-.sidebar-item.active .sidebar-icon svg { color: var(--green); }
+.sidebar-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
 .sidebar-label { flex:1; }
 .sidebar-acct-card { margin-top:auto; padding:16px; background:linear-gradient(135deg,rgba(124,92,252,0.12),rgba(59,158,255,0.08)); border:1px solid rgba(124,92,252,0.2); border-radius:var(--r-md); transition: opacity 0.2s; }
 .sac-label { font-size:9px; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-3); margin-bottom:4px; font-weight:700; }
@@ -2507,9 +2466,38 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .pf-tl-content { flex:1; padding-top:4px; }
 .pf-tl-title { font-size:14px; font-weight:700; color:var(--text-1); margin-bottom:2px; }
 .pf-tl-sub   { font-size:12px; color:var(--text-3); }
+
+/* ── Novo Header ── */
+.hdr-search {
+  display:flex; align-items:center; gap:9px;
+  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
+  border-radius:20px; padding:7px 16px; transition:all 0.2s;
+}
+.hdr-search:hover { border-color:var(--border-hi); background:rgba(255,255,255,0.07); }
+.hdr-search svg { color:var(--text-3); flex-shrink:0; }
+.hdr-icon-btn {
+  width:34px; height:34px; border-radius:50%;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border);
+  color:var(--text-2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:15px; transition:all 0.18s; flex-shrink:0;
+}
+.hdr-icon-btn:hover { background:var(--green-bg); border-color:rgba(0,245,160,0.25); color:var(--green); }
+.profile-card-btn {
+  display:flex !important; align-items:center; gap:9px;
+  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
+  border-radius:20px; padding:4px 12px 4px 4px;
+  cursor:pointer; transition:all 0.18s; position:relative;
+}
+.profile-card-btn:hover { border-color:rgba(0,245,160,0.3); background:rgba(0,245,160,0.04); }
+.pcb-info { display:flex !important; flex-direction:column; gap:1px; }
+.pcb-name { display:block !important; font-size:12px; font-weight:700; color:var(--text-1); line-height:1.2; }
+.pcb-sub  { display:block !important; font-size:10px; color:var(--text-3); line-height:1.2; }
+.pcb-avatar { width:32px !important; height:32px !important; }
+/* Sidebar collapse: nunca auto-colapsar */
+@media(max-width:1024px){ .sidebar { width:var(--sidebar-w) !important; } }
+
 </style>
 </head>
-<body>
 <!-- ════════════════════════════════
      AUTH SCREEN
 ════════════════════════════════ -->
@@ -2651,7 +2639,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <div class="sidebar-icon"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M3 15l4-5 3 3 4-6 3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="sidebar-label">Resumo Mensal</div>
   </div>
   <div class="sidebar-item" data-page="import" data-tooltip="Importar CSV" onclick="showPage('import',null)">
-    <div class="sidebar-icon"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 3v10M6 9l4 4 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 16h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><div class="sidebar-label">Importar CSV</div>
+    <div class="sidebar-icon"><svg viewBox="0 0 20 20" fill="none" width="18" height="18"><path d="M10 3v10M6 9l4 4 4-4M3 16h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="sidebar-label">Importar CSV</div>
   </div>
 
   <!-- 🎯 PLANEJAMENTO -->
@@ -2702,8 +2690,7 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 </aside>
 <div class="main-body">
 <header>
-
-  <!-- Conta switcher (oculto visualmente, mantido para JS) -->
+  <!-- Conta switcher oculto — mantido para JS -->
   <div style="display:none" id="acctSwitcherWrap">
     <div class="acct-trigger" onclick="toggleDropdown('acctDD')">
       <div class="acct-dot" id="hdr-dot" style="background:#00e5a0"></div>
@@ -2715,26 +2702,24 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <button class="add-acct-btn" onclick="openAddAcct()">＋ Adicionar Conta</button>
     </div>
   </div>
-
-  <!-- ① Barra de busca -->
-  <div class="hdr-search">
-    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" class="hdr-search-icon"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    <input class="hdr-search-input" type="text" placeholder="Search" readonly onclick="this.blur()"/>
+  <div class="hdr-bal-pill" id="hdr-bal-pill" style="display:none">
+    <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;font-weight:700">Saldo</span>
+    <span id="hdr-bal-live" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
   </div>
 
+  <!-- Barra de busca -->
+  <div class="hdr-search">
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <input type="text" placeholder="Search" style="background:none;border:none;outline:none;font-size:12px;color:var(--text-2);font-family:var(--font-ui);width:120px;" readonly/>
+  </div>
 
-
-  <!-- Spacer -->
   <div style="flex:1"></div>
 
-  <!-- ③ Ícones direita -->
   <div class="hdr-right">
-    <!-- Sync -->
     <div class="sync-badge" id="sync-badge">
       <div class="sync-dot" id="sync-dot"></div>
       <span id="sync-text">local</span>
     </div>
-    <!-- Relógio -->
     <span class="hdr-clock" id="clock"></span>
     <!-- Sino -->
     <button class="hdr-icon-btn" title="Notificações">
@@ -2746,22 +2731,135 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </button>
     <!-- Tema -->
     <button class="hdr-icon-btn" id="theme-toggle-btn" onclick="quickToggleTheme()" title="Tema">🌙</button>
-
-    <!-- ④ Perfil card -->
+    <!-- Perfil -->
     <div class="profile-card-btn" onclick="toggleProfileDropdown(event)" id="profile-card-btn" title="Meu Perfil">
       <div class="pcb-avatar" id="pcb-avatar">JR</div>
       <div class="pcb-info">
         <div class="pcb-name" id="pcb-name">Trader</div>
         <div class="pcb-sub" id="pcb-sub">Conta Principal</div>
       </div>
-      <!-- Bandeira BR -->
-      <div class="pcb-flag">🇧🇷</div>
+      <div style="font-size:18px;margin-left:2px">🇧🇷</div>
+    </div>
+
+    <!-- Profile Dropdown -->
+    <div class="profile-dropdown" id="profileDropdown" style="width:300px;max-height:90vh;overflow-y:auto">
+
+      <!-- CABEÇALHO -->
+      <div class="pd-header">
+        <div class="pd-avatar-lg" id="pd-avatar-lg">JR</div>
+        <div class="pd-name" id="pd-name">Trader</div>
+        <div class="pd-email" id="pd-email">—</div>
+        <div class="pd-meta-row">
+          <span class="pd-meta-dot active" id="pd-status-dot"></span>
+          <span id="pd-status-text">Conta ativa</span>
+          <span style="color:var(--text-4);margin:0 4px">·</span>
+          <span id="pd-since">—</span>
+        </div>
+        <div class="pd-session-badge">
+          <span class="pd-session-dot"></span>
+          <span id="pd-session-time">Sessão ativa</span>
+        </div>
+        <div class="pd-plan-badge" id="pd-plan-badge">✦ Plano Gratuito</div>
+      </div>
+
+      <!-- BARRA DE USO -->
+      <div class="pd-usage-wrap" id="pd-usage-wrap">
+        <div class="pd-usage-label">
+          <span>Limite de trades do mês</span>
+          <span id="pd-usage-val">— / —</span>
+        </div>
+        <div class="pd-usage-bar">
+          <div class="pd-usage-fill" id="pd-usage-fill" style="width:0%;background:var(--green)"></div>
+        </div>
+      </div>
+
+      <!-- UPGRADE -->
+      <div class="pd-upgrade-btn" onclick="closeProfileDropdown();showPage('settings',null)">
+        <span class="pd-upgrade-icon">⚡</span>
+        <div class="pd-upgrade-text">
+          <div class="pd-upgrade-title">Fazer upgrade para Pro</div>
+          <div class="pd-upgrade-sub">Histórico completo · IA · Prop Firm</div>
+        </div>
+        <span class="pd-upgrade-arrow">›</span>
+      </div>
+
+      <div class="pd-menu" style="padding-top:4px">
+
+        <!-- CONTA -->
+        <div class="pd-section-title">Conta</div>
+        <div class="pd-item" onclick="closeProfileDropdown();showPage('profile',null)">
+          <div class="pd-item-icon">👤</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Perfil</div>
+            <div class="pd-item-sub">Nome, foto, broker</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+        <div class="pd-item" onclick="closeProfileDropdown();showPage('settings',null)">
+          <div class="pd-item-icon">⚙️</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Configurações</div>
+            <div class="pd-item-sub">Metas, limites, preferências</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+        <div class="pd-item" onclick="closeProfileDropdown();showPage('settings',null);setTimeout(()=>document.getElementById('cfg-sb-url')?.scrollIntoView({behavior:'smooth'}),200)">
+          <div class="pd-item-icon">☁️</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Conta & Sincronização</div>
+            <div class="pd-item-sub">Supabase, backup, dados</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+
+        <!-- SEGURANÇA -->
+        <div class="pd-section-title">Segurança</div>
+        <div class="pd-item" onclick="closeProfileDropdown();pdResetPassword()">
+          <div class="pd-item-icon">🔑</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Alterar senha</div>
+            <div class="pd-item-sub">Enviar link por e-mail</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();showPage('settings',null);setTimeout(function(){switchCfgTab('seguranca',document.querySelector('[onclick*=seguranca]'));},200)">
+          <div class="pd-item-icon">🛡️</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Autenticação 2FA</div>
+            <div class="pd-item-sub" id="pd-2fa-sub">Inativo</div>
+          </div>
+          <span style="font-size:10px;background:rgba(255,181,71,0.15);border:1px solid rgba(255,181,71,0.3);color:#FFB547;border-radius:20px;padding:2px 7px;font-weight:700">BETA</span>
+        </div>
+
+        <!-- SUPORTE -->
+        <div class="pd-section-title">Suporte</div>
+        <div class="pd-item" onclick="closeProfileDropdown();pdOpenSupport()">
+          <div class="pd-item-icon">💬</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Abrir ticket de suporte</div>
+            <div class="pd-item-sub">Resposta em até 24h</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+        <div class="pd-item" onclick="closeProfileDropdown();pdOpenDocs()">
+          <div class="pd-item-icon">📖</div>
+          <div style="flex:1">
+            <div class="pd-item-label">Documentação & Guias</div>
+            <div class="pd-item-sub">FAQ e tutoriais</div>
+          </div>
+          <span class="pd-item-arrow">›</span>
+        </div>
+
+        <div class="pd-divider" style="margin:8px 8px 4px"></div>
+
+        <!-- SAIR -->
+        <div class="pd-item danger" onclick="closeProfileDropdown();doLogout()">
+          <div class="pd-item-icon">🚪</div>
+          <span class="pd-item-label">Encerrar sessão</span>
+        </div>
+      </div>
     </div>
   </div>
-
-
-  </div>
-
 </header>
 <main>
 
@@ -6083,7 +6181,6 @@ function renderDashboard() {
   const pill=document.getElementById('hdr-bal-pill');
   const pillVal=document.getElementById('hdr-bal-live');
   if(pill&&pillVal){pill.style.display='flex';pillVal.textContent=fmt$(bal);pillVal.style.color=bal>=(acct.capital||10000)?'var(--green)':'var(--red)';}
-
   renderHeader(); // garante que avatar/nome sempre atualiza
 }
 
@@ -6973,13 +7070,9 @@ function toggleSidebarCollapse() {
   try { localStorage.setItem('tros_sidebar_collapsed', isCollapsed ? '1' : '0'); } catch(e) {}
 }
 
-// Sempre inicia sidebar expandida (ignora localStorage)
+// Sempre inicia sidebar expandida
 (function restoreSidebarState() {
-  try {
-    localStorage.removeItem('tros_sidebar_collapsed');
-    const sidebar = document.getElementById('main-sidebar');
-    if (sidebar) sidebar.classList.remove('collapsed');
-  } catch(e) {}
+  try { localStorage.removeItem('tros_sidebar_collapsed'); } catch(e) {}
 })();
 
 function toggleRjMenu(ev, id, date) {
@@ -7740,126 +7833,7 @@ function exportDashboardPDF() {
   +topPairs.map(function(e){var p=e[0],d=e[1];return '<tr><td style="font-weight:700">'+p+'</td><td style="color:'+(d.pnl>=0?'#00875A':'#CC2244')+';font-weight:700">'+(d.pnl>=0?'+':'')+'R$'+d.pnl.toFixed(2)+'</td><td>'+d.c+'</td><td>'+(d.c?(d.w/d.c*100).toFixed(0)+'%':'—')+'</td></tr>';}).join('')+'</table>'
   +'<div class="sec">📋 Histórico Completo</div><table><tr><th>Data</th><th>Par</th><th>P&L</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>R:R</th></tr>'+tradeRows+'</table>'
   +'<div class="ft"><span>TRADER OS · Relatório Completo</span><span>'+acct.name+' · '+all.length+' ops · '+now.toLocaleDateString('pt-BR')+'</span><span>Emerson Jesus</span></div>'
-  +'<!-- Profile Dropdown -->
-    <div class="profile-dropdown" id="profileDropdown" style="width:300px;max-height:90vh;overflow-y:auto">
-
-      <!-- CABEÇALHO -->
-      <div class="pd-header">
-        <div class="pd-avatar-lg" id="pd-avatar-lg">JR</div>
-        <div class="pd-name" id="pd-name">Trader</div>
-        <div class="pd-email" id="pd-email">—</div>
-        <div class="pd-meta-row">
-          <span class="pd-meta-dot active" id="pd-status-dot"></span>
-          <span id="pd-status-text">Conta ativa</span>
-          <span style="color:var(--text-4);margin:0 4px">·</span>
-          <span id="pd-since">—</span>
-        </div>
-        <div class="pd-session-badge">
-          <span class="pd-session-dot"></span>
-          <span id="pd-session-time">Sessão ativa</span>
-        </div>
-        <div class="pd-plan-badge" id="pd-plan-badge">✦ Plano Gratuito</div>
-      </div>
-
-      <!-- BARRA DE USO -->
-      <div class="pd-usage-wrap" id="pd-usage-wrap">
-        <div class="pd-usage-label">
-          <span>Limite de trades do mês</span>
-          <span id="pd-usage-val">— / —</span>
-        </div>
-        <div class="pd-usage-bar">
-          <div class="pd-usage-fill" id="pd-usage-fill" style="width:0%;background:var(--green)"></div>
-        </div>
-      </div>
-
-      <!-- UPGRADE -->
-      <div class="pd-upgrade-btn" onclick="closeProfileDropdown();showPage('settings',null)">
-        <span class="pd-upgrade-icon">⚡</span>
-        <div class="pd-upgrade-text">
-          <div class="pd-upgrade-title">Fazer upgrade para Pro</div>
-          <div class="pd-upgrade-sub">Histórico completo · IA · Prop Firm</div>
-        </div>
-        <span class="pd-upgrade-arrow">›</span>
-      </div>
-
-      <div class="pd-menu" style="padding-top:4px">
-
-        <!-- CONTA -->
-        <div class="pd-section-title">Conta</div>
-        <div class="pd-item" onclick="closeProfileDropdown();showPage('profile',null)">
-          <div class="pd-item-icon">👤</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Perfil</div>
-            <div class="pd-item-sub">Nome, foto, broker</div>
-          </div>
-          <span class="pd-item-arrow">›</span>
-        </div>
-        <div class="pd-item" onclick="closeProfileDropdown();showPage('settings',null)">
-          <div class="pd-item-icon">⚙️</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Configurações</div>
-            <div class="pd-item-sub">Metas, limites, preferências</div>
-          </div>
-          <span class="pd-item-arrow">›</span>
-        </div>
-        <div class="pd-item" onclick="closeProfileDropdown();showPage('settings',null);setTimeout(()=>document.getElementById('cfg-sb-url')?.scrollIntoView({behavior:'smooth'}),200)">
-          <div class="pd-item-icon">☁️</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Conta & Sincronização</div>
-            <div class="pd-item-sub">Supabase, backup, dados</div>
-          </div>
-          <span class="pd-item-arrow">›</span>
-        </div>
-
-        <!-- SEGURANÇA -->
-        <div class="pd-section-title">Segurança</div>
-        <div class="pd-item" onclick="closeProfileDropdown();pdResetPassword()">
-          <div class="pd-item-icon">🔑</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Alterar senha</div>
-            <div class="pd-item-sub">Enviar link por e-mail</div>
-          </div>
-          <span class="pd-item-arrow">›</span>
-        </div>
-        <div class="pd-item" id="pd-2fa-item" onclick="closeProfileDropdown();showPage('settings',null);setTimeout(function(){switchCfgTab('seguranca',document.querySelector('[onclick*=seguranca]'));},200)">
-          <div class="pd-item-icon">🛡️</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Autenticação 2FA</div>
-            <div class="pd-item-sub" id="pd-2fa-sub">Inativo</div>
-          </div>
-          <span style="font-size:10px;background:rgba(255,181,71,0.15);border:1px solid rgba(255,181,71,0.3);color:#FFB547;border-radius:20px;padding:2px 7px;font-weight:700">BETA</span>
-        </div>
-
-        <!-- SUPORTE -->
-        <div class="pd-section-title">Suporte</div>
-        <div class="pd-item" onclick="closeProfileDropdown();pdOpenSupport()">
-          <div class="pd-item-icon">💬</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Abrir ticket de suporte</div>
-            <div class="pd-item-sub">Resposta em até 24h</div>
-          </div>
-          <span class="pd-item-arrow">›</span>
-        </div>
-        <div class="pd-item" onclick="closeProfileDropdown();pdOpenDocs()">
-          <div class="pd-item-icon">📖</div>
-          <div style="flex:1">
-            <div class="pd-item-label">Documentação & Guias</div>
-            <div class="pd-item-sub">FAQ e tutoriais</div>
-          </div>
-          <span class="pd-item-arrow">›</span>
-        </div>
-
-        <div class="pd-divider" style="margin:8px 8px 4px"></div>
-
-        <!-- SAIR -->
-        <div class="pd-item danger" onclick="closeProfileDropdown();doLogout()">
-          <div class="pd-item-icon">🚪</div>
-          <span class="pd-item-label">Encerrar sessão</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</body></html>';
+  +'</body></html>';
 
   var w=window.open('','_blank');
   if(!w){toast('Popup bloqueado',true);return;}
