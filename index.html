@@ -1278,7 +1278,20 @@ header {
 .pcb-sub  { font-size:10px; color:var(--text-3); line-height:1.2; }
 .pcb-flag { font-size:18px; flex-shrink:0; }
 
-/* ── Logo / nav (mantidos mas sem display) ── */
+/* ── Saldo pill no header ── */
+.hdr-saldo-pill {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(0,0,0,0.3); border:1px solid var(--border);
+  border-radius:20px; padding:5px 14px;
+}
+.hdr-saldo-label {
+  font-size:9px; text-transform:uppercase; letter-spacing:0.1em;
+  font-weight:700; color:var(--text-3);
+}
+.hdr-saldo-val {
+  font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--green);
+}
+.hdr-bal-pill { display:none !important; }
 .logo { display:flex; align-items:center; gap:10px; flex-shrink:0; margin-right:28px; }
 .logo-mark {
   width:34px; height:34px;
@@ -2702,8 +2715,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 <div class="main-body">
 <header>
 
-  <!-- Conta switcher (oculto, mantido para JS) -->
-  <div style="position:absolute;left:-9999px" id="acctSwitcherWrap">
+  <!-- Conta switcher (oculto visualmente, mantido para JS) -->
+  <div style="display:none" id="acctSwitcherWrap">
     <div class="acct-trigger" onclick="toggleDropdown('acctDD')">
       <div class="acct-dot" id="hdr-dot" style="background:#00e5a0"></div>
       <span class="acct-name" id="hdr-name">—</span>
@@ -2721,10 +2734,10 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     <input class="hdr-search-input" type="text" placeholder="Search" readonly onclick="this.blur()"/>
   </div>
 
-  <!-- ② Saldo da conta (centro) -->
-  <div class="hdr-bal-pill" id="hdr-bal-pill" style="display:none">
-    <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;font-weight:700">Saldo</span>
-    <span id="hdr-bal-live" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
+  <!-- ② Saldo visível -->
+  <div class="hdr-saldo-pill">
+    <span class="hdr-saldo-label">Saldo</span>
+    <span class="hdr-saldo-val" id="hdr-bal-live">—</span>
   </div>
 
   <!-- Spacer -->
@@ -6202,6 +6215,9 @@ function renderDashboard() {
   const pill=document.getElementById('hdr-bal-pill');
   const pillVal=document.getElementById('hdr-bal-live');
   if(pill&&pillVal){pill.style.display='flex';pillVal.textContent=fmt$(bal);pillVal.style.color=bal>=(acct.capital||10000)?'var(--green)':'var(--red)';}
+  // Atualiza o novo saldo pill visível no header
+  const saldoVal=document.querySelector('.hdr-saldo-val');
+  if(saldoVal){saldoVal.textContent=fmt$(bal);saldoVal.style.color=bal>=(acct.capital||10000)?'var(--green)':'var(--red)';}
   renderHeader(); // garante que avatar/nome sempre atualiza
 }
 
