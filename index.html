@@ -1201,11 +1201,84 @@ body::after {
 }
 header {
   position:sticky; top:0; z-index:400; height:var(--nav-h);
-  background:rgba(5,8,16,0.92); backdrop-filter:blur(32px) saturate(1.6);
+  background:rgba(5,8,16,0.95); backdrop-filter:blur(32px) saturate(1.6);
   border-bottom:1px solid var(--border);
   display:flex; align-items:center; padding:0 20px; gap:12px;
   flex-shrink:0;
 }
+
+/* ── Barra de busca ── */
+.hdr-search {
+  display:flex; align-items:center; gap:9px;
+  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
+  border-radius:20px; padding:8px 16px;
+  width:200px; transition:all 0.2s;
+}
+.hdr-search:focus-within, .hdr-search:hover {
+  border-color:var(--border-hi); background:rgba(255,255,255,0.07); width:240px;
+}
+.hdr-search-icon { color:var(--text-3); flex-shrink:0; }
+.hdr-search-input {
+  background:none; border:none; outline:none;
+  font-size:12px; color:var(--text-2); font-family:var(--font-ui);
+  width:100%; cursor:text;
+}
+.hdr-search-input::placeholder { color:var(--text-3); }
+
+/* ── Ícones do lado direito ── */
+.hdr-right { display:flex; align-items:center; gap:8px; }
+.hdr-icon-btn {
+  width:36px; height:36px; border-radius:50%;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border);
+  color:var(--text-2); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:15px; transition:all 0.18s; flex-shrink:0;
+}
+.hdr-icon-btn:hover {
+  background:var(--green-bg); border-color:rgba(0,245,160,0.25); color:var(--green);
+}
+#theme-toggle-btn { font-size:16px; }
+
+/* ── Sync badge ── */
+.sync-badge {
+  display:flex; align-items:center; gap:5px;
+  background:rgba(0,0,0,0.3); border:1px solid var(--border);
+  border-radius:20px; padding:4px 10px; font-size:10px; color:var(--text-3);
+}
+.sync-dot { width:6px; height:6px; border-radius:50%; background:var(--text-4); flex-shrink:0; }
+.sync-dot.synced  { background:var(--green); box-shadow:0 0 6px var(--green); }
+.sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
+@keyframes pulseAnim { 0%{box-shadow:0 0 0 0 rgba(255,181,71,0.6)}70%{box-shadow:0 0 0 8px rgba(255,181,71,0)}100%{box-shadow:0 0 0 0 rgba(255,181,71,0)} }
+
+/* ── Clock ── */
+.hdr-clock { font-family:var(--font-mono); font-size:11px; color:var(--text-3); }
+
+/* ── Profile card ── */
+.profile-card-btn {
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
+  border-radius:20px; padding:5px 14px 5px 5px;
+  cursor:pointer; transition:all 0.18s;
+}
+.profile-card-btn:hover {
+  border-color:rgba(0,245,160,0.25); background:rgba(0,245,160,0.04);
+}
+.pcb-avatar {
+  width:34px; height:34px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--purple),var(--blue));
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:800; color:#fff; letter-spacing:0.05em;
+  outline:2px solid rgba(124,92,252,0.5); outline-offset:2px;
+  transition:all 0.18s;
+}
+.profile-card-btn:hover .pcb-avatar {
+  outline-color:rgba(0,245,160,0.6); box-shadow:0 0 12px rgba(0,245,160,0.2);
+}
+.pcb-info { display:flex; flex-direction:column; gap:1px; }
+.pcb-name { font-size:12px; font-weight:700; color:var(--text-1); line-height:1.2; }
+.pcb-sub  { font-size:10px; color:var(--text-3); line-height:1.2; }
+.pcb-flag { font-size:18px; flex-shrink:0; }
+
+/* ── Logo / nav (mantidos mas sem display) ── */
 .logo { display:flex; align-items:center; gap:10px; flex-shrink:0; margin-right:28px; }
 .logo-mark {
   width:34px; height:34px;
@@ -1222,42 +1295,7 @@ header {
 }
 .nav-btn:hover { color:var(--text-1); background:rgba(255,255,255,0.05); }
 .nav-btn.active { color:var(--green); background:var(--green-bg); font-weight:600; }
-.hdr-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
-.sync-badge { display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:20px; padding:4px 10px; font-size:10px; color:var(--text-3); }
-.sync-dot { width:6px; height:6px; border-radius:50%; background:var(--text-4); flex-shrink:0; }
-.sync-dot.synced { background:var(--green); box-shadow:0 0 6px var(--green); }
-.sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
-@keyframes pulseAnim { 0%{box-shadow:0 0 0 0 rgba(255,181,71,0.6)}70%{box-shadow:0 0 0 8px rgba(255,181,71,0)}100%{box-shadow:0 0 0 0 rgba(255,181,71,0)} }
-.profile-card-btn {
-  display:flex; align-items:center;
-  background:none; border:none; padding:0;
-  cursor:pointer; transition:all 0.18s;
-  position:relative;
-}
-.profile-card-btn:hover .pcb-avatar {
-  outline-color:rgba(0,245,160,0.7);
-  box-shadow:0 0 14px rgba(0,245,160,0.25);
-}
-.pcb-avatar {
-  width:38px; height:38px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,#7C5CFC,#3B9EFF);
-  display:flex; align-items:center; justify-content:center;
-  font-size:13px; font-weight:800; color:var(--text-1); letter-spacing:0.05em;
-  outline:2px solid rgba(124,92,252,0.6); outline-offset:2px;
-  transition:all 0.18s;
-}
-/* mantém os elementos ocultos no header mas acessíveis ao JS */
-.pcb-info { display:none; }
-.pcb-name { display:none; }
-.pcb-sub  { display:none; }
-
 .hdr-bal-pill { display:flex; align-items:center; gap:6px; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:20px; padding:4px 12px; }
-.hdr-clock { font-family:var(--font-mono); font-size:11px; color:var(--text-3); }
-
-/* Account switcher */
-.acct-trigger { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border-md); border-radius:var(--r-sm); padding:7px 12px; cursor:pointer; transition:all 0.18s; }
-.acct-trigger:hover { border-color:var(--border-hi); background:rgba(255,255,255,0.07); }
-.acct-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .acct-name { font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; }
 .acct-bal  { font-family:var(--font-mono); font-size:11px; color:var(--green); }
 .acct-dropdown { display:none; position:absolute; top:calc(var(--nav-h) + 6px); left:24px; background:linear-gradient(145deg,#0c1220,#080c18); border:1px solid var(--border-md); border-radius:var(--r-md); padding:8px; min-width:280px; z-index:600; box-shadow:0 24px 64px rgba(0,0,0,0.7),var(--glow-purple); }
@@ -2663,7 +2701,9 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 </aside>
 <div class="main-body">
 <header>
-  <div style="position:relative" id="acctSwitcherWrap">
+
+  <!-- Conta switcher (oculto, mantido para JS) -->
+  <div style="position:absolute;left:-9999px" id="acctSwitcherWrap">
     <div class="acct-trigger" onclick="toggleDropdown('acctDD')">
       <div class="acct-dot" id="hdr-dot" style="background:#00e5a0"></div>
       <span class="acct-name" id="hdr-name">—</span>
@@ -2675,37 +2715,52 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </div>
   </div>
 
-  <nav class="desk-nav">
-    <button class="nav-btn active" onclick="showPage('dashboard',this)">Dashboard</button>
-    <button class="nav-btn" onclick="showPage('metas',this)">Metas</button>
-    <button class="nav-btn" onclick="showPage('calendar',this)">Calendário</button>
-    <button class="nav-btn" onclick="showPage('import',this)">Importar</button>
-    <button class="nav-btn" onclick="showPage('reports',this)">Relatórios</button>
-    <button class="nav-btn" onclick="showPage('analytics',this)">Análises</button>
-    <button class="nav-btn" onclick="showPage('settings',this)">Config</button>
-  </nav>
+  <!-- ① Barra de busca -->
+  <div class="hdr-search">
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" class="hdr-search-icon"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <input class="hdr-search-input" type="text" placeholder="Search" readonly onclick="this.blur()"/>
+  </div>
 
+  <!-- ② Saldo da conta (centro) -->
+  <div class="hdr-bal-pill" id="hdr-bal-pill" style="display:none">
+    <span style="font-size:9px;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;font-weight:700">Saldo</span>
+    <span id="hdr-bal-live" style="font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
+  </div>
+
+  <!-- Spacer -->
+  <div style="flex:1"></div>
+
+  <!-- ③ Ícones direita -->
   <div class="hdr-right">
+    <!-- Sync -->
     <div class="sync-badge" id="sync-badge">
       <div class="sync-dot" id="sync-dot"></div>
       <span id="sync-text">local</span>
     </div>
-    <span id="user-email-display" style="display:none;font-size:11px;color:var(--text-2)"></span>
-    <div class="hdr-bal-pill" id="hdr-bal-pill" style="display:none">
-      <span style="font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;font-weight:700">Saldo</span>
-      <span id="hdr-bal-live" style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green)">—</span>
-    </div>
+    <!-- Relógio -->
     <span class="hdr-clock" id="clock"></span>
-    <button id="theme-toggle-btn" onclick="quickToggleTheme()" title="Alternar tema claro/escuro"
-      style="background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:16px;color:var(--text-2);transition:all .15s"
-      onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🌙</button>
+    <!-- Sino -->
+    <button class="hdr-icon-btn" title="Notificações">
+      <svg viewBox="0 0 20 20" fill="none" width="17" height="17"><path d="M10 2a6 6 0 0 0-6 6c0 2.8-.8 4.2-1.6 5.2h15.2C16.8 12.2 16 10.8 16 8a6 6 0 0 0-6-6zM8.5 17.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <!-- Envelope -->
+    <button class="hdr-icon-btn" title="Mensagens">
+      <svg viewBox="0 0 20 20" fill="none" width="17" height="17"><rect x="2" y="4" width="16" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M2 7l8 5 8-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <!-- Tema -->
+    <button class="hdr-icon-btn" id="theme-toggle-btn" onclick="quickToggleTheme()" title="Tema">🌙</button>
+
+    <!-- ④ Perfil card -->
     <div class="profile-card-btn" onclick="toggleProfileDropdown(event)" id="profile-card-btn" title="Meu Perfil">
       <div class="pcb-avatar" id="pcb-avatar">JR</div>
       <div class="pcb-info">
         <div class="pcb-name" id="pcb-name">Trader</div>
         <div class="pcb-sub" id="pcb-sub">Conta Principal</div>
       </div>
+      <!-- Bandeira BR -->
+      <div class="pcb-flag">🇧🇷</div>
     </div>
+  </div>
 
     <!-- Profile Dropdown -->
     <div class="profile-dropdown" id="profileDropdown" style="width:300px;max-height:90vh;overflow-y:auto">
