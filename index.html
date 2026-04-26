@@ -2468,14 +2468,19 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .pf-tl-sub   { font-size:12px; color:var(--text-3); }
 
 /* ── Novo Header ── */
+.hdr-search-center {
+  position:absolute; left:50%; transform:translateX(-50%);
+  width:380px; max-width:40vw;
+}
 .hdr-search {
-  display:flex; align-items:center; gap:9px; position:relative;
-  background:rgba(255,255,255,0.05); border:1px solid var(--border-md);
-  border-radius:22px; padding:9px 18px; transition:all 0.25s;
-  width:260px; flex-shrink:0;
+  display:flex; align-items:center; gap:10px; position:relative;
+  background:rgba(255,255,255,0.06); border:1px solid var(--border-md);
+  border-radius:24px; padding:10px 20px; transition:all 0.25s;
+  width:100%;
 }
 .hdr-search:focus-within {
-  border-color:rgba(0,245,160,0.4); background:rgba(0,245,160,0.04); width:320px;
+  border-color:rgba(0,245,160,0.45); background:rgba(0,245,160,0.05);
+  box-shadow:0 0 0 3px rgba(0,245,160,0.08);
 }
 #hdr-search-input::placeholder { color:var(--text-3); }
 .hdr-search-results {
@@ -2525,6 +2530,14 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .pcb-sync .sync-dot { width:5px; height:5px; border-radius:50%; background:var(--text-4); flex-shrink:0; transition:all 0.3s; }
 .pcb-sync .sync-dot.synced  { background:var(--green); box-shadow:0 0 5px var(--green); }
 .pcb-sync .sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
+
+
+/* Header position:relative para busca centralizada */
+header { position:sticky !important; }
+header { isolation: isolate; }
+.hdr-search-center { z-index:1; }
+/* Esconder qualquer saldo no header */
+#hdr-bal-pill { display:none !important; }
 
 /* Sidebar: nunca auto-colapsar */
 @media(max-width:1024px){ .sidebar { width:var(--sidebar-w) !important; } }
@@ -2735,15 +2748,17 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <button class="add-acct-btn" onclick="openAddAcct()">＋ Adicionar Conta</button>
     </div>
   </div>
-  <div id="hdr-bal-pill" style="display:none"><span id="hdr-bal-live"></span></div>
+  <span id="hdr-bal-live" style="display:none"></span>
 
   <!-- ① Busca funcional centralizada -->
+  <div class="hdr-search-center">
   <div class="hdr-search" id="hdr-search-wrap">
     <svg viewBox="0 0 20 20" fill="none" width="15" height="15" style="flex-shrink:0;color:var(--text-3)"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     <input id="hdr-search-input" type="text" placeholder="Buscar página..." autocomplete="off"
       style="background:none;border:none;outline:none;font-size:13px;color:var(--text-1);font-family:var(--font-ui);width:100%;"/>
     <div class="hdr-search-results" id="hdr-search-results"></div>
   </div>
+  </div><!-- /.hdr-search-center -->
 
   <div style="flex:1"></div>
 
@@ -2919,7 +2934,8 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
   <!-- HEALTH SCORE + INSIGHTS -->
   <div id="dash-health-row" style="display:grid;grid-template-columns:280px 1fr;gap:14px;margin-bottom:14px"></div>
 
-  <!-- 5 KPI CARDS -->\n  <div class="db-kpi-row" id="kpi-grid"></div>
+  <!-- 5 KPI CARDS -->
+  <div class="db-kpi-row" id="kpi-grid"></div>
 
   <!-- EQUITY + PERFORMANCE SIDE -->
   <div class="db-main-grid">
@@ -6212,7 +6228,7 @@ function renderDashboard() {
   // Header balance pill
   const pill=document.getElementById('hdr-bal-pill');
   const pillVal=document.getElementById('hdr-bal-live');
-  if(pill&&pillVal){pill.style.display='flex';pillVal.textContent=fmt$(bal);pillVal.style.color=bal>=(acct.capital||10000)?'var(--green)':'var(--red)';}
+  if(pill&&pillVal){/* saldo removido do header — não exibir */pillVal.textContent=fmt$(bal);}
   renderHeader(); // garante que avatar/nome sempre atualiza
 }
 
