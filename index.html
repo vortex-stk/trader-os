@@ -2469,13 +2469,14 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* ── Novo Header ── */
 .hdr-search-center {
-  position:absolute; left:50%; transform:translateX(-50%);
-  width:700px; max-width:55vw;
+  flex: 1;
+  max-width: 900px;
+  padding: 0 16px;
 }
 .hdr-search {
   display:flex; align-items:center; gap:9px; position:relative;
   background:rgba(255,255,255,0.05); border:1px solid var(--border-md);
-  border-radius:22px; padding:8px 16px; transition:all 0.25s;
+  border-radius:22px; padding:9px 18px; transition:all 0.25s;
   width:100%;
 }
 .hdr-search:focus-within {
@@ -2769,8 +2770,6 @@ header { isolation: isolate; }
     <div class="hdr-search-results" id="hdr-search-results"></div>
   </div>
   </div><!-- /.hdr-search-center -->
-
-  <div style="flex:1"></div>
 
   <div class="hdr-right">
     <!-- Sino -->
