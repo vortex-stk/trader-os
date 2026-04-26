@@ -2469,15 +2469,31 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 
 /* ── Novo Header ── */
 .hdr-search {
-  display:flex; align-items:center; gap:9px;
-  background:rgba(255,255,255,0.04); border:1px solid var(--border-md);
-  border-radius:20px; padding:7px 16px; transition:all 0.2s;
-  width:180px;
+  display:flex; align-items:center; gap:9px; position:relative;
+  background:rgba(255,255,255,0.05); border:1px solid var(--border-md);
+  border-radius:22px; padding:9px 18px; transition:all 0.25s;
+  width:260px; flex-shrink:0;
 }
-.hdr-search:hover { border-color:var(--border-hi); background:rgba(255,255,255,0.07); }
-.hdr-search svg { color:var(--text-3); flex-shrink:0; }
+.hdr-search:focus-within {
+  border-color:rgba(0,245,160,0.4); background:rgba(0,245,160,0.04); width:320px;
+}
+#hdr-search-input::placeholder { color:var(--text-3); }
+.hdr-search-results {
+  display:none; position:absolute; top:calc(100% + 8px); left:0; right:0;
+  background:var(--bg-card2); border:1px solid var(--border-md);
+  border-radius:12px; overflow:hidden; z-index:600;
+  box-shadow:0 16px 48px rgba(0,0,0,0.6);
+}
+.hdr-search-results.open { display:block; }
+.hdr-search-result {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; cursor:pointer; font-size:13px; color:var(--text-2);
+  transition:background 0.15s;
+}
+.hdr-search-result:hover { background:rgba(255,255,255,0.06); color:var(--text-1); }
+.hdr-search-result-icon { font-size:15px; width:20px; text-align:center; }
 
-/* Ícone buttons (sino, envelope, tema) */
+/* Ícone buttons */
 .hdr-icon-btn {
   width:34px; height:34px; border-radius:50%;
   background:rgba(255,255,255,0.05); border:1px solid var(--border);
@@ -2486,40 +2502,31 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 }
 .hdr-icon-btn:hover { background:var(--green-bg); border-color:rgba(0,245,160,0.25); color:var(--green); }
 
-/* ── Profile card — igual ao modelo: avatar + texto + bandeira ── */
+/* Perfil card */
 .profile-card-btn {
   display:flex !important; align-items:center; gap:10px;
   background:none; border:none; padding:0;
-  cursor:pointer; transition:all 0.18s; position:relative;
-  margin-left:4px;
+  cursor:pointer; transition:all 0.18s; position:relative; margin-left:4px;
 }
-.profile-card-btn:hover .pcb-avatar {
-  outline-color:rgba(0,245,160,0.7);
-  box-shadow:0 0 14px rgba(0,245,160,0.25);
-}
+.profile-card-btn:hover .pcb-avatar { outline-color:rgba(0,245,160,0.7); box-shadow:0 0 14px rgba(0,245,160,0.25); }
 .pcb-avatar {
-  width:38px !important; height:38px !important;
-  border-radius:50% !important; flex-shrink:0;
+  width:38px !important; height:38px !important; border-radius:50% !important; flex-shrink:0;
   background:linear-gradient(135deg,var(--purple),var(--blue));
   display:flex; align-items:center; justify-content:center;
   font-size:13px; font-weight:800; color:#fff;
-  outline:2px solid rgba(124,92,252,0.5); outline-offset:2px;
-  transition:all 0.18s;
+  outline:2px solid rgba(124,92,252,0.5); outline-offset:2px; transition:all 0.18s;
 }
-.pcb-info {
-  display:flex !important; flex-direction:column; gap:1px;
-}
-.pcb-name {
-  display:block !important; font-size:13px; font-weight:700;
-  color:var(--text-1); line-height:1.3; white-space:nowrap;
-}
-.pcb-sub {
-  display:block !important; font-size:10px;
-  color:var(--text-3); line-height:1.3; white-space:nowrap;
-}
-.pcb-flag { font-size:20px; flex-shrink:0; line-height:1; }
+.pcb-info { display:flex !important; flex-direction:column; gap:1px; }
+.pcb-name { display:block !important; font-size:13px; font-weight:700; color:var(--text-1); line-height:1.3; white-space:nowrap; }
+.pcb-sub  { display:block !important; font-size:10px; color:var(--text-3); line-height:1.3; white-space:nowrap; }
 
-/* Sidebar: nunca auto-colapsar em telas menores */
+/* Sync dentro do perfil */
+.pcb-sync { display:flex; align-items:center; gap:4px; font-size:9px; color:var(--text-3); margin-top:2px; }
+.pcb-sync .sync-dot { width:5px; height:5px; border-radius:50%; background:var(--text-4); flex-shrink:0; transition:all 0.3s; }
+.pcb-sync .sync-dot.synced  { background:var(--green); box-shadow:0 0 5px var(--green); }
+.pcb-sync .sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
+
+/* Sidebar: nunca auto-colapsar */
 @media(max-width:1024px){ .sidebar { width:var(--sidebar-w) !important; } }
 
 </style>
@@ -2728,19 +2735,19 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
       <button class="add-acct-btn" onclick="openAddAcct()">＋ Adicionar Conta</button>
     </div>
   </div>
-  <!-- Barra de busca -->
-  <div class="hdr-search">
-    <svg viewBox="0 0 20 20" fill="none" width="15" height="15"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    <input type="text" placeholder="Search" style="background:none;border:none;outline:none;font-size:12px;color:var(--text-2);font-family:var(--font-ui);width:120px;" readonly/>
+  <div id="hdr-bal-pill" style="display:none"><span id="hdr-bal-live"></span></div>
+
+  <!-- ① Busca funcional centralizada -->
+  <div class="hdr-search" id="hdr-search-wrap">
+    <svg viewBox="0 0 20 20" fill="none" width="15" height="15" style="flex-shrink:0;color:var(--text-3)"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <input id="hdr-search-input" type="text" placeholder="Buscar página..." autocomplete="off"
+      style="background:none;border:none;outline:none;font-size:13px;color:var(--text-1);font-family:var(--font-ui);width:100%;"/>
+    <div class="hdr-search-results" id="hdr-search-results"></div>
   </div>
 
   <div style="flex:1"></div>
 
   <div class="hdr-right">
-    <div class="sync-badge" id="sync-badge">
-      <div class="sync-dot" id="sync-dot"></div>
-      <span id="sync-text">local</span>
-    </div>
     <span class="hdr-clock" id="clock"></span>
     <!-- Sino -->
     <button class="hdr-icon-btn" title="Notificações">
@@ -2752,14 +2759,18 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
     </button>
     <!-- Tema -->
     <button class="hdr-icon-btn" id="theme-toggle-btn" onclick="quickToggleTheme()" title="Tema">🌙</button>
-    <!-- Perfil -->
+
+    <!-- ② Perfil com sync integrado, sem bandeira -->
     <div class="profile-card-btn" onclick="toggleProfileDropdown(event)" id="profile-card-btn" title="Meu Perfil">
       <div class="pcb-avatar" id="pcb-avatar">JR</div>
       <div class="pcb-info">
         <div class="pcb-name" id="pcb-name">Trader</div>
         <div class="pcb-sub" id="pcb-sub">Conta Principal</div>
+        <div class="pcb-sync">
+          <div class="sync-dot" id="sync-dot"></div>
+          <span id="sync-text">local</span>
+        </div>
       </div>
-      <div class="pcb-flag">🇧🇷</div>
     </div>
 
     <!-- Profile Dropdown -->
@@ -11044,6 +11055,57 @@ window.addEventListener('load', () => {
     updateSWStatus('✅ Rodando como app instalado', '#00F5A0');
   }
 });
+
+// ══════════════════════════════════════════════
+//  BUSCA FUNCIONAL NO HEADER
+// ══════════════════════════════════════════════
+(function initHeaderSearch() {
+  const pages = [
+    { label:'Painel / Dashboard', icon:'📊', page:'dashboard' },
+    { label:'Negociações', icon:'📋', page:'trades' },
+    { label:'Calendário', icon:'📅', page:'calendar' },
+    { label:'Resumo Mensal', icon:'📈', page:'reports' },
+    { label:'Importar CSV', icon:'📥', page:'import' },
+    { label:'Alvos / Metas', icon:'🎯', page:'metas' },
+    { label:'Alertas de Risco', icon:'⚠️', page:'risk' },
+    { label:'Calculadora', icon:'🧮', page:'calculator' },
+    { label:'Prop Firm', icon:'⭐', page:'propfirm' },
+    { label:'Análises', icon:'📉', page:'analytics' },
+    { label:'Instrumentos', icon:'🔍', page:'instruments' },
+    { label:'Wiki e Ajuda', icon:'ℹ️', page:'wiki' },
+    { label:'Integração MT5', icon:'🔗', page:'mt5integration' },
+    { label:'Configurações', icon:'⚙️', page:'settings' },
+  ];
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const inp = document.getElementById('hdr-search-input');
+    const res = document.getElementById('hdr-search-results');
+    if (!inp || !res) return;
+
+    inp.addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      if (!q) { res.classList.remove('open'); res.innerHTML = ''; return; }
+      const matches = pages.filter(p => p.label.toLowerCase().includes(q));
+      if (!matches.length) { res.classList.remove('open'); res.innerHTML = ''; return; }
+      res.innerHTML = matches.map(p =>
+        `<div class="hdr-search-result" onclick="showPage('${p.page}',null);document.getElementById('hdr-search-input').value='';document.getElementById('hdr-search-results').classList.remove('open');">
+          <span class="hdr-search-result-icon">${p.icon}</span>
+          <span>${p.label}</span>
+        </div>`
+      ).join('');
+      res.classList.add('open');
+    });
+
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { this.value=''; res.classList.remove('open'); res.innerHTML=''; }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('#hdr-search-wrap')) { res.classList.remove('open'); }
+    });
+  });
+})();
+
 </script>
 <!-- ═══ MODAL 2FA ═══ -->
 <div class="modal-overlay" id="twoFAModal" style="display:none;position:fixed;inset:0;background:rgba(5,8,16,0.85);z-index:8000;display:flex;align-items:center;justify-content:center;padding:20px">
