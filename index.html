@@ -2535,6 +2535,61 @@ main { flex:1; padding:24px 28px; overflow-x:hidden; min-width:0; width:100%; }
 .pd-sync-row .sync-dot.synced  { background:var(--green); box-shadow:0 0 6px var(--green); }
 .pd-sync-row .sync-dot.syncing { background:var(--amber); animation:pulseAnim 1s infinite; }
 
+
+/* ── Card Conta Ativa — novo visual ── */
+.sidebar-acct-card {
+  margin: 12px 10px 10px !important;
+  padding: 16px 14px !important;
+  background: linear-gradient(145deg, rgba(124,92,252,0.13), rgba(59,158,255,0.08)) !important;
+  border: 1px solid rgba(124,92,252,0.25) !important;
+  border-radius: 16px !important;
+  text-align: center;
+}
+.sac-label {
+  font-size: 9px !important; letter-spacing: 0.18em !important;
+  text-transform: uppercase !important; color: var(--text-3) !important;
+  font-weight: 700 !important; margin-bottom: 3px !important;
+}
+.sac-name {
+  font-size: 12px !important; font-weight: 700 !important;
+  color: var(--text-2) !important; margin-bottom: 10px !important;
+}
+
+/* Rosto animado */
+.sac-face-wrap {
+  position: relative; width: 90px; height: 90px;
+  margin: 0 auto 10px;
+}
+.sac-face-ring {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transition: stroke 0.6s ease;
+}
+.sac-face-svg {
+  position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px);
+  border-radius: 50%; overflow: visible;
+  transition: all 0.4s ease;
+}
+#sac-ring-arc { transition: stroke 0.6s ease, stroke-dashoffset 0.8s ease; }
+#sac-mouth    { transition: d 0.4s ease, stroke 0.4s ease; }
+#sac-brow-l, #sac-brow-r { transition: d 0.4s ease; }
+#sac-cheek-l, #sac-cheek-r { transition: opacity 0.4s ease; }
+
+.sac-bal {
+  font-family: var(--font-mono) !important;
+  font-size: 22px !important; font-weight: 800 !important;
+  background: linear-gradient(90deg, var(--green), var(--cyan)) !important;
+  -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  margin-bottom: 3px !important; line-height: 1 !important;
+}
+.sac-bal.negative {
+  background: linear-gradient(90deg, var(--red), #ff8a9a) !important;
+  -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+}
+.sac-change { font-size: 11px !important; font-family: var(--font-mono) !important; margin-bottom: 8px !important; }
+.sac-bar { height: 4px !important; background: rgba(255,255,255,0.08) !important; border-radius: 99px !important; overflow: hidden !important; }
+.sac-bar-fill { height: 100% !important; border-radius: 99px !important; background: linear-gradient(90deg, var(--green), var(--cyan)) !important; transition: width 0.8s ease, background 0.6s ease !important; }
+.sac-bar-fill.negative { background: linear-gradient(90deg, var(--red), #ff8a9a) !important; }
+
 /* Sync dentro do perfil */
 .pcb-sync { display:flex; align-items:center; gap:4px; font-size:9px; color:var(--text-3); margin-top:2px; }
 .pcb-sync .sync-dot { width:5px; height:5px; border-radius:50%; background:var(--text-4); flex-shrink:0; transition:all 0.3s; }
@@ -2738,6 +2793,37 @@ header { isolation: isolate; }
   <div class="sidebar-acct-card" id="sidebar-acct-card" style="margin-top:auto">
     <div class="sac-label">Conta Ativa</div>
     <div class="sac-name" id="sac-name">—</div>
+
+    <!-- Rosto animado que muda conforme o saldo -->
+    <div class="sac-face-wrap">
+      <svg class="sac-face-ring" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+        <circle cx="50" cy="50" r="44" fill="none" id="sac-ring-arc"
+          stroke="var(--green)" stroke-width="4"
+          stroke-dasharray="276.5" stroke-dashoffset="138"
+          stroke-linecap="round" transform="rotate(-90 50 50)"/>
+      </svg>
+      <!-- Rosto SVG animado -->
+      <svg class="sac-face-svg" id="sac-face" viewBox="0 0 80 80">
+        <!-- Fundo circular -->
+        <circle cx="40" cy="40" r="38" fill="rgba(0,0,0,0.3)"/>
+        <!-- Olhos -->
+        <ellipse cx="27" cy="33" rx="5" ry="6" fill="var(--text-1)" id="sac-eye-l"/>
+        <ellipse cx="53" cy="33" rx="5" ry="6" fill="var(--text-1)" id="sac-eye-r"/>
+        <circle cx="29" cy="34" r="2.5" fill="#050810" id="sac-pupil-l"/>
+        <circle cx="55" cy="34" r="2.5" fill="#050810" id="sac-pupil-r"/>
+        <!-- Boca (muda: sorriso ou triste) -->
+        <path id="sac-mouth" d="M28 52 Q40 62 52 52" fill="none" stroke="var(--text-1)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Sobrancelhas (neutras por padrão) -->
+        <path id="sac-brow-l" d="M20 24 Q27 20 34 24" fill="none" stroke="var(--text-1)" stroke-width="2.5" stroke-linecap="round"/>
+        <path id="sac-brow-r" d="M46 24 Q53 20 60 24" fill="none" stroke="var(--text-1)" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Bochechas (aparecem quando feliz) -->
+        <ellipse cx="20" cy="48" rx="7" ry="4" fill="rgba(255,100,100,0.25)" id="sac-cheek-l" opacity="0"/>
+        <ellipse cx="60" cy="48" rx="7" ry="4" fill="rgba(255,100,100,0.25)" id="sac-cheek-r" opacity="0"/>
+      </svg>
+    </div>
+
+    <!-- Saldo em destaque -->
     <div class="sac-bal" id="sac-bal">—</div>
     <div class="sac-change" id="sac-change">—</div>
     <div class="sac-bar"><div class="sac-bar-fill" id="sac-bar-fill" style="width:0%"></div></div>
@@ -5653,6 +5739,8 @@ function renderHeader() {
   if(sacChange){ sacChange.textContent=(pnl>=0?'▲ +':'▼ ')+fmtSign(pnl); sacChange.style.color=pnl>=0?'var(--green)':'var(--red)'; }
   const cfg2=getCfg(); const pct2=cfg2.target>0?Math.min(100,pnl/cfg2.target*100):50;
   if(sacFill) sacFill.style.width=Math.max(0,pct2)+'%';
+  // Atualizar rosto animado
+  updateSacFace(pnl, acct.capital||10000);
   document.getElementById('acct-dd-list').innerHTML = db.accounts.map(a => {
     const p = (db.trades[a.id]||[]).reduce((x,y)=>x+y.pnl,0);
     const b = (a.capital||10000)+p;
@@ -11129,6 +11217,78 @@ window.addEventListener('load', () => {
     });
   });
 })();
+
+
+// ── Animação do rosto no card de conta ──
+function updateSacFace(pnl, capital) {
+  const mouth   = document.getElementById('sac-mouth');
+  const browL   = document.getElementById('sac-brow-l');
+  const browR   = document.getElementById('sac-brow-r');
+  const cheekL  = document.getElementById('sac-cheek-l');
+  const cheekR  = document.getElementById('sac-cheek-r');
+  const ring    = document.getElementById('sac-ring-arc');
+  const sacBal  = document.getElementById('sac-bal');
+  const sacFillEl = document.getElementById('sac-bar-fill');
+
+  if (!mouth) return;
+
+  const pct = capital > 0 ? Math.max(-1, Math.min(1, pnl / (capital * 0.1))) : 0;
+  // pct: -1 = muito triste, 0 = neutro, +1 = muito feliz
+
+  if (pnl > 0) {
+    // Feliz: sorriso largo
+    mouth.setAttribute('d', 'M26 50 Q40 65 54 50');
+    browL.setAttribute('d', 'M20 22 Q27 17 34 22');
+    browR.setAttribute('d', 'M46 22 Q53 17 60 22');
+    cheekL.style.opacity = Math.min(0.6, pct * 0.8);
+    cheekR.style.opacity = Math.min(0.6, pct * 0.8);
+    if (ring) ring.setAttribute('stroke', 'var(--green)');
+    if (sacBal) sacBal.classList.remove('negative');
+    if (sacFillEl) sacFillEl.classList.remove('negative');
+    // Piscar de olho ocasional
+    clearInterval(window._sacBlink);
+    window._sacBlink = setInterval(() => {
+      const el = document.getElementById('sac-eye-l');
+      const er = document.getElementById('sac-eye-r');
+      if (el && er) {
+        el.setAttribute('ry','1'); er.setAttribute('ry','1');
+        setTimeout(()=>{ el.setAttribute('ry','6'); er.setAttribute('ry','6'); }, 150);
+      }
+    }, 3500);
+  } else if (pnl < 0) {
+    // Triste: boca virada para baixo
+    mouth.setAttribute('d', 'M26 58 Q40 46 54 58');
+    browL.setAttribute('d', 'M20 26 Q27 22 34 26');
+    browR.setAttribute('d', 'M46 26 Q53 22 60 26');
+    // Sobrancelhas franzidas (preocupado)
+    browL.setAttribute('d', 'M20 23 Q27 27 34 22');
+    browR.setAttribute('d', 'M46 22 Q53 27 60 23');
+    cheekL.style.opacity = 0;
+    cheekR.style.opacity = 0;
+    if (ring) ring.setAttribute('stroke', 'var(--red)');
+    if (sacBal) sacBal.classList.add('negative');
+    if (sacFillEl) sacFillEl.classList.add('negative');
+    clearInterval(window._sacBlink);
+  } else {
+    // Neutro
+    mouth.setAttribute('d', 'M28 54 Q40 56 52 54');
+    browL.setAttribute('d', 'M20 24 Q27 20 34 24');
+    browR.setAttribute('d', 'M46 24 Q53 20 60 24');
+    cheekL.style.opacity = 0;
+    cheekR.style.opacity = 0;
+    if (ring) ring.setAttribute('stroke', 'var(--text-3)');
+    if (sacBal) sacBal.classList.remove('negative');
+    if (sacFillEl) sacFillEl.classList.remove('negative');
+    clearInterval(window._sacBlink);
+  }
+
+  // Arco do ring proporcional ao pnl
+  if (ring) {
+    const total = 276.5;
+    const filled = Math.min(total, Math.max(0, (Math.abs(pnl) / (capital * 0.1)) * total * 0.5));
+    ring.setAttribute('stroke-dashoffset', total - filled);
+  }
+}
 
 </script>
 <!-- ═══ MODAL 2FA ═══ -->
