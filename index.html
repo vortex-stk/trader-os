@@ -3038,6 +3038,10 @@ header {
     </div>
 
     <button class="btn-demo" onclick="useDemoMode()">🔓 Explorar plataforma sem conta</button>
+    <p style="font-size:11px;color:rgba(255,255,255,0.35);text-align:center;margin-top:8px;line-height:1.5">
+      Se o login travar, sua chave do Supabase pode estar desatualizada.<br>
+      Clique em <strong style="color:rgba(255,255,255,0.6)">"Explorar plataforma sem conta"</strong> para entrar sem login.
+    </p>
 
     <div id="auth-loading-hint" style="display:none;margin-top:10px;text-align:center;font-size:11px;color:var(--text-3);animation:fadeIn .5s">
       ⏳ Conectando ao servidor… <span id="auth-countdown">8</span>s
@@ -5312,6 +5316,14 @@ async function doLogin() {
   const btn = document.getElementById('btn-login');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Entrando…</span>'; }
 
+  // Verificar se a chave do Supabase é válida (deve começar com eyJ)
+  const { key } = getSupabaseConfig();
+  if (!key || !key.startsWith('eyJ')) {
+    showAuthError('⚠️ Chave do Supabase inválida. Configure em Configurações → Sincronização, ou use "Explorar sem conta".');
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
+    return;
+  }
+
   // 8-second timeout so the button never freezes
   const loginTimeout = setTimeout(() => {
     showAuthError('Tempo esgotado. Verifique sua conexão ou use "Explorar sem conta".');
@@ -5468,6 +5480,9 @@ function translateAuthError(msg) {
 function useDemoMode() {
   isCloudMode = false;
   currentUser = null;
+  // Forçar esconder auth-screen imediatamente
+  const authScr = document.getElementById('auth-screen');
+  if (authScr) { authScr.style.display = 'none'; authScr.classList.add('hidden'); }
   launchApp();
 }
 
