@@ -23,98 +23,114 @@
    APEX TRADE · DESIGN SYSTEM
 ═══════════════════════════════════════ */
 :root {
-  /* ── Dark: Value Analytics style ── */
-  --bg-deep:    #12122A;
-  --bg-base:    #16163A;
-  --bg-card:    #1E1E45;
-  --bg-card2:   #232350;
-  --bg-hover:   #2A2A5A;
-  --border:     rgba(255,255,255,0.07);
-  --border-md:  rgba(255,255,255,0.11);
-  --border-hi:  rgba(255,255,255,0.20);
+  /* ── Dark: "My Training" style ── */
+  --bg-deep:    #1A1A2E;
+  --bg-base:    #16213E;
+  --bg-card:    #1F1F3A;
+  --bg-card2:   #252540;
+  --bg-hover:   #2C2C50;
+  --border:     rgba(255,255,255,0.08);
+  --border-md:  rgba(255,255,255,0.12);
+  --border-hi:  rgba(255,255,255,0.22);
 
+  /* Positivo = verde neon */
   --green:      #00F5A0;
   --green-dim:  #00C880;
-  --green-glow: rgba(0,245,160,0.20);
+  --green-glow: rgba(0,245,160,0.22);
   --green-bg:   rgba(0,245,160,0.08);
-  --red:        #FF4F6A;
-  --red-bg:     rgba(255,79,106,0.10);
+
+  /* Negativo = rosa-vermelho */
+  --red:        #FF4F7A;
+  --red-bg:     rgba(255,79,122,0.10);
+
+  /* Alertas = âmbar */
   --amber:      #FFB547;
   --amber-bg:   rgba(255,181,71,0.10);
-  --purple:     #7B2FF7;
-  --purple-dim: #6020D0;
-  --purple-bg:  rgba(123,47,247,0.15);
-  --blue:       #4B8BFF;
-  --blue-bg:    rgba(75,139,255,0.12);
-  --cyan:       #00D4FF;
-  --orange:     #FF7A3D;
 
-  --text-1:    #EEEEFF;
-  --text-2:    #9090B8;
-  --text-3:    #50507A;
-  --text-4:    #30305A;
+  /* Accent principal = laranja dourado (sidebar ativa) */
+  --orange:     #FF8C42;
+  --orange-dim: #E07030;
+  --orange-bg:  rgba(255,140,66,0.15);
+
+  /* Gradiente roxo-rosa (cards/charts) */
+  --purple:     #A855F7;
+  --purple-dim: #8B3DE8;
+  --purple-bg:  rgba(168,85,247,0.12);
+  --pink:       #EC4899;
+  --blue:       #4B8BFF;
+  --blue-bg:    rgba(75,139,255,0.10);
+  --cyan:       #00D4FF;
+
+  --text-1:    #F0F0FF;
+  --text-2:    #8888AA;
+  --text-3:    #484870;
+  --text-4:    #282850;
 
   --font-ui:   'Outfit', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
+  --r-sm: 8px; --r-md: 16px; --r-lg: 22px; --r-xl: 28px;
   --nav-h: 64px;
-  --sidebar-w: 240px;
+  --sidebar-w: 220px;
 
   --shadow-sm:  0 2px 16px rgba(0,0,0,0.5);
-  --shadow-md:  0 8px 32px rgba(0,0,0,0.6);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.55);
   --shadow-lg:  0 20px 60px rgba(0,0,0,0.7);
   --glow-green: 0 0 30px rgba(0,245,160,0.18);
-  --glow-purple:0 0 40px rgba(123,47,247,0.20);
+  --glow-orange:0 0 30px rgba(255,140,66,0.25);
 
-  --accent: var(--purple);
+  /* accent = laranja para itens ativos */
+  --accent: var(--orange);
 }
 
 /* ── Light Theme ── */
 [data-theme="light"] {
-  /* ── Light: Value Analytics — branco puro e limpo ── */
-  --bg-deep:    #F4F5FA;
+  /* ── Light: "My Training" — branco puro com gradientes vibrantes ── */
+  --bg-deep:    #F5F5FF;
   --bg-base:    #FFFFFF;
   --bg-card:    #FFFFFF;
-  --bg-card2:   #F8F8FC;
-  --bg-hover:   #F0F0FA;
-  --border:     rgba(0,0,0,0.08);
-  --border-md:  rgba(0,0,0,0.12);
-  --border-hi:  rgba(0,0,0,0.20);
+  --bg-card2:   #F8F8FF;
+  --bg-hover:   #F0F0FF;
+  --border:     rgba(0,0,0,0.07);
+  --border-md:  rgba(0,0,0,0.11);
+  --border-hi:  rgba(0,0,0,0.18);
 
-  --green:      #00A76F;
-  --green-dim:  #007F55;
-  --green-glow: rgba(0,167,111,0.15);
-  --green-bg:   rgba(0,167,111,0.08);
-  --red:        #E53E5C;
-  --red-bg:     rgba(229,62,92,0.08);
+  --green:      #00B87A;
+  --green-dim:  #008F5E;
+  --green-glow: rgba(0,184,122,0.15);
+  --green-bg:   rgba(0,184,122,0.08);
+  --red:        #FF4F7A;
+  --red-bg:     rgba(255,79,122,0.08);
   --amber:      #F59E0B;
   --amber-bg:   rgba(245,158,11,0.08);
-  --purple:     #7B2FF7;
-  --purple-dim: #6020D0;
-  --purple-bg:  rgba(123,47,247,0.08);
-  --blue:       #3B6FE8;
-  --blue-bg:    rgba(59,111,232,0.08);
+  --orange:     #FF8C42;
+  --orange-dim: #E07030;
+  --orange-bg:  rgba(255,140,66,0.10);
+  --purple:     #A855F7;
+  --purple-dim: #8B3DE8;
+  --purple-bg:  rgba(168,85,247,0.08);
+  --pink:       #EC4899;
+  --blue:       #4B8BFF;
+  --blue-bg:    rgba(75,139,255,0.08);
   --cyan:       #0099CC;
-  --orange:     #FF6B2B;
 
   --text-1:    #1A1A2E;
   --text-2:    #4A4A6A;
   --text-3:    #8A8AAA;
-  --text-4:    #BABACА;
+  --text-4:    #C0C0D0;
 
-  --shadow-sm:  0 1px 4px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg:  0 12px 40px rgba(0,0,0,0.12);
-  --glow-green: 0 0 16px rgba(0,167,111,0.12);
-  --glow-purple:0 0 16px rgba(123,47,247,0.12);
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 20px rgba(0,0,0,0.09);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.13);
+  --glow-green: 0 0 16px rgba(0,184,122,0.15);
+  --glow-orange:0 0 16px rgba(255,140,66,0.18);
 
-  --accent: var(--purple);
+  --accent: var(--orange);
   color-scheme: light;
 }
 
 /* ── Light: base structure ── */
-[data-theme="light"] body            { background: #F4F5FA; color: #1A1A2E; }
+[data-theme="light"] body            { background: #F5F5FF; color: #1A1A2E; }
 [data-theme="light"] body::before    { background:
     radial-gradient(ellipse 80% 60% at 100% 0%,   rgba(109,79,240,0.06) 0%, transparent 55%),
     radial-gradient(ellipse 60% 50% at 0%   100%,  rgba(0,168,107,0.05) 0%, transparent 55%); }
@@ -124,12 +140,12 @@
     background-size:52px 52px; }
 
 /* ── Light: sidebar ── */
-[data-theme="light"] .sidebar        { background: #2B2D6E; border-right: none; }
+[data-theme="light"] .sidebar        { background: #16213E; border-right: none; }
 [data-theme="light"] .sb-top         { border-bottom: 1px solid rgba(255,255,255,0.12); }
 [data-theme="light"] .sb-top:hover   { background: rgba(255,255,255,0.08); }
 [data-theme="light"] .sidebar-item   { color: rgba(255,255,255,0.65); }
 [data-theme="light"] .sidebar-item:hover { background: rgba(255,255,255,0.10); color: #fff; }
-[data-theme="light"] .sidebar-item.active { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.25); font-weight:700; }
+[data-theme="light"] .sidebar-item.active { background: rgba(255,140,66,0.18); color: #FF8C42; border-color: rgba(255,140,66,0.35); font-weight:700; }
 [data-theme="light"] .sidebar-section-label { color: rgba(255,255,255,0.35); }
 [data-theme="light"] .sidebar-acct-card { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.20); }
 
@@ -2607,44 +2623,133 @@ header { isolation: isolate; }
 /* Esconder qualquer saldo no header */
 #hdr-bal-pill { display:none !important; }
 
+
+/* ══════════════════════════════════════════════════
+   LIGHT — "My Training" style
+════════════════════════════════════════════════ */
+[data-theme="light"] .db-kpi-card,
+[data-theme="light"] .db-equity-card,
+[data-theme="light"] .db-perf-card,
+[data-theme="light"] .db-bottom-card,
+[data-theme="light"] .card,
+[data-theme="light"] .cfg-card {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0,0,0,0.07) !important;
+  box-shadow: 0 4px 16px rgba(26,26,46,0.08) !important;
+  border-radius: 16px !important;
+}
+[data-theme="light"] .db-kpi-card:hover {
+  box-shadow: 0 8px 28px rgba(168,85,247,0.14) !important;
+  border-color: rgba(168,85,247,0.18) !important;
+  transform: translateY(-3px) !important;
+}
+[data-theme="light"] .db-kpi-card:nth-child(1) .db-kpi-top-line { background: linear-gradient(90deg,#A855F7,#EC4899) !important; }
+[data-theme="light"] .db-kpi-card:nth-child(2) .db-kpi-top-line { background: linear-gradient(90deg,#FF8C42,#FFB547) !important; }
+[data-theme="light"] .db-kpi-card:nth-child(3) .db-kpi-top-line { background: linear-gradient(90deg,#4B8BFF,#00D4FF) !important; }
+[data-theme="light"] .db-kpi-card:nth-child(4) .db-kpi-top-line { background: linear-gradient(90deg,#EC4899,#A855F7) !important; }
+[data-theme="light"] .db-kpi-card:nth-child(5) .db-kpi-top-line { background: linear-gradient(90deg,#00B87A,#4B8BFF) !important; }
+[data-theme="light"] .db-kpi-card:nth-child(6) .db-kpi-top-line { background: linear-gradient(90deg,#FFB547,#FF8C42) !important; }
+[data-theme="light"] .db-title { color: #1A1A2E !important; }
+[data-theme="light"] .db-kpi-val { color: #1A1A2E !important; }
+[data-theme="light"] .db-kpi-tag { color: #8A8AAA !important; }
+[data-theme="light"] .db-sub    { color: #8A8AAA !important; }
+[data-theme="light"] .db-eq-title { color: #1A1A2E !important; }
+[data-theme="light"] .db-perf-title { color: #1A1A2E !important; }
+[data-theme="light"] .db-bottom-title { color: #1A1A2E !important; }
+[data-theme="light"] header { box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .period-chip.active { background: var(--orange-bg) !important; border-color: rgba(255,140,66,0.30) !important; color: var(--orange) !important; }
+[data-theme="light"] .btn-add { background: linear-gradient(135deg, var(--orange), #FFB547) !important; box-shadow: 0 4px 16px rgba(255,140,66,0.35) !important; color: #fff !important; border: none !important; }
+[data-theme="light"] .hdr-icon-btn:hover { background: var(--orange-bg) !important; border-color: rgba(255,140,66,0.30) !important; color: var(--orange) !important; }
+[data-theme="light"] .cal-cell { background: #FFFFFF !important; border-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .modal { background: #FFFFFF !important; }
+
+/* Botão primário dark = gradiente laranja */
+.btn-add {
+  background: linear-gradient(135deg, #FF8C42, #A855F7) !important;
+  box-shadow: 0 4px 20px rgba(255,140,66,0.35) !important;
+  color: #fff !important; border: none !important;
+}
+.btn-add:hover { filter: brightness(1.1) !important; transform: translateY(-1px) !important; }
+
+/* Sidebar account card: laranja-roxo */
+.sidebar-acct-card {
+  background: linear-gradient(135deg, rgba(255,140,66,0.12), rgba(168,85,247,0.10)) !important;
+  border-color: rgba(255,140,66,0.22) !important;
+}
+[data-theme="light"] .sidebar-acct-card {
+  background: rgba(255,255,255,0.10) !important;
+  border-color: rgba(255,255,255,0.20) !important;
+}
+
+/* Eq-filter ativo: laranja */
+.eq-filter.active { background: var(--orange-bg) !important; border-color: rgba(255,140,66,0.40) !important; color: var(--orange) !important; }
+[data-theme="light"] .eq-filter.active { background: var(--orange-bg) !important; border-color: rgba(255,140,66,0.35) !important; color: var(--orange) !important; }
+
+/* hdr-search focus: laranja */
+.hdr-search:focus-within { border-color: rgba(255,140,66,0.40) !important; background: rgba(255,140,66,0.04) !important; }
+
 /* Sidebar: nunca auto-colapsar */
 @media(max-width:1024px){ .sidebar { width:var(--sidebar-w) !important; } }
 
 
-/* ── Dark: sidebar estilo Value Analytics ── */
+/* ══════════════════════════════════════════════════
+   DARK — "My Training" style
+════════════════════════════════════════════════ */
+
+/* Sidebar: fundo escuro quase preto-azulado */
 .sidebar {
-  background: linear-gradient(180deg, #1E1060 0%, #16163A 100%) !important;
-  border-right: none !important;
+  background: #16213E !important;
+  border-right: 1px solid rgba(255,255,255,0.06) !important;
 }
-.sb-top { border-bottom: 1px solid rgba(255,255,255,0.08) !important; }
-.sidebar-item { color: rgba(255,255,255,0.55) !important; }
-.sidebar-item:hover { color: rgba(255,255,255,0.90) !important; background: rgba(255,255,255,0.08) !important; }
-.sidebar-item.active { color: #fff !important; background: var(--purple-bg) !important; border-color: rgba(123,47,247,0.35) !important; }
-.sidebar-item.active .sidebar-icon svg { color: #fff !important; }
-.sidebar-item:hover .sidebar-icon svg  { color: rgba(255,255,255,0.90) !important; }
-.sidebar-icon svg { color: rgba(255,255,255,0.45) !important; }
-.sidebar-section-label { color: rgba(255,255,255,0.28) !important; }
+.sb-top { border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+.sidebar-item { color: rgba(255,255,255,0.50) !important; }
+.sidebar-item:hover { color: rgba(255,255,255,0.85) !important; background: rgba(255,255,255,0.06) !important; }
+
+/* Item ativo: destaque laranja dourado */
+.sidebar-item.active {
+  color: #FF8C42 !important;
+  background: rgba(255,140,66,0.12) !important;
+  border-color: rgba(255,140,66,0.30) !important;
+}
+.sidebar-item.active .sidebar-icon svg { color: #FF8C42 !important; }
+.sidebar-item:hover .sidebar-icon svg  { color: rgba(255,255,255,0.85) !important; }
+.sidebar-icon svg { color: rgba(255,255,255,0.40) !important; }
+.sidebar-section-label { color: rgba(255,255,255,0.25) !important; }
 .sb-logo-text { color: #fff !important; }
 
-/* ── Body dark: fundo roxo profundo ── */
-body { background: #12122A !important; }
+/* Body dark */
+body { background: #1A1A2E !important; }
 body::before {
   background:
-    radial-gradient(ellipse 70% 50% at 90% 5%,  rgba(123,47,247,0.18) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 10% 90%, rgba(75,139,255,0.10) 0%, transparent 55%) !important;
+    radial-gradient(ellipse 60% 45% at 95% 5%,  rgba(168,85,247,0.15) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 5%  95%, rgba(255,140,66,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(75,139,255,0.05) 0%, transparent 70%) !important;
 }
 
-/* ── Cards dark: bordas suaves roxas ── */
+/* Cards dark */
 .db-kpi-card, .db-equity-card, .db-perf-card, .db-bottom-card,
 .card, .cfg-card, .an-card {
-  background: #1E1E45 !important;
+  background: #1F1F3A !important;
   border: 1px solid rgba(255,255,255,0.07) !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.45) !important;
+  border-radius: 16px !important;
 }
-.db-kpi-card:hover { border-color: rgba(123,47,247,0.30) !important; transform: translateY(-2px) !important; }
+.db-kpi-card:hover {
+  border-color: rgba(168,85,247,0.25) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(168,85,247,0.15) !important;
+}
 
 /* Header dark */
-header { background: #16163A !important; border-bottom: 1px solid rgba(255,255,255,0.06) !important; }
+header { background: #16213E !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+
+/* KPI top lines com gradientes vibrantes */
+.db-kpi-card:nth-child(1) .db-kpi-top-line { background: linear-gradient(90deg, #A855F7, #EC4899) !important; }
+.db-kpi-card:nth-child(2) .db-kpi-top-line { background: linear-gradient(90deg, #FF8C42, #FFB547) !important; }
+.db-kpi-card:nth-child(3) .db-kpi-top-line { background: linear-gradient(90deg, #4B8BFF, #00D4FF) !important; }
+.db-kpi-card:nth-child(4) .db-kpi-top-line { background: linear-gradient(90deg, #EC4899, #A855F7) !important; }
+.db-kpi-card:nth-child(5) .db-kpi-top-line { background: linear-gradient(90deg, #00F5A0, #4B8BFF) !important; }
+.db-kpi-card:nth-child(6) .db-kpi-top-line { background: linear-gradient(90deg, #FFB547, #FF8C42) !important; }
 
 /* ── Light: cards brancos com sombra leve ── */
 [data-theme="light"] .db-kpi-card,
