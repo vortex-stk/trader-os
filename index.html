@@ -11220,6 +11220,38 @@ input:focus, select:focus, textarea:focus {
 
 /* ████ FIM DO TEMA FINAL ████ */
 
+
+/* ════ FIX: Inputs da tela de LOGIN ════ */
+#auth-screen input[type="email"],
+#auth-screen input[type="password"],
+#auth-screen input[type="text"],
+#l-email, #l-pass, #r-name, #r-email, #r-pass {
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  padding: 14px 16px !important;
+  font-size: 15px !important;
+}
+#auth-screen input:focus {
+  border-color: rgba(232,131,58,0.60) !important;
+  box-shadow: 0 0 0 3px rgba(232,131,58,0.12) !important;
+  outline: none !important;
+  background: rgba(255,255,255,0.10) !important;
+}
+#auth-screen input::placeholder { color: rgba(255,255,255,0.35) !important; }
+
+/* Botão Entrar na auth */
+#btn-login, .btn-auth {
+  background: linear-gradient(135deg, #00F5A0, #00C880) !important;
+  color: #050810 !important;
+  font-weight: 800 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+}
+/* ════ FIM FIX AUTH ════ */
+
 </style></head><body>'
   +'<div class="hdr"><div><h1 style="font-size:20px;font-weight:900;margin:0">'+firm.logo+' '+cfg.firmName+' — Relatório do Desafio</h1><p style="margin:4px 0 0;font-size:12px;color:#777">'+['','Fase 1 — Desafio','Fase 2 — Verificação','Funded'][cfg.phase]||'Fase 1'+'  ·  Capital: R$'+capital.toLocaleString('pt-BR')+'</p></div>'
   +'<div style="text-align:right"><div style="background:'+(totalPnL>=0?'#00875A':'#CC2244')+';color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:4px">'+(totalPnL>=(cfg.profitTarget*0.9)?'META ATINGIDA':'EM PROGRESSO')+'</div>'
