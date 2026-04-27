@@ -130,14 +130,9 @@
 }
 
 /* ── Light: base structure ── */
-[data-theme="light"] body            { background: #F5F5FF; color: #1A1A2E; }
-[data-theme="light"] body::before    { background:
-    radial-gradient(ellipse 80% 60% at 100% 0%,   rgba(109,79,240,0.06) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 0%   100%,  rgba(0,168,107,0.05) 0%, transparent 55%); }
-[data-theme="light"] body::after     { background-image:
-    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-    background-size:52px 52px; }
+[data-theme="light"] body            { background: #F4F6FA !important; color: #1A1A2E; }
+[data-theme="light"] body::before    { display:none !important; }
+[data-theme="light"] body::after     { background: none !important; display:none; }
 
 /* ── Light: sidebar ── */
 [data-theme="light"] .sidebar        { background: #16213E; border-right: none; }
@@ -345,22 +340,10 @@ body {
 }
 
 /* ── AMBIENT BACKGROUND ── */
-body::before {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-  background:
-    radial-gradient(ellipse 80% 60% at 100% 0%,   rgba(124,92,252,0.10) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 0%   100%,  rgba(0,245,160,0.07)  0%, transparent 55%),
-    radial-gradient(ellipse 40% 40% at 50%  50%,   rgba(59,158,255,0.04) 0%, transparent 70%);
-}
+body::before { display:none !important; }
 
-/* ── GRID TEXTURE ── */
-body::after {
-  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-  background-image:
-    linear-gradient(rgba(124,92,252,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(124,92,252,0.03) 1px, transparent 1px);
-  background-size:52px 52px;
-}
+/* Grid removido */
+body::after { display:none !important; }
 
 /* ═══════════════════════════════════════
    LAYOUT
@@ -2703,6 +2686,102 @@ header { isolation: isolate; }
 [data-theme="light"] .nav-btn { color: #4A4A6A !important; }
 [data-theme="light"] .nav-btn.active { color: #E8833A !important; background: rgba(232,131,58,0.10) !important; }
 
+
+/* ════ LIGHT MODE: tudo limpo, sem texturas ════ */
+[data-theme="light"] html { background: #F4F6FA !important; }
+[data-theme="light"] body::before,
+[data-theme="light"] body::after { display: none !important; background: none !important; }
+[data-theme="light"] .main-body { background: #F4F6FA !important; }
+[data-theme="light"] main { background: #F4F6FA !important; }
+[data-theme="light"] .page { background: transparent !important; }
+
+/* Light: cards de saúde e insights também brancos */
+[data-theme="light"] #dash-health-row > div,
+[data-theme="light"] .db-equity-card,
+[data-theme="light"] .db-perf-card,
+[data-theme="light"] .db-bottom-card,
+[data-theme="light"] .db-kpi-card,
+[data-theme="light"] .an-card,
+[data-theme="light"] .card,
+[data-theme="light"] .cfg-card { background: #FFFFFF !important; }
+
+/* Light: textos escuros nos cards */
+[data-theme="light"] .db-kpi-val,
+[data-theme="light"] .eq-stat-val,
+[data-theme="light"] .db-perf-val,
+[data-theme="light"] .db-title,
+[data-theme="light"] .db-eq-title { color: #1A1A2E !important; }
+[data-theme="light"] .db-kpi-tag,
+[data-theme="light"] .db-kpi-sub,
+[data-theme="light"] .db-sub,
+[data-theme="light"] .db-perf-key,
+[data-theme="light"] .eq-stat-lbl { color: #8A8AAA !important; }
+
+/* Light: sidebar items texto branco (sidebar escura) */
+[data-theme="light"] .sidebar-label { color: inherit !important; }
+
+/* Light: header totalmente branco */
+[data-theme="light"] header {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .hdr-search {
+  background: #F4F6FA !important;
+  border-color: rgba(0,0,0,0.10) !important;
+}
+[data-theme="light"] .pcb-avatar { background: linear-gradient(135deg, #E8833A, #A855F7) !important; }
+
+/* Light: period chips */
+[data-theme="light"] .period-chip {
+  background: #FFFFFF !important;
+  border-color: rgba(0,0,0,0.10) !important;
+  color: #6A6A8A !important;
+}
+[data-theme="light"] .period-chip.active {
+  background: #E8833A !important;
+  border-color: #E8833A !important;
+  color: #fff !important;
+}
+
+/* Light: botões */
+[data-theme="light"] .btn-export {
+  background: #FFFFFF !important;
+  border-color: rgba(0,0,0,0.12) !important;
+  color: #4A4A6A !important;
+}
+
+/* Light: calendário */
+[data-theme="light"] .cal-header,
+[data-theme="light"] .cal-cell { background: #FFFFFF !important; border-color: rgba(0,0,0,0.07) !important; }
+[data-theme="light"] .cal-day-label { color: #8A8AAA !important; }
+
+/* Light: modal */
+[data-theme="light"] .modal { background: #FFFFFF !important; border-color: rgba(0,0,0,0.08) !important; }
+[data-theme="light"] .modal-hdr { border-bottom-color: rgba(0,0,0,0.08) !important; }
+
+/* Light: tabela de trades */
+[data-theme="light"] .jrow { border-color: rgba(0,0,0,0.06) !important; }
+[data-theme="light"] .jrow:hover { background: rgba(232,131,58,0.04) !important; }
+
+/* Light: cfg cards */
+[data-theme="light"] .cfg-tab { color: #6A6A8A !important; }
+[data-theme="light"] .cfg-tab.active { color: #E8833A !important; background: rgba(232,131,58,0.08) !important; }
+
+/* Light: profile dropdown */
+[data-theme="light"] .profile-dropdown { background: #FFFFFF !important; border-color: rgba(0,0,0,0.09) !important; box-shadow: 0 16px 48px rgba(0,0,0,0.12) !important; }
+[data-theme="light"] .pd-item:hover { background: rgba(232,131,58,0.06) !important; }
+
+/* Light: inputs */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea { background: #FFFFFF !important; border-color: rgba(0,0,0,0.12) !important; color: #1A1A2E !important; }
+
+/* Light: Análises cards também brancos */
+[data-theme="light"] .an-card,
+[data-theme="light"] .an-hm-wrap,
+[data-theme="light"] [class*="an-"] { background: #FFFFFF !important; color: #1A1A2E !important; }
+
 /* Sidebar: nunca auto-colapsar */
 @media(max-width:1024px){ .sidebar { width:var(--sidebar-w) !important; } }
 
@@ -2713,13 +2792,6 @@ header { isolation: isolate; }
 
 /* ── BODY: fundo azul-marinho profundo ── */
 html, body { background: #1A1A2E !important; }
-body::before {
-  content: '' !important; position: fixed !important; inset: 0 !important;
-  pointer-events: none !important; z-index: 0 !important;
-  background:
-    radial-gradient(ellipse 55% 40% at 100% 0%,   rgba(168,85,247,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 45% 35% at 0%   100%,  rgba(255,140,66,0.08) 0%, transparent 60%) !important;
-}
 
 /* ── SIDEBAR: azul-escuro com item ativo laranja ── */
 .sidebar {
