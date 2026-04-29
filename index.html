@@ -4772,20 +4772,23 @@ async function doLogin() {
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     clearTimeout(loginTimeout);
     if (error) throw error;
-    // Check if user has 2FA enabled
-    const assuranceRes = await sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
-    const nextLevel = assuranceRes.data?.nextLevel;
-    const currentLevel = assuranceRes.data?.currentLevel;
-    if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
-      // 2FA required — find the TOTP factor and challenge
-      const factorsRes = await sbClient.auth.mfa.listFactors();
-      const totpFactor = (factorsRes.data?.totp || []).find(f => f.status === 'verified');
-      if (totpFactor) {
-        if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
-        tfa_challengeLogin(data.user, totpFactor.id);
-        return;
+    // Verifica 2FA opcionalmente (não crasha se MFA não disponível)
+    try {
+      if (sbClient.auth.mfa) {
+        const assuranceRes = await sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
+        const nextLevel = assuranceRes?.data?.nextLevel;
+        const currentLevel = assuranceRes?.data?.currentLevel;
+        if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
+          const factorsRes = await sbClient.auth.mfa.listFactors();
+          const totpFactor = (factorsRes?.data?.totp || []).find(f => f.status === 'verified');
+          if (totpFactor) {
+            if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
+            tfa_challengeLogin(data.user, totpFactor.id);
+            return;
+          }
+        }
       }
-    }
+    } catch(mfaErr) { /* MFA não disponível nesta versão */ }
     currentUser = data.user;
     isCloudMode = true;
     await launchApp();
@@ -8681,112 +8684,132 @@ function renderMetaYearSummary(year) {
 // ════════════════════════════════════════
 //  HELPERS DE NAVEGAÇÃO DA AUTH
 // ════════════════════════════════════════
-function showSetupPanel() {
-  // setup-panel removido
-  document.getElementById('login-panel').style.display = 'none';
-}
-function showLoginPanel() {
-  // setup-panel removido
-  document.getElementById('login-panel').style.display = 'block';
-}
+function showSetupPanel() { /* setup-panel removido */ }
+function showLoginPanel() { /* setup-panel removido */ }
 
 // ════════════════════════════════════════
 //  BOOT
 // ════════════════════════════════════════
 (function boot() {
+  // ── Helper: mostra tela de login e garante interatividade ──
+  function showLoginScreen(errorMsg) {
+    const authScreen = document.getElementById('auth-screen');
+    if (authScreen) {
+      authScreen.style.display = 'flex';
+      authScreen.classList.remove('hidden');
+      authScreen.style.pointerEvents = 'auto';
+    }
+    ['btn-login','btn-register','l-email','l-pass','r-email','r-pass','r-pass2'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = false;
+    });
+    if (errorMsg) {
+      const banner = document.getElementById('no-config-banner');
+      if (banner) { banner.style.display = 'block'; banner.innerHTML = errorMsg; }
+    }
+  }
+
   // ── Trata retorno de link de email (confirmação / reset) ──
-  // O Supabase às vezes entrega o token no hash mesmo com auth.html configurado
   const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
   const accessToken  = hashParams.get('access_token');
   const refreshToken = hashParams.get('refresh_token');
-  const tokenType    = hashParams.get('type');
   if (accessToken && refreshToken) {
-    // Inicializa Supabase imediatamente para setar a sessão
     const { url, key } = getSupabaseConfig();
-    if (url && key) {
+    if (url && key && key.startsWith('eyJ')) {
       try {
         const tempClient = window.supabase.createClient(url, key);
         tempClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
           .then(({ data, error }) => {
             if (!error && data?.session) {
-              // Limpa o hash feio da URL
               history.replaceState(null, '', window.location.pathname);
-              // Retoma boot normal com sessão já definida
               sbClient = tempClient;
               currentUser = data.session.user;
               isCloudMode = true;
               launchApp();
-            }
-          });
-        return; // boot normal vai rodar depois do setSession
+            } else { showLoginScreen(); }
+          }).catch(() => showLoginScreen());
+        return;
       } catch(e) { /* continua boot normal */ }
     }
   }
 
   const { url, key } = getSupabaseConfig();
-  const notConfigured = !url || url.includes('COLE_AQUI') || !key || key.includes('COLE_AQUI');
 
-  if (notConfigured) {
-    // Dono ainda não colocou as credenciais — mostra aviso só para ele
-    const banner = document.getElementById('no-config-banner');
-    if (banner) banner.style.display = 'block';
+  // ── Detecta credenciais ausentes ou inválidas ──
+  const missingCreds = !url || url.includes('COLE_AQUI') || !key || key.includes('COLE_AQUI');
+  const invalidKey   = key && !key.startsWith('eyJ'); // Anon Key DEVE começar com eyJ (JWT)
+
+  if (missingCreds) {
+    showLoginScreen('⚠️ <strong>Supabase não configurado.</strong><br>Adicione a URL e a Anon Key no código.<br><small style="opacity:0.7">Use "Explorar sem conta" para acessar o app.</small>');
     return;
   }
 
-  const hasSB = initSupabase();
-  if (hasSB) {
-    // Show loading hint after 2s if still on auth screen
-    const hintTimer = setTimeout(() => {
-      const hint = document.getElementById('auth-loading-hint');
-      if (hint) hint.style.display = 'block';
-      // Countdown display
-      let secs = 8;
-      const cdEl = document.getElementById('auth-countdown');
-      const cdInterval = setInterval(() => {
-        secs--;
-        if (cdEl) cdEl.textContent = secs;
-        if (secs <= 0) clearInterval(cdInterval);
-      }, 1000);
-    }, 2000);
-
-    // Race: Supabase session check vs 4s timeout
-    let launched = false;
-    const fallbackTimer = setTimeout(() => {
-      if (!launched) {
-        launched = true;
-        clearTimeout(hintTimer);
-        console.warn('[Auth] Supabase timeout — entrando em modo local');
-        isCloudMode = false;
-        launchApp();
-      }
-    }, 4000);
-
-    sbClient.auth.getSession().then(({ data }) => {
-      clearTimeout(fallbackTimer);
-      clearTimeout(hintTimer);
-      if (launched) return;
-      launched = true;
-      if (data?.session?.user) {
-        currentUser = data.session.user;
-        isCloudMode = true;
-        launchApp();
-      }
-      // Sem sessão — tela de login visível, usuário escolhe
-    }).catch(() => {
-      clearTimeout(fallbackTimer);
-      clearTimeout(hintTimer);
-      if (!launched) { launched = true; isCloudMode = false; launchApp(); }
-    });
-  } else {
-    // Erro ao conectar — avisa mas mantém tela de login funcional
-    console.warn('[Auth] Supabase createClient falhou. Verifique URL e Anon Key.');
-    const banner = document.getElementById('no-config-banner');
-    if (banner) {
-      banner.style.display = 'block';
-      banner.innerHTML = '⚠️ <strong>Erro ao conectar com o Supabase.</strong><br>Verifique se a URL e a Anon Key estão corretas no código.<br><small style="opacity:0.7">Você pode usar "Explorar sem conta" enquanto isso.</small>';
-    }
-    // Mesmo sem sbClient, mantém a tela de login visível e funcional
+  if (invalidKey) {
+    // Chave inválida (ex: sb_publishable_...) — não tenta conectar, vai direto para login
+    showLoginScreen('⚠️ <strong>Anon Key inválida.</strong> A chave deve começar com <code>eyJ</code>.<br><small style="opacity:0.7">No painel Supabase → Project Settings → API → <b>anon public</b>.<br>Use "Explorar sem conta" enquanto isso.</small>');
+    return;
   }
+
+  // ── Tenta inicializar Supabase com credenciais válidas ──
+  const hasSB = initSupabase();
+  if (!hasSB) {
+    showLoginScreen('⚠️ <strong>Falha ao conectar com Supabase.</strong><br>Verifique URL e Anon Key.<br><small style="opacity:0.7">Use "Explorar sem conta" para acessar o app.</small>');
+    return;
+  }
+
+  // ── Mostra hint de loading após 2s ──
+  const hintTimer = setTimeout(() => {
+    const hint = document.getElementById('auth-loading-hint');
+    if (hint) hint.style.display = 'block';
+    let secs = 6;
+    const cdEl = document.getElementById('auth-countdown');
+    if (cdEl) cdEl.textContent = secs;
+    const cdInterval = setInterval(() => {
+      secs--;
+      if (cdEl) cdEl.textContent = secs;
+      if (secs <= 0) clearInterval(cdInterval);
+    }, 1000);
+  }, 2000);
+
+  // ── Race: verifica sessão existente vs timeout de 5s ──
+  let launched = false;
+  const fallbackTimer = setTimeout(() => {
+    if (!launched) {
+      launched = true;
+      clearTimeout(hintTimer);
+      console.warn('[Boot] Supabase timeout — modo local');
+      isCloudMode = false;
+      showLoginScreen(); // mantém login visível, usuário pode tentar entrar
+    }
+  }, 5000);
+
+  sbClient.auth.getSession().then(({ data, error }) => {
+    clearTimeout(fallbackTimer);
+    clearTimeout(hintTimer);
+    if (launched) return;
+    launched = true;
+
+    const hint = document.getElementById('auth-loading-hint');
+    if (hint) hint.style.display = 'none';
+
+    if (!error && data?.session?.user) {
+      // Sessão ativa — entra direto
+      currentUser = data.session.user;
+      isCloudMode = true;
+      launchApp();
+    } else {
+      // Sem sessão — mostra tela de login normalmente
+      showLoginScreen();
+    }
+  }).catch((err) => {
+    clearTimeout(fallbackTimer);
+    clearTimeout(hintTimer);
+    if (!launched) {
+      launched = true;
+      console.warn('[Boot] getSession erro:', err?.message);
+      showLoginScreen('⚠️ Erro de conexão com Supabase.<br><small style="opacity:0.7">Use "Explorar sem conta" ou tente novamente.</small>');
+    }
+  });
 })();
 
 
