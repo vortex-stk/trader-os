@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 /* ═══════════════════════════════════════
@@ -4677,9 +4677,18 @@ function initSupabase() {
   const { url, key } = getSupabaseConfig();
   if (!url || !key) return false;
   try {
-    sbClient = window.supabase.createClient(url, key);
+    // supabase-js v2 aceita tanto JWT (eyJ...) quanto sb_publishable_... keys
+    const client = window.supabase.createClient(url, key, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+    // Valida que o client foi criado corretamente
+    if (!client || typeof client.auth === 'undefined') return false;
+    sbClient = client;
     return true;
-  } catch(e) { return false; }
+  } catch(e) {
+    console.error('[initSupabase] Erro:', e.message);
+    return false;
+  }
 }
 
 function saveSupabaseConfig() {
@@ -4743,6 +4752,16 @@ async function doLogin() {
   const btn = document.getElementById('btn-login');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Entrando…</span>'; }
 
+  // Tenta re-inicializar o sbClient caso tenha falhado no boot
+  if (!sbClient) {
+    const ok = initSupabase();
+    if (!ok) {
+      showAuthError('Serviço indisponível. Verifique as credenciais do Supabase no código.');
+      if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
+      return;
+    }
+  }
+
   // 8-second timeout so the button never freezes
   const loginTimeout = setTimeout(() => {
     showAuthError('Tempo esgotado. Verifique sua conexão ou use "Explorar sem conta".');
@@ -4750,7 +4769,6 @@ async function doLogin() {
   }, 8000);
 
   try {
-    if (!sbClient) throw new Error('Serviço indisponível. Use "Explorar plataforma sem conta".');
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     clearTimeout(loginTimeout);
     if (error) throw error;
@@ -4794,6 +4812,8 @@ async function doRegister() {
   showAuthError('');
   const btn = document.getElementById('btn-register');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Criando sua conta…</span>'; }
+  // Tenta re-inicializar o sbClient caso tenha falhado no boot
+  if (!sbClient) { initSupabase(); }
   try {
     if (!sbClient) throw new Error('Serviço indisponível. Tente novamente.');
     const { data, error } = await sbClient.auth.signUp({
@@ -8758,12 +8778,14 @@ function showLoginPanel() {
       if (!launched) { launched = true; isCloudMode = false; launchApp(); }
     });
   } else {
-    // Erro ao conectar — avisa
+    // Erro ao conectar — avisa mas mantém tela de login funcional
+    console.warn('[Auth] Supabase createClient falhou. Verifique URL e Anon Key.');
     const banner = document.getElementById('no-config-banner');
     if (banner) {
       banner.style.display = 'block';
-      banner.innerHTML = '⚠️ <strong>Erro ao conectar com o Supabase.</strong><br>Verifique se a URL e a Anon Key estão corretas.';
+      banner.innerHTML = '⚠️ <strong>Erro ao conectar com o Supabase.</strong><br>Verifique se a URL e a Anon Key estão corretas no código.<br><small style="opacity:0.7">Você pode usar "Explorar sem conta" enquanto isso.</small>';
     }
+    // Mesmo sem sbClient, mantém a tela de login visível e funcional
   }
 })();
 
