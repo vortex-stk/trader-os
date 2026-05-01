@@ -15,7 +15,7 @@
 <meta name="description" content="Diário de trading profissional para traders de forex e prop firms">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.warn('QRCode lib not loaded')"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -4676,12 +4676,11 @@ function getSupabaseConfig() {
 function initSupabase() {
   const { url, key } = getSupabaseConfig();
   if (!url || !key) return false;
+  if (!key.startsWith('eyJ')) { console.error('[Supabase] Anon Key inválida. Use a chave que começa com eyJ'); return false; }
   try {
-    // supabase-js v2 aceita tanto JWT (eyJ...) quanto sb_publishable_... keys
     const client = window.supabase.createClient(url, key, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
-    // Valida que o client foi criado corretamente
     if (!client || typeof client.auth === 'undefined') return false;
     sbClient = client;
     return true;
@@ -4752,27 +4751,25 @@ async function doLogin() {
   const btn = document.getElementById('btn-login');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Entrando…</span>'; }
 
-  // Tenta re-inicializar o sbClient caso tenha falhado no boot
+  // Re-inicializa sbClient se necessário
+  if (!sbClient) { initSupabase(); }
   if (!sbClient) {
-    const ok = initSupabase();
-    if (!ok) {
-      showAuthError('Serviço indisponível. Verifique as credenciais do Supabase no código.');
-      if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
-      return;
-    }
+    showAuthError('Serviço indisponível. Verifique as credenciais ou use "Explorar sem conta".');
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
+    return;
   }
 
-  // 8-second timeout so the button never freezes
+  // Timeout de 10s para não congelar o botão
   const loginTimeout = setTimeout(() => {
     showAuthError('Tempo esgotado. Verifique sua conexão ou use "Explorar sem conta".');
     if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
-  }, 8000);
+  }, 10000);
 
   try {
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     clearTimeout(loginTimeout);
     if (error) throw error;
-    // Verifica 2FA opcionalmente (não crasha se MFA não disponível)
+    // Verifica 2FA de forma segura (não crasha se mfa não existir)
     try {
       if (sbClient.auth.mfa) {
         const assuranceRes = await sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -4788,7 +4785,7 @@ async function doLogin() {
           }
         }
       }
-    } catch(mfaErr) { /* MFA não disponível nesta versão */ }
+    } catch(mfaErr) { /* MFA não disponível — continua normalmente */ }
     currentUser = data.user;
     isCloudMode = true;
     await launchApp();
@@ -4815,8 +4812,6 @@ async function doRegister() {
   showAuthError('');
   const btn = document.getElementById('btn-register');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Criando sua conta…</span>'; }
-  // Tenta re-inicializar o sbClient caso tenha falhado no boot
-  if (!sbClient) { initSupabase(); }
   try {
     if (!sbClient) throw new Error('Serviço indisponível. Tente novamente.');
     const { data, error } = await sbClient.auth.signUp({
@@ -7734,8 +7729,7 @@ function exportDashboardPDF() {
 
   var sessCards=Object.entries(sessions).map(function(e){return '<div style="flex:1;background:#f8f8f8;border-radius:8px;padding:12px;text-align:center"><div style="font-size:9px;color:#999;text-transform:uppercase;margin-bottom:4px">'+e[0]+'</div><div style="font-size:15px;font-weight:800;color:'+(e[1]>=0?'#00875A':'#CC2244')+'">'+(e[1]>=0?'+':'')+'R$'+e[1].toFixed(0)+'</div></div>';}).join('');
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #00875A}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.kp{background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}.kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.kv{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cb{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:6px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>
-/* ████ TEMA MY TRAINING ████ */
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #00875A}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.kp{background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}.kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.kv{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cb{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:6px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */
 body,html{background:#1C1C2E!important;}
 body::before,body::after{display:none!important;}
 .main-body,main,.page{background:transparent!important;}
@@ -7757,8 +7751,7 @@ header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.0
 .db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;}
 .db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;}
 .db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;}
-.db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;}
-.db-kpi-tag{color:rgba(255,255,255,0.35)!important;}
+.db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;}.db-kpi-tag{color:rgba(255,255,255,0.35)!important;}
 .db-kpi-val{color:#F0F0FF!important;}
 .db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;}
 .db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;}
@@ -7796,64 +7789,64 @@ input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!impor
 [data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;}
 /* ████ FIM ████ */
 </style>
-</head><body>'
-  +'<div class="hdr"><div><h1 style="font-size:22px;font-weight:900">TRADER OS · Relatório Completo</h1><p style="font-size:12px;color:#777;margin-top:4px">'+acct.name+' · '+now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})+'</p></div>'
-  +'<div style="text-align:right"><div style="background:#00875A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">RELATÓRIO COMPLETO</div><div style="font-size:22px;font-weight:900;color:'+(balance>=cap?'#00875A':'#CC2244')+';margin-top:4px">'+(balance>=0?'+':'')+'R$'+balance.toFixed(2)+'</div></div></div>'
-  +'<div class="sec">📊 Resumo Geral</div>'
-  +'<div class="kg"><div class="kp"><div class="kl">P&L Total</div><div class="kv '+(total>=0?'pos':'neg')+'">'+(total>=0?'+':'')+'R$'+total.toFixed(2)+'</div></div>'
-  +'<div class="kp"><div class="kl">Win Rate</div><div class="kv '+(wr>=50?'pos':'neg')+'">'+wr.toFixed(1)+'%</div></div>'
-  +'<div class="kp"><div class="kl">Fator de Lucro</div><div class="kv '+(pf>=1?'pos':'neg')+'">'+(pf>0?pf.toFixed(2):'—')+'</div></div>'
-  +'<div class="kp"><div class="kl">Max Drawdown</div><div class="kv neg">-R$'+maxDD.toFixed(2)+'</div></div>'
-  +'<div class="kp"><div class="kl">Operações</div><div class="kv">'+all.length+'</div></div>'
-  +'<div class="kp"><div class="kl">Ganho Médio</div><div class="kv pos">+R$'+avgWin.toFixed(2)+'</div></div>'
-  +'<div class="kp"><div class="kl">Melhor Trade</div><div class="kv pos">'+(bestT?'+R$'+bestT.pnl.toFixed(2):'—')+'</div></div>'
-  +'<div class="kp"><div class="kl">Pior Trade</div><div class="kv neg">'+(worstT?'R$'+worstT.pnl.toFixed(2):'—')+'</div></div></div>'
-  +'<div class="two"><div><div class="sec">📅 P&L Mensal — '+yr+'</div><div class="cb"><div style="display:flex;gap:2px;height:90px;align-items:flex-end">'+monthBars+'</div></div></div>'
-  +'<div><div class="sec">⏰ Sessões</div><div style="display:flex;gap:8px;margin-bottom:14px">'+sessCards+'</div></div></div>'
-  +'<div class="sec">📊 Top Pares</div><table><tr><th>Par</th><th>P&L</th><th>Trades</th><th>Win%</th></tr>'
-  +topPairs.map(function(e){var p=e[0],d=e[1];return '<tr><td style="font-weight:700">'+p+'</td><td style="color:'+(d.pnl>=0?'#00875A':'#CC2244')+';font-weight:700">'+(d.pnl>=0?'+':'')+'R$'+d.pnl.toFixed(2)+'</td><td>'+d.c+'</td><td>'+(d.c?(d.w/d.c*100).toFixed(0)+'%':'—')+'</td></tr>';}).join('')+'</table>'
-  +'<div class="sec">📋 Histórico Completo</div><table><tr><th>Data</th><th>Par</th><th>P&L</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>R:R</th></tr>'+tradeRows+'</table>'
-  +'<div class="ft"><span>TRADER OS · Relatório Completo</span><span>'+acct.name+' · '+all.length+' ops · '+now.toLocaleDateString('pt-BR')+'</span><span>Emerson Jesus</span></div>'
-  +'
+</head><body>\\'
+  +\\'<div class="hdr"><div><h1 style="font-size:22px;font-weight:900">TRADER OS · Relatório Completo</h1><p style="font-size:12px;color:#777;margin-top:4px">\\'+acct.name+\\' · \\'+now.toLocaleDateString(\\'pt-BR\\',{day:\\'2-digit\\',month:\\'long\\',year:\\'numeric\\'})+\\'</p></div>\\'
+  +\\'<div style="text-align:right"><div style="background:#00875A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">RELATÓRIO COMPLETO</div><div style="font-size:22px;font-weight:900;color:\\'+(balance>=cap?\\'#00875A\\':\\'#CC2244\\')+\\';margin-top:4px">\\'+(balance>=0?\\'+\\':\\'\\')+\\'R$\\'+balance.toFixed(2)+\\'</div></div></div>\\'
+  +\\'<div class="sec">📊 Resumo Geral</div>\\'
+  +\\'<div class="kg"><div class="kp"><div class="kl">P&L Total</div><div class="kv \\'+(total>=0?\\'pos\\':\\'neg\\')+\\'">\\'+(total>=0?\\'+\\':\\'\\')+\\'R$\\'+total.toFixed(2)+\\'</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Win Rate</div><div class="kv \\'+(wr>=50?\\'pos\\':\\'neg\\')+\\'">\\'+wr.toFixed(1)+\\'%</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Fator de Lucro</div><div class="kv \\'+(pf>=1?\\'pos\\':\\'neg\\')+\\'">\\'+(pf>0?pf.toFixed(2):\\'—\\')+\\'</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Max Drawdown</div><div class="kv neg">-R$\\'+maxDD.toFixed(2)+\\'</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Operações</div><div class="kv">\\'+all.length+\\'</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Ganho Médio</div><div class="kv pos">+R$\\'+avgWin.toFixed(2)+\\'</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Melhor Trade</div><div class="kv pos">\\'+(bestT?\\'+R$\\'+bestT.pnl.toFixed(2):\\'—\\')+\\'</div></div>\\'
+  +\\'<div class="kp"><div class="kl">Pior Trade</div><div class="kv neg">\\'+(worstT?\\'R$\\'+worstT.pnl.toFixed(2):\\'—\\')+\\'</div></div></div>\\'
+  +\\'<div class="two"><div><div class="sec">📅 P&L Mensal — \\'+yr+\\'</div><div class="cb"><div style="display:flex;gap:2px;height:90px;align-items:flex-end">\\'+monthBars+\\'</div></div></div>\\'
+  +\\'<div><div class="sec">⏰ Sessões</div><div style="display:flex;gap:8px;margin-bottom:14px">\\'+sessCards+\\'</div></div></div>\\'
+  +\\'<div class="sec">📊 Top Pares</div><table><tr><th>Par</th><th>P&L</th><th>Trades</th><th>Win%</th></tr>\\'
+  +topPairs.map(function(e){var p=e[0],d=e[1];return \\'<tr><td style="font-weight:700">\\'+p+\\'</td><td style="color:\\'+(d.pnl>=0?\\'#00875A\\':\\'#CC2244\\')+\\';font-weight:700">\\'+(d.pnl>=0?\\'+\\':\\'\\')+\\'R$\\'+d.pnl.toFixed(2)+\\'</td><td>\\'+d.c+\\'</td><td>\\'+(d.c?(d.w/d.c*100).toFixed(0)+\\'%\\':\\'—\\')+\\'</td></tr>\\';}).join(\\'\\')+\\'</table>\\'
+  +\\'<div class="sec">📋 Histórico Completo</div><table><tr><th>Data</th><th>Par</th><th>P&L</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>R:R</th></tr>\\'+tradeRows+\\'</table>\\'
+  +\\'<div class="ft"><span>TRADER OS · Relatório Completo</span><span>\\'+acct.name+\\' · \\'+all.length+\\' ops · \\'+now.toLocaleDateString(\\'pt-BR\\')+\\'</span><span>Emerson Jesus</span></div>\\'
+  +\\'
 <script>
 (function initSearch(){
   var pages=[
-    {l:'Painel',i:'📊',p:'dashboard'},{l:'Negociações',i:'📋',p:'trades'},
-    {l:'Calendário',i:'📅',p:'calendar'},{l:'Resumo Mensal',i:'📈',p:'reports'},
-    {l:'Importar CSV',i:'📥',p:'import'},{l:'Alvos',i:'🎯',p:'metas'},
-    {l:'Alertas de Risco',i:'⚠️',p:'risk'},{l:'Calculadora',i:'🧮',p:'calculator'},
-    {l:'Prop Firm',i:'⭐',p:'propfirm'},{l:'Análises',i:'📉',p:'analytics'},
-    {l:'Instrumentos',i:'🔍',p:'instruments'},{l:'Wiki & Ajuda',i:'ℹ️',p:'wiki'},
-    {l:'Integração MT5',i:'🔗',p:'mt5integration'},{l:'Configurações',i:'⚙️',p:'settings'}
+    {l:\'Painel\',i:\'📊\',p:\'dashboard\'},{l:\'Negociações\',i:\'📋\',p:\'trades\'},
+    {l:\'Calendário\',i:\'📅\',p:\'calendar\'},{l:\'Resumo Mensal\',i:\'📈\',p:\'reports\'},
+    {l:\'Importar CSV\',i:\'📥\',p:\'import\'},{l:\'Alvos\',i:\'🎯\',p:\'metas\'},
+    {l:\'Alertas de Risco\',i:\'⚠️\',p:\'risk\'},{l:\'Calculadora\',i:\'🧮\',p:\'calculator\'},
+    {l:\'Prop Firm\',i:\'⭐\',p:\'propfirm\'},{l:\'Análises\',i:\'📉\',p:\'analytics\'},
+    {l:\'Instrumentos\',i:\'🔍\',p:\'instruments\'},{l:\'Wiki & Ajuda\',i:\'ℹ️\',p:\'wiki\'},
+    {l:\'Integração MT5\',i:\'🔗\',p:\'mt5integration\'},{l:\'Configurações\',i:\'⚙️\',p:\'settings\'}
   ];
-  document.addEventListener('DOMContentLoaded',function(){
-    var inp=document.getElementById('hdr-search-input');
-    var res=document.getElementById('hdr-search-results');
+  document.addEventListener(\'DOMContentLoaded\',function(){
+    var inp=document.getElementById(\'hdr-search-input\');
+    var res=document.getElementById(\'hdr-search-results\');
     if(!inp||!res)return;
-    inp.addEventListener('input',function(){
+    inp.addEventListener(\'input\',function(){
       var q=this.value.trim().toLowerCase();
-      if(!q){res.style.display='none';res.innerHTML='';return;}
+      if(!q){res.style.display=\'none\';res.innerHTML=\'\';return;}
       var m=pages.filter(function(p){return p.l.toLowerCase().indexOf(q)>=0;});
-      if(!m.length){res.style.display='none';res.innerHTML='';return;}
+      if(!m.length){res.style.display=\'none\';res.innerHTML=\'\';return;}
       res.innerHTML=m.map(function(p){
-        return '<div onclick="showPage(\''+p.p+'\',null);document.getElementById(\'hdr-search-input\').value=\'\';document.getElementById(\'hdr-search-results\').style.display=\'none\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.65);" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'\'">'
-          +'<span>'+p.i+'</span><span>'+p.l+'</span></div>';
-      }).join('');
-      res.style.display='block';
+        return \'<div onclick="showPage(\\'\'+p.p+\'\\',null);document.getElementById(\\'hdr-search-input\\').value=\\'\\';document.getElementById(\\'hdr-search-results\\').style.display=\\'none\\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.65);" onmouseover="this.style.background=\\'rgba(255,255,255,0.07)\\'" onmouseout="this.style.background=\\'\\'">\'
+          +\'<span>\'+p.i+\'</span><span>\'+p.l+\'</span></div>\';
+      }).join(\'\');
+      res.style.display=\'block\';
     });
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('#hdr-search-wrap'))res.style.display='none';
+    document.addEventListener(\'click\',function(e){
+      if(!e.target.closest(\'#hdr-search-wrap\'))res.style.display=\'none\';
     });
   });
 })();
 </script>
-</body></html>';
+</body></html>\';
 
-  var w=window.open('','_blank');
-  if(!w){toast('Popup bloqueado',true);return;}
+  var w=window.open(\'\',\'_blank\');
+  if(!w){toast(\'Popup bloqueado\',true);return;}
   w.document.write(html);w.document.close();
   setTimeout(function(){w.print();},600);
-  toast('PDF completo gerado!');
+  toast(\'PDF completo gerado!\');
 }
 
 // ════════════════════════════════════════
@@ -7861,10 +7854,10 @@ input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!impor
 // ════════════════════════════════════════
 function exportAnnualComparativePDF() {
   var acct=getAcct(),all=getTrades(),now=new Date(),curYr=now.getFullYear(),prvYr=curYr-1,cap=acct.capital||10000;
-  var MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  var byYear=function(yr){return all.filter(function(t){return new Date(t.date+'T12:00:00').getFullYear()===yr;});};
+  var MONTHS=[\'Jan\',\'Fev\',\'Mar\',\'Abr\',\'Mai\',\'Jun\',\'Jul\',\'Ago\',\'Set\',\'Out\',\'Nov\',\'Dez\'];
+  var byYear=function(yr){return all.filter(function(t){return new Date(t.date+\'T12:00:00\').getFullYear()===yr;});};
   var cur=byYear(curYr),prv=byYear(prvYr);
-  if(!cur.length&&!prv.length){toast('Sem dados para comparativo',true);return;}
+  if(!cur.length&&!prv.length){toast(\'Sem dados para comparativo\',true);return;}
   var stats=function(trades){
     var wins=trades.filter(function(t){return t.pnl>0;}),losses=trades.filter(function(t){return t.pnl<0;});
     var pnl=trades.reduce(function(a,t){return a+t.pnl;},0);
@@ -7873,7 +7866,7 @@ function exportAnnualComparativePDF() {
     var avgL=losses.length?Math.abs(losses.reduce(function(a,t){return a+t.pnl;},0)/losses.length):0;
     var pf=avgL>0?avgW*wins.length/(avgL*losses.length):0;
     var dd=calcMaxDD(trades);
-    var byM=Array(12).fill(0).map(function(_,i){return trades.filter(function(t){return new Date(t.date+'T12:00:00').getMonth()===i;}).reduce(function(a,t){return a+t.pnl;},0);});
+    var byM=Array(12).fill(0).map(function(_,i){return trades.filter(function(t){return new Date(t.date+\'T12:00:00\').getMonth()===i;}).reduce(function(a,t){return a+t.pnl;},0);});
     return {pnl:pnl,wr:wr,total:trades.length,wins:wins.length,pf:pf,dd:dd,avgW:avgW,byM:byM};
   };
   var cs=stats(cur),ps=stats(prv);
@@ -7882,13 +7875,12 @@ function exportAnnualComparativePDF() {
   var monthRows=MONTHS.map(function(m,i){
     var c=cs.byM[i],p=ps.byM[i];
     var diff=c-p;
-    return '<tr><td style="font-weight:700">'+m+'</td>'
-      +'<td style="color:'+(c>=0?'#00875A':'#CC2244')+';font-weight:700">'+(c!==0?(c>=0?'+':'')+'R$'+c.toFixed(2):'—')+'</td>'
-      +'<td style="color:'+(p>=0?'#00875A':'#CC2244')+';font-weight:700">'+(p!==0?(p>=0?'+':'')+'R$'+p.toFixed(2):'—')+'</td>'
-      +'<td style="color:'+(diff>=0?'#00875A':'#CC2244');}).join('');
+    return \'<tr><td style="font-weight:700">\'+m+\'</td>\'
+      +\'<td style="color:\'+(c>=0?\'#00875A\':\'#CC2244\')+\';font-weight:700">\'+(c!==0?(c>=0?\'+\':\'\')+\'R$\'+c.toFixed(2):\'—\')+\'</td>\'
+      +\'<td style="color:\'+(p>=0?\'#00875A\':\'#CC2244\')+\';font-weight:700">\'+(p!==0?(p>=0?\'+\':\'\')+\'R$\'+p.toFixed(2):\'—\')+\'</td>\'
+      +\'<td style="color:\'+(diff>=0?\'#00875A\':\'#CC2244\');}).join(\'\');
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #3B9EFF}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.yc{border-radius:10px;padding:18px;border:2px solid}.yk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ykb{background:#fff;border-radius:6px;padding:8px;text-align:center}.ykl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}.ykv{font-size:14px;font-weight:800}.pos{color:#00875A}.neg{color:#CC2244}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:7px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>
-/* ████ TEMA MY TRAINING ████ */
+  var html=\'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #3B9EFF}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.yc{border-radius:10px;padding:18px;border:2px solid}.yk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ykb{background:#fff;border-radius:6px;padding:8px;text-align:center}.ykl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}.ykv{font-size:14px;font-weight:800}.pos{color:#00875A}.neg{color:#CC2244}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:7px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */
 body,html{background:#1C1C2E!important;}
 body::before,body::after{display:none!important;}
 .main-body,main,.page{background:transparent!important;}
@@ -8691,7 +8683,7 @@ function showLoginPanel() { /* setup-panel removido */ }
 //  BOOT
 // ════════════════════════════════════════
 (function boot() {
-  // ── Helper: mostra tela de login e garante interatividade ──
+  // Helper: garante tela de login visível e interativa
   function showLoginScreen(errorMsg) {
     const authScreen = document.getElementById('auth-screen');
     if (authScreen) {
@@ -8699,17 +8691,19 @@ function showLoginPanel() { /* setup-panel removido */ }
       authScreen.classList.remove('hidden');
       authScreen.style.pointerEvents = 'auto';
     }
-    ['btn-login','btn-register','l-email','l-pass','r-email','r-pass','r-pass2'].forEach(id => {
+    ['btn-login','btn-register','l-email','l-pass','r-email','r-pass','r-pass2'].forEach(function(id) {
       const el = document.getElementById(id);
       if (el) el.disabled = false;
     });
+    const hint = document.getElementById('auth-loading-hint');
+    if (hint) hint.style.display = 'none';
     if (errorMsg) {
       const banner = document.getElementById('no-config-banner');
       if (banner) { banner.style.display = 'block'; banner.innerHTML = errorMsg; }
     }
   }
 
-  // ── Trata retorno de link de email (confirmação / reset) ──
+  // Trata retorno de link de email (confirmação / reset)
   const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
   const accessToken  = hashParams.get('access_token');
   const refreshToken = hashParams.get('refresh_token');
@@ -8719,95 +8713,84 @@ function showLoginPanel() { /* setup-panel removido */ }
       try {
         const tempClient = window.supabase.createClient(url, key);
         tempClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-          .then(({ data, error }) => {
-            if (!error && data?.session) {
+          .then(function(res) {
+            if (!res.error && res.data && res.data.session) {
               history.replaceState(null, '', window.location.pathname);
               sbClient = tempClient;
-              currentUser = data.session.user;
+              currentUser = res.data.session.user;
               isCloudMode = true;
               launchApp();
             } else { showLoginScreen(); }
-          }).catch(() => showLoginScreen());
+          }).catch(function() { showLoginScreen(); });
         return;
       } catch(e) { /* continua boot normal */ }
     }
   }
 
   const { url, key } = getSupabaseConfig();
-
-  // ── Detecta credenciais ausentes ou inválidas ──
   const missingCreds = !url || url.includes('COLE_AQUI') || !key || key.includes('COLE_AQUI');
-  const invalidKey   = key && !key.startsWith('eyJ'); // Anon Key DEVE começar com eyJ (JWT)
+  const invalidKey   = key && !key.startsWith('eyJ');
 
   if (missingCreds) {
-    showLoginScreen('⚠️ <strong>Supabase não configurado.</strong><br>Adicione a URL e a Anon Key no código.<br><small style="opacity:0.7">Use "Explorar sem conta" para acessar o app.</small>');
+    showLoginScreen('⚠️ <strong>Supabase não configurado.</strong> Adicione a URL e a Anon Key no código.');
     return;
   }
-
   if (invalidKey) {
-    // Chave inválida (ex: sb_publishable_...) — não tenta conectar, vai direto para login
-    showLoginScreen('⚠️ <strong>Anon Key inválida.</strong> A chave deve começar com <code>eyJ</code>.<br><small style="opacity:0.7">No painel Supabase → Project Settings → API → <b>anon public</b>.<br>Use "Explorar sem conta" enquanto isso.</small>');
+    showLoginScreen('⚠️ <strong>Anon Key inválida.</strong> A chave deve começar com <code>eyJ</code>.<br><small>No painel Supabase → Project Settings → API → <b>anon public</b>.</small>');
     return;
   }
 
-  // ── Tenta inicializar Supabase com credenciais válidas ──
   const hasSB = initSupabase();
   if (!hasSB) {
-    showLoginScreen('⚠️ <strong>Falha ao conectar com Supabase.</strong><br>Verifique URL e Anon Key.<br><small style="opacity:0.7">Use "Explorar sem conta" para acessar o app.</small>');
+    showLoginScreen('⚠️ <strong>Falha ao conectar com Supabase.</strong> Verifique URL e Anon Key.');
     return;
   }
 
-  // ── Mostra hint de loading após 2s ──
-  const hintTimer = setTimeout(() => {
+  // Mostra hint de carregamento após 2s
+  const hintTimer = setTimeout(function() {
     const hint = document.getElementById('auth-loading-hint');
     if (hint) hint.style.display = 'block';
     let secs = 6;
     const cdEl = document.getElementById('auth-countdown');
     if (cdEl) cdEl.textContent = secs;
-    const cdInterval = setInterval(() => {
+    const cdInterval = setInterval(function() {
       secs--;
       if (cdEl) cdEl.textContent = secs;
       if (secs <= 0) clearInterval(cdInterval);
     }, 1000);
   }, 2000);
 
-  // ── Race: verifica sessão existente vs timeout de 5s ──
+  // Race: verifica sessão vs timeout de 5s
   let launched = false;
-  const fallbackTimer = setTimeout(() => {
+  const fallbackTimer = setTimeout(function() {
     if (!launched) {
       launched = true;
       clearTimeout(hintTimer);
-      console.warn('[Boot] Supabase timeout — modo local');
-      isCloudMode = false;
-      showLoginScreen(); // mantém login visível, usuário pode tentar entrar
+      console.warn('[Boot] Supabase timeout — mantendo tela de login');
+      showLoginScreen();
     }
   }, 5000);
 
-  sbClient.auth.getSession().then(({ data, error }) => {
+  sbClient.auth.getSession().then(function(res) {
     clearTimeout(fallbackTimer);
     clearTimeout(hintTimer);
     if (launched) return;
     launched = true;
-
-    const hint = document.getElementById('auth-loading-hint');
-    if (hint) hint.style.display = 'none';
-
-    if (!error && data?.session?.user) {
-      // Sessão ativa — entra direto
-      currentUser = data.session.user;
+    if (!res.error && res.data && res.data.session && res.data.session.user) {
+      currentUser = res.data.session.user;
       isCloudMode = true;
       launchApp();
     } else {
-      // Sem sessão — mostra tela de login normalmente
+      // Sem sessão — mostra login normalmente
       showLoginScreen();
     }
-  }).catch((err) => {
+  }).catch(function(err) {
     clearTimeout(fallbackTimer);
     clearTimeout(hintTimer);
     if (!launched) {
       launched = true;
-      console.warn('[Boot] getSession erro:', err?.message);
-      showLoginScreen('⚠️ Erro de conexão com Supabase.<br><small style="opacity:0.7">Use "Explorar sem conta" ou tente novamente.</small>');
+      console.warn('[Boot] getSession erro:', err && err.message);
+      showLoginScreen('⚠️ Erro de conexão. Use "Explorar sem conta" ou tente recarregar.');
     }
   });
 })();
@@ -10658,8 +10641,7 @@ function exportPFReport() {
   var now=new Date();
   var profitPct=Math.min(100,Math.max(0,totalPnL)/cfg.profitTarget*100);
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:740px;margin:0 auto}.hdr{border-bottom:3px solid '+firm.color+';padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.card{background:#f8f8f8;border-radius:8px;padding:12px;border:1px solid #eee;text-align:center}.lbl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.val{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.bar-wrap{background:#eee;border-radius:20px;height:10px;margin:6px 0 4px;overflow:hidden}.bar{height:100%;border-radius:20px}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}@media print{body{padding:16px}}</style><style>
-/* ████ TEMA MY TRAINING ████ */
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:740px;margin:0 auto}.hdr{border-bottom:3px solid '+firm.color+';padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.card{background:#f8f8f8;border-radius:8px;padding:12px;border:1px solid #eee;text-align:center}.lbl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.val{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.bar-wrap{background:#eee;border-radius:20px;height:10px;margin:6px 0 4px;overflow:hidden}.bar{height:100%;border-radius:20px}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */
 body,html{background:#1C1C2E!important;}
 body::before,body::after{display:none!important;}
 .main-body,main,.page{background:transparent!important;}
