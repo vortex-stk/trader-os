@@ -15,7 +15,7 @@
 <meta name="description" content="Diário de trading profissional para traders de forex e prop firms">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" onerror="console.warn('QRCode lib not loaded')"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
@@ -4667,27 +4667,23 @@ let syncTimeout = null;
 //  Acesse: supabase.com → seu projeto → Settings → API
 // ════════════════════════════════════════
 const SUPABASE_URL = 'https://slffnyslgmdateaaxceo.supabase.co';  // ex: https://abcdef.supabase.co
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZmZueXNsZ21kYXRlYWF4Y2VvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDA0NzQsImV4cCI6MjA5MDIxNjQ3NH0.O3ck84OXCF7weO9X_5qKSQkjK9cItwVRgTCx5TAOAS0';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsZmZueXNsZ21kYXRlYWF4Y2VvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDA0NzQsImV4cCI6MjA5MDIxNjQ3NH0.O3ck84OXCF7weO9X_5qKSQkjK9cItwVRgTCx5TAOAS0'; // anon public
 
 function getSupabaseConfig() {
   return { url: SUPABASE_URL, key: SUPABASE_KEY };
 }
 
 function initSupabase() {
-  const { url, key } = getSupabaseConfig();
-  if (!url || !key) return false;
-  if (!key.startsWith('eyJ')) { console.error('[Supabase] Anon Key inválida. Use a chave que começa com eyJ'); return false; }
+  var cfg = getSupabaseConfig();
+  if (!cfg.url || !cfg.key) return false;
+  if (!cfg.key.startsWith('eyJ')) { console.error('[Supabase] Anon Key inválida'); return false; }
   try {
-    const client = window.supabase.createClient(url, key, {
+    var client = window.supabase.createClient(cfg.url, cfg.key, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
     if (!client || typeof client.auth === 'undefined') return false;
-    sbClient = client;
-    return true;
-  } catch(e) {
-    console.error('[initSupabase] Erro:', e.message);
-    return false;
-  }
+    sbClient = client; return true;
+  } catch(e) { console.error('[initSupabase]', e.message); return false; }
 }
 
 function saveSupabaseConfig() {
@@ -4750,44 +4746,31 @@ async function doLogin() {
   showAuthError('');
   const btn = document.getElementById('btn-login');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="opacity:0.7">Entrando…</span>'; }
-
-  // Re-inicializa sbClient se necessário
-  if (!sbClient) { initSupabase(); }
+  if (!sbClient) initSupabase();
   if (!sbClient) {
-    showAuthError('Serviço indisponível. Verifique as credenciais ou use "Explorar sem conta".');
+    showAuthError('Serviço indisponível. Use "Explorar sem conta" por enquanto.');
     if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
     return;
   }
-
-  // Timeout de 10s para não congelar o botão
   const loginTimeout = setTimeout(() => {
-    showAuthError('Tempo esgotado. Verifique sua conexão ou use "Explorar sem conta".');
+    showAuthError('Tempo esgotado. Verifique sua conexão.');
     if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
   }, 10000);
-
   try {
     const { data, error } = await sbClient.auth.signInWithPassword({ email, password: pass });
     clearTimeout(loginTimeout);
     if (error) throw error;
-    // Verifica 2FA de forma segura (não crasha se mfa não existir)
     try {
       if (sbClient.auth.mfa) {
-        const assuranceRes = await sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
-        const nextLevel = assuranceRes?.data?.nextLevel;
-        const currentLevel = assuranceRes?.data?.currentLevel;
-        if (nextLevel === 'aal2' && currentLevel !== 'aal2') {
-          const factorsRes = await sbClient.auth.mfa.listFactors();
-          const totpFactor = (factorsRes?.data?.totp || []).find(f => f.status === 'verified');
-          if (totpFactor) {
-            if (btn) { btn.disabled = false; btn.innerHTML = 'Entrar'; }
-            tfa_challengeLogin(data.user, totpFactor.id);
-            return;
-          }
+        const ar = await sbClient.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (ar?.data?.nextLevel === 'aal2' && ar?.data?.currentLevel !== 'aal2') {
+          const fr = await sbClient.auth.mfa.listFactors();
+          const tf = (fr?.data?.totp || []).find(f => f.status === 'verified');
+          if (tf) { if (btn) { btn.disabled=false; btn.innerHTML='Entrar'; } tfa_challengeLogin(data.user, tf.id); return; }
         }
       }
-    } catch(mfaErr) { /* MFA não disponível — continua normalmente */ }
-    currentUser = data.user;
-    isCloudMode = true;
+    } catch(mfaErr) {}
+    currentUser = data.user; isCloudMode = true;
     await launchApp();
   } catch(e) {
     clearTimeout(loginTimeout);
@@ -7729,124 +7712,31 @@ function exportDashboardPDF() {
 
   var sessCards=Object.entries(sessions).map(function(e){return '<div style="flex:1;background:#f8f8f8;border-radius:8px;padding:12px;text-align:center"><div style="font-size:9px;color:#999;text-transform:uppercase;margin-bottom:4px">'+e[0]+'</div><div style="font-size:15px;font-weight:800;color:'+(e[1]>=0?'#00875A':'#CC2244')+'">'+(e[1]>=0?'+':'')+'R$'+e[1].toFixed(0)+'</div></div>';}).join('');
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #00875A}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.kp{background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}.kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.kv{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cb{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:6px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */
-body,html{background:#1C1C2E!important;}
-body::before,body::after{display:none!important;}
-.main-body,main,.page{background:transparent!important;}
-.sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;}
-.sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.sb-logo-text{color:#fff!important;}
-.sidebar-section-label{color:rgba(255,255,255,0.20)!important;}
-.sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;}
-.sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;}
-.sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;}
-.sidebar-item.active svg{color:#fff!important;}
-.sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;}
-header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;}
-.db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;}
-.db-kpi-top-line{height:3px!important;}
-.db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;}
-.db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;}
-.db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;}
-.db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;}
-.db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;}
-.db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;}.db-kpi-tag{color:rgba(255,255,255,0.35)!important;}
-.db-kpi-val{color:#F0F0FF!important;}
-.db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;}
-.db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;}
-.period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;}
-.period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;}
-.btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;}
-.btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;}
-.eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;}
-.eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;}
-.modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;}
-.cal-cell.today{border-color:#E8833A!important;}
-.cfg-tab{color:rgba(255,255,255,0.40)!important;}
-.cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;}
-input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;}
-input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;}
-::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;}
-[data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;}
-[data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;}
-[data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;}
-[data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;}
-[data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;}
-[data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;}
-[data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;}
-[data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;}
-[data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;}
-[data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;}
-[data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;}
-[data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;}
-[data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;}
-[data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;}
-[data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;}
-/* ████ FIM ████ */
-</style>
-</head><body>\\'
-  +\\'<div class="hdr"><div><h1 style="font-size:22px;font-weight:900">TRADER OS · Relatório Completo</h1><p style="font-size:12px;color:#777;margin-top:4px">\\'+acct.name+\\' · \\'+now.toLocaleDateString(\\'pt-BR\\',{day:\\'2-digit\\',month:\\'long\\',year:\\'numeric\\'})+\\'</p></div>\\'
-  +\\'<div style="text-align:right"><div style="background:#00875A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">RELATÓRIO COMPLETO</div><div style="font-size:22px;font-weight:900;color:\\'+(balance>=cap?\\'#00875A\\':\\'#CC2244\\')+\\';margin-top:4px">\\'+(balance>=0?\\'+\\':\\'\\')+\\'R$\\'+balance.toFixed(2)+\\'</div></div></div>\\'
-  +\\'<div class="sec">📊 Resumo Geral</div>\\'
-  +\\'<div class="kg"><div class="kp"><div class="kl">P&L Total</div><div class="kv \\'+(total>=0?\\'pos\\':\\'neg\\')+\\'">\\'+(total>=0?\\'+\\':\\'\\')+\\'R$\\'+total.toFixed(2)+\\'</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Win Rate</div><div class="kv \\'+(wr>=50?\\'pos\\':\\'neg\\')+\\'">\\'+wr.toFixed(1)+\\'%</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Fator de Lucro</div><div class="kv \\'+(pf>=1?\\'pos\\':\\'neg\\')+\\'">\\'+(pf>0?pf.toFixed(2):\\'—\\')+\\'</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Max Drawdown</div><div class="kv neg">-R$\\'+maxDD.toFixed(2)+\\'</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Operações</div><div class="kv">\\'+all.length+\\'</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Ganho Médio</div><div class="kv pos">+R$\\'+avgWin.toFixed(2)+\\'</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Melhor Trade</div><div class="kv pos">\\'+(bestT?\\'+R$\\'+bestT.pnl.toFixed(2):\\'—\\')+\\'</div></div>\\'
-  +\\'<div class="kp"><div class="kl">Pior Trade</div><div class="kv neg">\\'+(worstT?\\'R$\\'+worstT.pnl.toFixed(2):\\'—\\')+\\'</div></div></div>\\'
-  +\\'<div class="two"><div><div class="sec">📅 P&L Mensal — \\'+yr+\\'</div><div class="cb"><div style="display:flex;gap:2px;height:90px;align-items:flex-end">\\'+monthBars+\\'</div></div></div>\\'
-  +\\'<div><div class="sec">⏰ Sessões</div><div style="display:flex;gap:8px;margin-bottom:14px">\\'+sessCards+\\'</div></div></div>\\'
-  +\\'<div class="sec">📊 Top Pares</div><table><tr><th>Par</th><th>P&L</th><th>Trades</th><th>Win%</th></tr>\\'
-  +topPairs.map(function(e){var p=e[0],d=e[1];return \\'<tr><td style="font-weight:700">\\'+p+\\'</td><td style="color:\\'+(d.pnl>=0?\\'#00875A\\':\\'#CC2244\\')+\\';font-weight:700">\\'+(d.pnl>=0?\\'+\\':\\'\\')+\\'R$\\'+d.pnl.toFixed(2)+\\'</td><td>\\'+d.c+\\'</td><td>\\'+(d.c?(d.w/d.c*100).toFixed(0)+\\'%\\':\\'—\\')+\\'</td></tr>\\';}).join(\\'\\')+\\'</table>\\'
-  +\\'<div class="sec">📋 Histórico Completo</div><table><tr><th>Data</th><th>Par</th><th>P&L</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>R:R</th></tr>\\'+tradeRows+\\'</table>\\'
-  +\\'<div class="ft"><span>TRADER OS · Relatório Completo</span><span>\\'+acct.name+\\' · \\'+all.length+\\' ops · \\'+now.toLocaleDateString(\\'pt-BR\\')+\\'</span><span>Emerson Jesus</span></div>\\'
-  +\\'
-<script>
-(function initSearch(){
-  var pages=[
-    {l:\'Painel\',i:\'📊\',p:\'dashboard\'},{l:\'Negociações\',i:\'📋\',p:\'trades\'},
-    {l:\'Calendário\',i:\'📅\',p:\'calendar\'},{l:\'Resumo Mensal\',i:\'📈\',p:\'reports\'},
-    {l:\'Importar CSV\',i:\'📥\',p:\'import\'},{l:\'Alvos\',i:\'🎯\',p:\'metas\'},
-    {l:\'Alertas de Risco\',i:\'⚠️\',p:\'risk\'},{l:\'Calculadora\',i:\'🧮\',p:\'calculator\'},
-    {l:\'Prop Firm\',i:\'⭐\',p:\'propfirm\'},{l:\'Análises\',i:\'📉\',p:\'analytics\'},
-    {l:\'Instrumentos\',i:\'🔍\',p:\'instruments\'},{l:\'Wiki & Ajuda\',i:\'ℹ️\',p:\'wiki\'},
-    {l:\'Integração MT5\',i:\'🔗\',p:\'mt5integration\'},{l:\'Configurações\',i:\'⚙️\',p:\'settings\'}
-  ];
-  document.addEventListener(\'DOMContentLoaded\',function(){
-    var inp=document.getElementById(\'hdr-search-input\');
-    var res=document.getElementById(\'hdr-search-results\');
-    if(!inp||!res)return;
-    inp.addEventListener(\'input\',function(){
-      var q=this.value.trim().toLowerCase();
-      if(!q){res.style.display=\'none\';res.innerHTML=\'\';return;}
-      var m=pages.filter(function(p){return p.l.toLowerCase().indexOf(q)>=0;});
-      if(!m.length){res.style.display=\'none\';res.innerHTML=\'\';return;}
-      res.innerHTML=m.map(function(p){
-        return \'<div onclick="showPage(\\'\'+p.p+\'\\',null);document.getElementById(\\'hdr-search-input\\').value=\\'\\';document.getElementById(\\'hdr-search-results\\').style.display=\\'none\\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.65);" onmouseover="this.style.background=\\'rgba(255,255,255,0.07)\\'" onmouseout="this.style.background=\\'\\'">\'
-          +\'<span>\'+p.i+\'</span><span>\'+p.l+\'</span></div>\';
-      }).join(\'\');
-      res.style.display=\'block\';
-    });
-    document.addEventListener(\'click\',function(e){
-      if(!e.target.closest(\'#hdr-search-wrap\'))res.style.display=\'none\';
-    });
-  });
-})();
-</script>
-</body></html>\';
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #00875A}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.kp{background:#f8f8f8;border-radius:8px;padding:12px;text-align:center;border:1px solid #eee}.kl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.kv{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cb{border:1px solid #eee;border-radius:8px;padding:14px;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:6px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */ body,html{background:#1C1C2E!important;} body::before,body::after{display:none!important;} .main-body,main,.page{background:transparent!important;} .sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;} .sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .sb-logo-text{color:#fff!important;} .sidebar-section-label{color:rgba(255,255,255,0.20)!important;} .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;} .sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;} .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;} .sidebar-item.active svg{color:#fff!important;} .sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;} header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;} .db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;} .db-kpi-top-line{height:3px!important;} .db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;} .db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;} .db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;} .db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;} .db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;} .db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;} .db-kpi-tag{color:rgba(255,255,255,0.35)!important;} .db-kpi-val{color:#F0F0FF!important;} .db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;} .db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;} .period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;} .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;} .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;} .btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;} .eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;} .eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;} .modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;} .cal-cell.today{border-color:#E8833A!important;} .cfg-tab{color:rgba(255,255,255,0.40)!important;} .cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;} input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;} input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;} ::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;} [data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;} [data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;} [data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;} [data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;} [data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;} [data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;} [data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;} [data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;} [data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;} [data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;} [data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;} [data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;} [data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;} [data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;} [data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;} /* ████ FIM ████ */ </style></head><body>'
+  +'<div class="hdr"><div><h1 style="font-size:22px;font-weight:900">TRADER OS · Relatório Completo</h1><p style="font-size:12px;color:#777;margin-top:4px">'+acct.name+' · '+now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})+'</p></div>'
+  +'<div style="text-align:right"><div style="background:#00875A;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">RELATÓRIO COMPLETO</div><div style="font-size:22px;font-weight:900;color:'+(balance>=cap?'#00875A':'#CC2244')+';margin-top:4px">'+(balance>=0?'+':'')+'R$'+balance.toFixed(2)+'</div></div></div>'
+  +'<div class="sec">📊 Resumo Geral</div>'
+  +'<div class="kg"><div class="kp"><div class="kl">P&L Total</div><div class="kv '+(total>=0?'pos':'neg')+'">'+(total>=0?'+':'')+'R$'+total.toFixed(2)+'</div></div>'
+  +'<div class="kp"><div class="kl">Win Rate</div><div class="kv '+(wr>=50?'pos':'neg')+'">'+wr.toFixed(1)+'%</div></div>'
+  +'<div class="kp"><div class="kl">Fator de Lucro</div><div class="kv '+(pf>=1?'pos':'neg')+'">'+(pf>0?pf.toFixed(2):'—')+'</div></div>'
+  +'<div class="kp"><div class="kl">Max Drawdown</div><div class="kv neg">-R$'+maxDD.toFixed(2)+'</div></div>'
+  +'<div class="kp"><div class="kl">Operações</div><div class="kv">'+all.length+'</div></div>'
+  +'<div class="kp"><div class="kl">Ganho Médio</div><div class="kv pos">+R$'+avgWin.toFixed(2)+'</div></div>'
+  +'<div class="kp"><div class="kl">Melhor Trade</div><div class="kv pos">'+(bestT?'+R$'+bestT.pnl.toFixed(2):'—')+'</div></div>'
+  +'<div class="kp"><div class="kl">Pior Trade</div><div class="kv neg">'+(worstT?'R$'+worstT.pnl.toFixed(2):'—')+'</div></div></div>'
+  +'<div class="two"><div><div class="sec">📅 P&L Mensal — '+yr+'</div><div class="cb"><div style="display:flex;gap:2px;height:90px;align-items:flex-end">'+monthBars+'</div></div></div>'
+  +'<div><div class="sec">⏰ Sessões</div><div style="display:flex;gap:8px;margin-bottom:14px">'+sessCards+'</div></div></div>'
+  +'<div class="sec">📊 Top Pares</div><table><tr><th>Par</th><th>P&L</th><th>Trades</th><th>Win%</th></tr>'
+  +topPairs.map(function(e){var p=e[0],d=e[1];return '<tr><td style="font-weight:700">'+p+'</td><td style="color:'+(d.pnl>=0?'#00875A':'#CC2244')+';font-weight:700">'+(d.pnl>=0?'+':'')+'R$'+d.pnl.toFixed(2)+'</td><td>'+d.c+'</td><td>'+(d.c?(d.w/d.c*100).toFixed(0)+'%':'—')+'</td></tr>';}).join('')+'</table>'
+  +'<div class="sec">📋 Histórico Completo</div><table><tr><th>Data</th><th>Par</th><th>P&L</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>R:R</th></tr>'+tradeRows+'</table>'
+  +'<div class="ft"><span>TRADER OS · Relatório Completo</span><span>'+acct.name+' · '+all.length+' ops · '+now.toLocaleDateString('pt-BR')+'</span><span>Emerson Jesus</span></div>'
+  +'</body></html>';
 
-  var w=window.open(\'\',\'_blank\');
-  if(!w){toast(\'Popup bloqueado\',true);return;}
+  var w=window.open('','_blank');
+  if(!w){toast('Popup bloqueado',true);return;}
   w.document.write(html);w.document.close();
   setTimeout(function(){w.print();},600);
-  toast(\'PDF completo gerado!\');
+  toast('PDF completo gerado!');
 }
 
 // ════════════════════════════════════════
@@ -7854,10 +7744,10 @@ input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!impor
 // ════════════════════════════════════════
 function exportAnnualComparativePDF() {
   var acct=getAcct(),all=getTrades(),now=new Date(),curYr=now.getFullYear(),prvYr=curYr-1,cap=acct.capital||10000;
-  var MONTHS=[\'Jan\',\'Fev\',\'Mar\',\'Abr\',\'Mai\',\'Jun\',\'Jul\',\'Ago\',\'Set\',\'Out\',\'Nov\',\'Dez\'];
-  var byYear=function(yr){return all.filter(function(t){return new Date(t.date+\'T12:00:00\').getFullYear()===yr;});};
+  var MONTHS=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var byYear=function(yr){return all.filter(function(t){return new Date(t.date+'T12:00:00').getFullYear()===yr;});};
   var cur=byYear(curYr),prv=byYear(prvYr);
-  if(!cur.length&&!prv.length){toast(\'Sem dados para comparativo\',true);return;}
+  if(!cur.length&&!prv.length){toast('Sem dados para comparativo',true);return;}
   var stats=function(trades){
     var wins=trades.filter(function(t){return t.pnl>0;}),losses=trades.filter(function(t){return t.pnl<0;});
     var pnl=trades.reduce(function(a,t){return a+t.pnl;},0);
@@ -7866,7 +7756,7 @@ function exportAnnualComparativePDF() {
     var avgL=losses.length?Math.abs(losses.reduce(function(a,t){return a+t.pnl;},0)/losses.length):0;
     var pf=avgL>0?avgW*wins.length/(avgL*losses.length):0;
     var dd=calcMaxDD(trades);
-    var byM=Array(12).fill(0).map(function(_,i){return trades.filter(function(t){return new Date(t.date+\'T12:00:00\').getMonth()===i;}).reduce(function(a,t){return a+t.pnl;},0);});
+    var byM=Array(12).fill(0).map(function(_,i){return trades.filter(function(t){return new Date(t.date+'T12:00:00').getMonth()===i;}).reduce(function(a,t){return a+t.pnl;},0);});
     return {pnl:pnl,wr:wr,total:trades.length,wins:wins.length,pf:pf,dd:dd,avgW:avgW,byM:byM};
   };
   var cs=stats(cur),ps=stats(prv);
@@ -7875,73 +7765,12 @@ function exportAnnualComparativePDF() {
   var monthRows=MONTHS.map(function(m,i){
     var c=cs.byM[i],p=ps.byM[i];
     var diff=c-p;
-    return \'<tr><td style="font-weight:700">\'+m+\'</td>\'
-      +\'<td style="color:\'+(c>=0?\'#00875A\':\'#CC2244\')+\';font-weight:700">\'+(c!==0?(c>=0?\'+\':\'\')+\'R$\'+c.toFixed(2):\'—\')+\'</td>\'
-      +\'<td style="color:\'+(p>=0?\'#00875A\':\'#CC2244\')+\';font-weight:700">\'+(p!==0?(p>=0?\'+\':\'\')+\'R$\'+p.toFixed(2):\'—\')+\'</td>\'
-      +\'<td style="color:\'+(diff>=0?\'#00875A\':\'#CC2244\');}).join(\'\');
+    return '<tr><td style="font-weight:700">'+m+'</td>'
+      +'<td style="color:'+(c>=0?'#00875A':'#CC2244')+';font-weight:700">'+(c!==0?(c>=0?'+':'')+'R$'+c.toFixed(2):'—')+'</td>'
+      +'<td style="color:'+(p>=0?'#00875A':'#CC2244')+';font-weight:700">'+(p!==0?(p>=0?'+':'')+'R$'+p.toFixed(2):'—')+'</td>'
+      +'<td style="color:'+(diff>=0?'#00875A':'#CC2244');}).join('');
 
-  var html=\'<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #3B9EFF}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.yc{border-radius:10px;padding:18px;border:2px solid}.yk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ykb{background:#fff;border-radius:6px;padding:8px;text-align:center}.ykl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}.ykv{font-size:14px;font-weight:800}.pos{color:#00875A}.neg{color:#CC2244}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:7px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */
-body,html{background:#1C1C2E!important;}
-body::before,body::after{display:none!important;}
-.main-body,main,.page{background:transparent!important;}
-.sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;}
-.sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.sb-logo-text{color:#fff!important;}
-.sidebar-section-label{color:rgba(255,255,255,0.20)!important;}
-.sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;}
-.sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;}
-.sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;}
-.sidebar-item.active svg{color:#fff!important;}
-.sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;}
-header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;}
-.db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;}
-.db-kpi-top-line{height:3px!important;}
-.db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;}
-.db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;}
-.db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;}
-.db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;}
-.db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;}
-.db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;}
-.db-kpi-tag{color:rgba(255,255,255,0.35)!important;}
-.db-kpi-val{color:#F0F0FF!important;}
-.db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;}
-.db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;}
-.period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;}
-.period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;}
-.btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;}
-.btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;}
-.eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;}
-.eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;}
-.modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;}
-.cal-cell.today{border-color:#E8833A!important;}
-.cfg-tab{color:rgba(255,255,255,0.40)!important;}
-.cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;}
-input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;}
-input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;}
-::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;}
-[data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;}
-[data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;}
-[data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;}
-[data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;}
-[data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;}
-[data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;}
-[data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;}
-[data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;}
-[data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;}
-[data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;}
-[data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;}
-[data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;}
-[data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;}
-[data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;}
-[data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;}
-/* ████ FIM ████ */
-</style>
-</head><body>'
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:820px;margin:0 auto}.hdr{display:flex;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #3B9EFF}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}.yc{border-radius:10px;padding:18px;border:2px solid}.yk{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ykb{background:#fff;border-radius:6px;padding:8px;text-align:center}.ykl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}.ykv{font-size:14px;font-weight:800}.pos{color:#00875A}.neg{color:#CC2244}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#111;color:#fff;padding:7px 10px;text-align:left;font-weight:600;font-size:10px}td{padding:7px 10px;border-bottom:1px solid #f0f0f0}tr:nth-child(even)td{background:#fafafa}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */ body,html{background:#1C1C2E!important;} body::before,body::after{display:none!important;} .main-body,main,.page{background:transparent!important;} .sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;} .sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .sb-logo-text{color:#fff!important;} .sidebar-section-label{color:rgba(255,255,255,0.20)!important;} .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;} .sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;} .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;} .sidebar-item.active svg{color:#fff!important;} .sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;} header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;} .db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;} .db-kpi-top-line{height:3px!important;} .db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;} .db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;} .db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;} .db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;} .db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;} .db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;} .db-kpi-tag{color:rgba(255,255,255,0.35)!important;} .db-kpi-val{color:#F0F0FF!important;} .db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;} .db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;} .period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;} .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;} .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;} .btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;} .eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;} .eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;} .modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;} .cal-cell.today{border-color:#E8833A!important;} .cfg-tab{color:rgba(255,255,255,0.40)!important;} .cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;} input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;} input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;} ::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;} [data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;} [data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;} [data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;} [data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;} [data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;} [data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;} [data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;} [data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;} [data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;} [data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;} [data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;} [data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;} [data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;} [data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;} [data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;} /* ████ FIM ████ */ </style></head><body>'
   +'<div class="hdr"><div><h1 style="font-size:22px;font-weight:900">TRADER OS · Comparativo Anual</h1><p style="font-size:12px;color:#777;margin-top:4px">'+acct.name+' · '+prvYr+' vs '+curYr+'</p></div><div style="background:#3B9EFF;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;align-self:flex-start">'+prvYr+' vs '+curYr+'</div></div>'
   +'<div class="sec">📊 Resumo por Ano</div>'
   +'<div class="cg">'
@@ -7960,40 +7789,7 @@ input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!impor
   +MONTHS.map(function(m,i){var c=cs.byM[i],p=ps.byM[i],d=c-p;return '<tr><td style="font-weight:700">'+m+'</td><td style="color:'+(c>=0?'#00875A':'#CC2244')+';font-weight:700">'+(c!==0?(c>=0?'+':'')+'R$'+c.toFixed(2):'—')+'</td><td style="color:'+(p>=0?'#00875A':'#CC2244')+';font-weight:700">'+(p!==0?(p>=0?'+':'')+'R$'+p.toFixed(2):'—')+'</td><td style="color:'+(d>=0?'#00875A':'#CC2244');}).join('')
   +'<tr style="background:#111"><td style="color:#fff;font-weight:800">TOTAL</td><td style="color:'+(cs.pnl>=0?'#4ade80':'#f87171')+';font-weight:800">'+(cs.pnl>=0?'+':'')+'R$'+cs.pnl.toFixed(2)+'</td><td style="color:'+(ps.pnl>=0?'#4ade80':'#f87171')+';font-weight:800">'+(ps.pnl>=0?'+':'')+'R$'+ps.pnl.toFixed(2)+'</td><td></td></tr></table>'
   +'<div class="ft"><span>TRADER OS · Comparativo '+prvYr+' vs '+curYr+'</span><span>'+acct.name+'</span><span>Emerson Jesus</span></div>'
-  +'
-<script>
-(function initSearch(){
-  var pages=[
-    {l:'Painel',i:'📊',p:'dashboard'},{l:'Negociações',i:'📋',p:'trades'},
-    {l:'Calendário',i:'📅',p:'calendar'},{l:'Resumo Mensal',i:'📈',p:'reports'},
-    {l:'Importar CSV',i:'📥',p:'import'},{l:'Alvos',i:'🎯',p:'metas'},
-    {l:'Alertas de Risco',i:'⚠️',p:'risk'},{l:'Calculadora',i:'🧮',p:'calculator'},
-    {l:'Prop Firm',i:'⭐',p:'propfirm'},{l:'Análises',i:'📉',p:'analytics'},
-    {l:'Instrumentos',i:'🔍',p:'instruments'},{l:'Wiki & Ajuda',i:'ℹ️',p:'wiki'},
-    {l:'Integração MT5',i:'🔗',p:'mt5integration'},{l:'Configurações',i:'⚙️',p:'settings'}
-  ];
-  document.addEventListener('DOMContentLoaded',function(){
-    var inp=document.getElementById('hdr-search-input');
-    var res=document.getElementById('hdr-search-results');
-    if(!inp||!res)return;
-    inp.addEventListener('input',function(){
-      var q=this.value.trim().toLowerCase();
-      if(!q){res.style.display='none';res.innerHTML='';return;}
-      var m=pages.filter(function(p){return p.l.toLowerCase().indexOf(q)>=0;});
-      if(!m.length){res.style.display='none';res.innerHTML='';return;}
-      res.innerHTML=m.map(function(p){
-        return '<div onclick="showPage(\''+p.p+'\',null);document.getElementById(\'hdr-search-input\').value=\'\';document.getElementById(\'hdr-search-results\').style.display=\'none\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.65);" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'\'">'
-          +'<span>'+p.i+'</span><span>'+p.l+'</span></div>';
-      }).join('');
-      res.style.display='block';
-    });
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('#hdr-search-wrap'))res.style.display='none';
-    });
-  });
-})();
-</script>
-</body></html>';
+  +'</body></html>';
 
   var w=window.open('','_blank');
   if(!w){toast('Popup bloqueado',true);return;}
@@ -8090,68 +7886,7 @@ function exportPDF(type) {
     tr:nth-child(even) td{background:#fafafa}
     footer{margin-top:28px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}
     @media print{body{padding:16px}}
-  </style><style>
-/* ████ TEMA MY TRAINING ████ */
-body,html{background:#1C1C2E!important;}
-body::before,body::after{display:none!important;}
-.main-body,main,.page{background:transparent!important;}
-.sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;}
-.sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.sb-logo-text{color:#fff!important;}
-.sidebar-section-label{color:rgba(255,255,255,0.20)!important;}
-.sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;}
-.sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;}
-.sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;}
-.sidebar-item.active svg{color:#fff!important;}
-.sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;}
-header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;}
-.db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;}
-.db-kpi-top-line{height:3px!important;}
-.db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;}
-.db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;}
-.db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;}
-.db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;}
-.db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;}
-.db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;}
-.db-kpi-tag{color:rgba(255,255,255,0.35)!important;}
-.db-kpi-val{color:#F0F0FF!important;}
-.db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;}
-.db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;}
-.period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;}
-.period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;}
-.btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;}
-.btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;}
-.eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;}
-.eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;}
-.modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;}
-.cal-cell.today{border-color:#E8833A!important;}
-.cfg-tab{color:rgba(255,255,255,0.40)!important;}
-.cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;}
-input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;}
-input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;}
-::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;}
-[data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;}
-[data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;}
-[data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;}
-[data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;}
-[data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;}
-[data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;}
-[data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;}
-[data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;}
-[data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;}
-[data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;}
-[data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;}
-[data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;}
-[data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;}
-[data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;}
-[data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;}
-/* ████ FIM ████ */
-</style>
+  </style><style>/* ████ TEMA MY TRAINING ████ */ body,html{background:#1C1C2E!important;} body::before,body::after{display:none!important;} .main-body,main,.page{background:transparent!important;} .sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;} .sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .sb-logo-text{color:#fff!important;} .sidebar-section-label{color:rgba(255,255,255,0.20)!important;} .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;} .sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;} .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;} .sidebar-item.active svg{color:#fff!important;} .sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;} header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;} .db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;} .db-kpi-top-line{height:3px!important;} .db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;} .db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;} .db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;} .db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;} .db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;} .db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;} .db-kpi-tag{color:rgba(255,255,255,0.35)!important;} .db-kpi-val{color:#F0F0FF!important;} .db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;} .db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;} .period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;} .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;} .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;} .btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;} .eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;} .eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;} .modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;} .cal-cell.today{border-color:#E8833A!important;} .cfg-tab{color:rgba(255,255,255,0.40)!important;} .cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;} input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;} input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;} ::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;} [data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;} [data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;} [data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;} [data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;} [data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;} [data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;} [data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;} [data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;} [data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;} [data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;} [data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;} [data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;} [data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;} [data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;} [data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;} /* ████ FIM ████ */</style>
 </head><body>
   <h1>TRADER OS · ${title}</h1>
   <h2>${acct.name} · Gerado em ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</h2>
@@ -8186,38 +7921,6 @@ input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!impor
 
   <footer>TRADER OS · ${acct.name} · ${now.toLocaleDateString('pt-BR')} · Desenvolvido por Emerson Jesus</footer>
   
-<script>
-(function initSearch(){
-  var pages=[
-    {l:'Painel',i:'📊',p:'dashboard'},{l:'Negociações',i:'📋',p:'trades'},
-    {l:'Calendário',i:'📅',p:'calendar'},{l:'Resumo Mensal',i:'📈',p:'reports'},
-    {l:'Importar CSV',i:'📥',p:'import'},{l:'Alvos',i:'🎯',p:'metas'},
-    {l:'Alertas de Risco',i:'⚠️',p:'risk'},{l:'Calculadora',i:'🧮',p:'calculator'},
-    {l:'Prop Firm',i:'⭐',p:'propfirm'},{l:'Análises',i:'📉',p:'analytics'},
-    {l:'Instrumentos',i:'🔍',p:'instruments'},{l:'Wiki & Ajuda',i:'ℹ️',p:'wiki'},
-    {l:'Integração MT5',i:'🔗',p:'mt5integration'},{l:'Configurações',i:'⚙️',p:'settings'}
-  ];
-  document.addEventListener('DOMContentLoaded',function(){
-    var inp=document.getElementById('hdr-search-input');
-    var res=document.getElementById('hdr-search-results');
-    if(!inp||!res)return;
-    inp.addEventListener('input',function(){
-      var q=this.value.trim().toLowerCase();
-      if(!q){res.style.display='none';res.innerHTML='';return;}
-      var m=pages.filter(function(p){return p.l.toLowerCase().indexOf(q)>=0;});
-      if(!m.length){res.style.display='none';res.innerHTML='';return;}
-      res.innerHTML=m.map(function(p){
-        return '<div onclick="showPage(\''+p.p+'\',null);document.getElementById(\'hdr-search-input\').value=\'\';document.getElementById(\'hdr-search-results\').style.display=\'none\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.65);" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'\'">'
-          +'<span>'+p.i+'</span><span>'+p.l+'</span></div>';
-      }).join('');
-      res.style.display='block';
-    });
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('#hdr-search-wrap'))res.style.display='none';
-    });
-  });
-})();
-</script>
 </body></html>`;
 
   const w = window.open('', '_blank');
@@ -8676,122 +8379,71 @@ function renderMetaYearSummary(year) {
 // ════════════════════════════════════════
 //  HELPERS DE NAVEGAÇÃO DA AUTH
 // ════════════════════════════════════════
-function showSetupPanel() { /* setup-panel removido */ }
-function showLoginPanel() { /* setup-panel removido */ }
+function showSetupPanel() {}
+function showLoginPanel() {}
 
 // ════════════════════════════════════════
 //  BOOT
 // ════════════════════════════════════════
 (function boot() {
-  // Helper: garante tela de login visível e interativa
-  function showLoginScreen(errorMsg) {
-    const authScreen = document.getElementById('auth-screen');
-    if (authScreen) {
-      authScreen.style.display = 'flex';
-      authScreen.classList.remove('hidden');
-      authScreen.style.pointerEvents = 'auto';
-    }
-    ['btn-login','btn-register','l-email','l-pass','r-email','r-pass','r-pass2'].forEach(function(id) {
-      const el = document.getElementById(id);
-      if (el) el.disabled = false;
+  function unlockLogin(msg) {
+    var sc = document.getElementById('auth-screen');
+    if (sc) { sc.style.display='flex'; sc.style.pointerEvents='auto'; }
+    ['btn-login','btn-register','l-email','l-pass','r-email','r-pass','r-pass2'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.disabled=false;
     });
-    const hint = document.getElementById('auth-loading-hint');
-    if (hint) hint.style.display = 'none';
-    if (errorMsg) {
-      const banner = document.getElementById('no-config-banner');
-      if (banner) { banner.style.display = 'block'; banner.innerHTML = errorMsg; }
-    }
+    var hint=document.getElementById('auth-loading-hint'); if(hint) hint.style.display='none';
+    if(msg){ var b=document.getElementById('no-config-banner'); if(b){b.style.display='block';b.innerHTML=msg;} }
   }
-
-  // Trata retorno de link de email (confirmação / reset)
-  const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
-  const accessToken  = hashParams.get('access_token');
-  const refreshToken = hashParams.get('refresh_token');
-  if (accessToken && refreshToken) {
-    const { url, key } = getSupabaseConfig();
-    if (url && key && key.startsWith('eyJ')) {
-      try {
-        const tempClient = window.supabase.createClient(url, key);
-        tempClient.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-          .then(function(res) {
-            if (!res.error && res.data && res.data.session) {
-              history.replaceState(null, '', window.location.pathname);
-              sbClient = tempClient;
-              currentUser = res.data.session.user;
-              isCloudMode = true;
-              launchApp();
-            } else { showLoginScreen(); }
-          }).catch(function() { showLoginScreen(); });
+  var hp=new URLSearchParams(window.location.hash.replace('#',''));
+  var at=hp.get('access_token'), rt=hp.get('refresh_token');
+  if(at && rt){
+    var cfg=getSupabaseConfig();
+    if(cfg.url && cfg.key && cfg.key.startsWith('eyJ')){
+      try{
+        var tc=window.supabase.createClient(cfg.url,cfg.key);
+        tc.auth.setSession({access_token:at,refresh_token:rt}).then(function(r){
+          if(!r.error&&r.data&&r.data.session){
+            history.replaceState(null,'',window.location.pathname);
+            sbClient=tc; currentUser=r.data.session.user; isCloudMode=true; launchApp();
+          } else { unlockLogin(); }
+        }).catch(function(){ unlockLogin(); });
         return;
-      } catch(e) { /* continua boot normal */ }
+      }catch(e){}
     }
   }
-
-  const { url, key } = getSupabaseConfig();
-  const missingCreds = !url || url.includes('COLE_AQUI') || !key || key.includes('COLE_AQUI');
-  const invalidKey   = key && !key.startsWith('eyJ');
-
-  if (missingCreds) {
-    showLoginScreen('⚠️ <strong>Supabase não configurado.</strong> Adicione a URL e a Anon Key no código.');
+  var cfg=getSupabaseConfig();
+  if(!cfg.url||cfg.url.includes('COLE_AQUI')||!cfg.key||cfg.key.includes('COLE_AQUI')){
+    unlockLogin('⚠️ <strong>Supabase não configurado.</strong>');
     return;
   }
-  if (invalidKey) {
-    showLoginScreen('⚠️ <strong>Anon Key inválida.</strong> A chave deve começar com <code>eyJ</code>.<br><small>No painel Supabase → Project Settings → API → <b>anon public</b>.</small>');
+  if(!cfg.key.startsWith('eyJ')){
+    unlockLogin('⚠️ <strong>Anon Key inválida.</strong> Deve começar com <code>eyJ</code>.');
     return;
   }
-
-  const hasSB = initSupabase();
-  if (!hasSB) {
-    showLoginScreen('⚠️ <strong>Falha ao conectar com Supabase.</strong> Verifique URL e Anon Key.');
+  if(!initSupabase()){
+    unlockLogin('⚠️ <strong>Falha ao conectar.</strong> Verifique URL e Anon Key.');
     return;
   }
-
-  // Mostra hint de carregamento após 2s
-  const hintTimer = setTimeout(function() {
-    const hint = document.getElementById('auth-loading-hint');
-    if (hint) hint.style.display = 'block';
-    let secs = 6;
-    const cdEl = document.getElementById('auth-countdown');
-    if (cdEl) cdEl.textContent = secs;
-    const cdInterval = setInterval(function() {
-      secs--;
-      if (cdEl) cdEl.textContent = secs;
-      if (secs <= 0) clearInterval(cdInterval);
-    }, 1000);
-  }, 2000);
-
-  // Race: verifica sessão vs timeout de 5s
-  let launched = false;
-  const fallbackTimer = setTimeout(function() {
-    if (!launched) {
-      launched = true;
-      clearTimeout(hintTimer);
-      console.warn('[Boot] Supabase timeout — mantendo tela de login');
-      showLoginScreen();
-    }
-  }, 5000);
-
-  sbClient.auth.getSession().then(function(res) {
-    clearTimeout(fallbackTimer);
-    clearTimeout(hintTimer);
-    if (launched) return;
-    launched = true;
-    if (!res.error && res.data && res.data.session && res.data.session.user) {
-      currentUser = res.data.session.user;
-      isCloudMode = true;
-      launchApp();
-    } else {
-      // Sem sessão — mostra login normalmente
-      showLoginScreen();
-    }
-  }).catch(function(err) {
-    clearTimeout(fallbackTimer);
-    clearTimeout(hintTimer);
-    if (!launched) {
-      launched = true;
-      console.warn('[Boot] getSession erro:', err && err.message);
-      showLoginScreen('⚠️ Erro de conexão. Use "Explorar sem conta" ou tente recarregar.');
-    }
+  var hintTimer=setTimeout(function(){
+    var h=document.getElementById('auth-loading-hint'); if(h) h.style.display='block';
+    var s=6, cd=document.getElementById('auth-countdown');
+    if(cd) cd.textContent=s;
+    var iv=setInterval(function(){ s--; if(cd) cd.textContent=s; if(s<=0) clearInterval(iv); },1000);
+  },2000);
+  var launched=false;
+  var fallback=setTimeout(function(){
+    if(!launched){ launched=true; clearTimeout(hintTimer); unlockLogin(); }
+  },5000);
+  sbClient.auth.getSession().then(function(r){
+    clearTimeout(fallback); clearTimeout(hintTimer);
+    if(launched) return; launched=true;
+    if(!r.error&&r.data&&r.data.session&&r.data.session.user){
+      currentUser=r.data.session.user; isCloudMode=true; launchApp();
+    } else { unlockLogin(); }
+  }).catch(function(){
+    clearTimeout(fallback); clearTimeout(hintTimer);
+    if(!launched){ launched=true; unlockLogin('⚠️ Erro de conexão. Use "Explorar sem conta" ou recarregue.'); }
   });
 })();
 
@@ -10641,68 +10293,7 @@ function exportPFReport() {
   var now=new Date();
   var profitPct=Math.min(100,Math.max(0,totalPnL)/cfg.profitTarget*100);
 
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:740px;margin:0 auto}.hdr{border-bottom:3px solid '+firm.color+';padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.card{background:#f8f8f8;border-radius:8px;padding:12px;border:1px solid #eee;text-align:center}.lbl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.val{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.bar-wrap{background:#eee;border-radius:20px;height:10px;margin:6px 0 4px;overflow:hidden}.bar{height:100%;border-radius:20px}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */
-body,html{background:#1C1C2E!important;}
-body::before,body::after{display:none!important;}
-.main-body,main,.page{background:transparent!important;}
-.sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;}
-.sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.sb-logo-text{color:#fff!important;}
-.sidebar-section-label{color:rgba(255,255,255,0.20)!important;}
-.sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;}
-.sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;}
-.sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;}
-.sidebar-item.active svg{color:#fff!important;}
-.sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;}
-header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;}
-.db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;}
-.db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;}
-.db-kpi-top-line{height:3px!important;}
-.db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;}
-.db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;}
-.db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;}
-.db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;}
-.db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;}
-.db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;}
-.db-kpi-tag{color:rgba(255,255,255,0.35)!important;}
-.db-kpi-val{color:#F0F0FF!important;}
-.db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;}
-.db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;}
-.period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;}
-.period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;}
-.btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;}
-.btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;}
-.eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;}
-.eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;}
-.modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;}
-.cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;}
-.cal-cell.today{border-color:#E8833A!important;}
-.cfg-tab{color:rgba(255,255,255,0.40)!important;}
-.cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;}
-input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;}
-input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;}
-::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;}
-[data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;}
-[data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;}
-[data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;}
-[data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;}
-[data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;}
-[data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;}
-[data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;}
-[data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;}
-[data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;}
-[data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;}
-[data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;}
-[data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;}
-[data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;}
-[data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;}
-[data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;}
-[data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;}
-/* ████ FIM ████ */
-</style>
-</head><body>'
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Segoe UI,Arial,sans-serif;padding:32px 40px;color:#111;max-width:740px;margin:0 auto}.hdr{border-bottom:3px solid '+firm.color+';padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between}.sec{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#555;border-bottom:1px solid #eee;padding-bottom:4px;margin:18px 0 10px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.card{background:#f8f8f8;border-radius:8px;padding:12px;border:1px solid #eee;text-align:center}.lbl{font-size:8px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}.val{font-size:18px;font-weight:900}.pos{color:#00875A}.neg{color:#CC2244}.bar-wrap{background:#eee;border-radius:20px;height:10px;margin:6px 0 4px;overflow:hidden}.bar{height:100%;border-radius:20px}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;font-size:12px}.ft{margin-top:24px;font-size:9px;color:#bbb;border-top:1px solid #eee;padding-top:10px;text-align:center}@media print{body{padding:16px}}</style><style>/* ████ TEMA MY TRAINING ████ */ body,html{background:#1C1C2E!important;} body::before,body::after{display:none!important;} .main-body,main,.page{background:transparent!important;} .sidebar{background:#1C1C2E!important;border-right:1px solid rgba(255,255,255,0.05)!important;width:210px!important;} .sb-top{background:transparent!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .sb-logo-text{color:#fff!important;} .sidebar-section-label{color:rgba(255,255,255,0.20)!important;} .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;border-radius:8px!important;margin:1px 8px!important;} .sidebar-item:hover{color:rgba(255,255,255,0.88)!important;background:rgba(255,255,255,0.06)!important;border:none!important;} .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;font-weight:600!important;} .sidebar-item.active svg{color:#fff!important;} .sidebar-acct-card{background:rgba(232,131,58,0.10)!important;border:1px solid rgba(232,131,58,0.18)!important;border-radius:14px!important;} header{background:#16213E!important;border-bottom:1px solid rgba(255,255,255,0.05)!important;} .db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,.card,.cfg-card,.an-card{background:#252535!important;border:1px solid rgba(255,255,255,0.07)!important;box-shadow:0 4px 20px rgba(0,0,0,0.35)!important;border-radius:16px!important;} .db-kpi-card:hover{transform:translateY(-3px)!important;box-shadow:0 8px 28px rgba(0,0,0,0.5)!important;} .db-kpi-top-line{height:3px!important;} .db-kpi-card:nth-child(1) .db-kpi-top-line{background:linear-gradient(90deg,#A855F7,#EC4899)!important;} .db-kpi-card:nth-child(2) .db-kpi-top-line{background:linear-gradient(90deg,#E8833A,#FFD166)!important;} .db-kpi-card:nth-child(3) .db-kpi-top-line{background:linear-gradient(90deg,#4ECDC4,#00D4FF)!important;} .db-kpi-card:nth-child(4) .db-kpi-top-line{background:linear-gradient(90deg,#EC4899,#A855F7)!important;} .db-kpi-card:nth-child(5) .db-kpi-top-line{background:linear-gradient(90deg,#00F5A0,#4B8BFF)!important;} .db-kpi-card:nth-child(6) .db-kpi-top-line{background:linear-gradient(90deg,#FFB547,#E8833A)!important;} .db-kpi-tag{color:rgba(255,255,255,0.35)!important;} .db-kpi-val{color:#F0F0FF!important;} .db-title,.db-eq-title,.db-perf-title,.db-bottom-title{color:#fff!important;} .db-sub,.db-perf-key,.db-kpi-sub{color:rgba(255,255,255,0.38)!important;} .period-chip{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;border-radius:20px!important;} .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;font-weight:600!important;} .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;border:none!important;box-shadow:0 4px 16px rgba(232,131,58,0.40)!important;} .btn-export{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.55)!important;} .eq-filter{background:#252535!important;border:1px solid rgba(255,255,255,0.08)!important;color:rgba(255,255,255,0.45)!important;} .eq-filter.active{background:rgba(232,131,58,0.15)!important;border-color:rgba(232,131,58,0.40)!important;color:#E8833A!important;} .modal{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .profile-dropdown{background:#252535!important;border-color:rgba(255,255,255,0.08)!important;} .cal-cell{background:#252535!important;border-color:rgba(255,255,255,0.06)!important;} .cal-cell.today{border-color:#E8833A!important;} .cfg-tab{color:rgba(255,255,255,0.40)!important;} .cfg-tab.active{color:#E8833A!important;background:rgba(232,131,58,0.10)!important;} input,select,textarea{background:#1C1C2E!important;border:1px solid rgba(255,255,255,0.10)!important;color:#F0F0FF!important;} input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!important;outline:none!important;} ::-webkit-scrollbar-thumb{background:rgba(232,131,58,0.28)!important;} [data-theme="light"] body,[data-theme="light"] html{background:#F4F6FA!important;} [data-theme="light"] .main-body,[data-theme="light"] main{background:#F4F6FA!important;} [data-theme="light"] .sidebar{background:#1C1C2E!important;border-right:none!important;} [data-theme="light"] .sidebar-item{color:rgba(255,255,255,0.45)!important;border:none!important;} [data-theme="light"] .sidebar-item:hover{background:rgba(255,255,255,0.07)!important;color:#fff!important;} [data-theme="light"] .sidebar-item.active{background:#E8833A!important;color:#fff!important;border:none!important;} [data-theme="light"] header{background:#fff!important;border-bottom:1px solid rgba(0,0,0,0.08)!important;box-shadow:0 2px 10px rgba(0,0,0,0.06)!important;} [data-theme="light"] .db-kpi-card,[data-theme="light"] .db-equity-card,[data-theme="light"] .db-perf-card,[data-theme="light"] .db-bottom-card,[data-theme="light"] #dash-health-row>div,[data-theme="light"] .card,[data-theme="light"] .cfg-card,[data-theme="light"] .an-card{background:#fff!important;border:1px solid rgba(0,0,0,0.07)!important;box-shadow:0 4px 16px rgba(0,0,0,0.07)!important;} [data-theme="light"] .db-kpi-tag,[data-theme="light"] .db-sub,[data-theme="light"] .db-perf-key{color:#9A9ABB!important;} [data-theme="light"] .db-kpi-val,[data-theme="light"] .db-title,[data-theme="light"] .db-eq-title,[data-theme="light"] .db-perf-val,[data-theme="light"] .db-bottom-title{color:#1C1C2E!important;} [data-theme="light"] .period-chip{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] .period-chip.active{background:#E8833A!important;border-color:#E8833A!important;color:#fff!important;} [data-theme="light"] .btn-add{background:linear-gradient(135deg,#E8833A,#F7B731)!important;color:#fff!important;} [data-theme="light"] .btn-export{background:#fff!important;border-color:rgba(0,0,0,0.10)!important;color:#6A6A8A!important;} [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background:#fff!important;border-color:rgba(0,0,0,0.12)!important;color:#1C1C2E!important;} [data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;} [data-theme="light"] .cal-cell{background:#fff!important;border-color:rgba(0,0,0,0.07)!important;} /* ████ FIM ████ */ </style></head><body>'
   +'<div class="hdr"><div><h1 style="font-size:20px;font-weight:900;margin:0">'+firm.logo+' '+cfg.firmName+' — Relatório do Desafio</h1><p style="margin:4px 0 0;font-size:12px;color:#777">'+['','Fase 1 — Desafio','Fase 2 — Verificação','Funded'][cfg.phase]||'Fase 1'+'  ·  Capital: R$'+capital.toLocaleString('pt-BR')+'</p></div>'
   +'<div style="text-align:right"><div style="background:'+(totalPnL>=0?'#00875A':'#CC2244')+';color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;margin-bottom:4px">'+(totalPnL>=(cfg.profitTarget*0.9)?'META ATINGIDA':'EM PROGRESSO')+'</div>'
   +'<div style="font-size:11px;color:#777">'+now.toLocaleDateString('pt-BR')+'</div></div></div>'
@@ -10727,40 +10318,8 @@ input:focus,select:focus,textarea:focus{border-color:rgba(232,131,58,0.55)!impor
       +'<td style="padding:5px 10px;text-align:right;font-weight:700;color:'+(t.pnl>=0?'#00875A':'#CC2244')+'">'+(t.pnl>=0?'+':'')+'R$'+Math.abs(t.pnl).toFixed(2)+'</td>'
       +'</tr>';
   }).join('')+'</tbody></table>'
-  +'<div class="ft">TRADER OS · '+cfg.firmName+' · '+now.toLocaleDateString('pt-BR')+'</div>
-<script>
-(function initSearch(){
-  var pages=[
-    {l:'Painel',i:'📊',p:'dashboard'},{l:'Negociações',i:'📋',p:'trades'},
-    {l:'Calendário',i:'📅',p:'calendar'},{l:'Resumo Mensal',i:'📈',p:'reports'},
-    {l:'Importar CSV',i:'📥',p:'import'},{l:'Alvos',i:'🎯',p:'metas'},
-    {l:'Alertas de Risco',i:'⚠️',p:'risk'},{l:'Calculadora',i:'🧮',p:'calculator'},
-    {l:'Prop Firm',i:'⭐',p:'propfirm'},{l:'Análises',i:'📉',p:'analytics'},
-    {l:'Instrumentos',i:'🔍',p:'instruments'},{l:'Wiki & Ajuda',i:'ℹ️',p:'wiki'},
-    {l:'Integração MT5',i:'🔗',p:'mt5integration'},{l:'Configurações',i:'⚙️',p:'settings'}
-  ];
-  document.addEventListener('DOMContentLoaded',function(){
-    var inp=document.getElementById('hdr-search-input');
-    var res=document.getElementById('hdr-search-results');
-    if(!inp||!res)return;
-    inp.addEventListener('input',function(){
-      var q=this.value.trim().toLowerCase();
-      if(!q){res.style.display='none';res.innerHTML='';return;}
-      var m=pages.filter(function(p){return p.l.toLowerCase().indexOf(q)>=0;});
-      if(!m.length){res.style.display='none';res.innerHTML='';return;}
-      res.innerHTML=m.map(function(p){
-        return '<div onclick="showPage(\''+p.p+'\',null);document.getElementById(\'hdr-search-input\').value=\'\';document.getElementById(\'hdr-search-results\').style.display=\'none\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.65);" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'\'">'
-          +'<span>'+p.i+'</span><span>'+p.l+'</span></div>';
-      }).join('');
-      res.style.display='block';
-    });
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('#hdr-search-wrap'))res.style.display='none';
-    });
-  });
-})();
-</script>
-</body></html>';
+  +'<div class="ft">TRADER OS · '+cfg.firmName+' · '+now.toLocaleDateString('pt-BR')+'</div>'
+  +'</body></html>';
 
   var w=window.open('','_blank');
   if(!w){toast('Popup bloqueado',true);return;}
@@ -11421,6 +10980,6 @@ window.addEventListener('load', () => {
     });
   });
 })();
-</script>
+<\/script>
 </body>
 </html>
