@@ -2765,6 +2765,7 @@ input:focus,select:focus,textarea:focus{border-color:rgba(0,135,90,0.55)!importa
     <div class="hdr-search" id="hdr-search-wrap" style="display:flex;align-items:center;gap:9px;position:relative;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:22px;padding:9px 18px;width:100%;max-width:700px;margin:0 auto;box-sizing:border-box;">
       <svg viewBox="0 0 20 20" fill="none" width="15" height="15" style="flex-shrink:0;opacity:0.4"><circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <input id="hdr-search-input" type="text" placeholder="Buscar página..." autocomplete="off"
+        oninput="if(window.doSearch)doSearch(this.value)"
         style="background:none;border:none;outline:none;font-size:13px;color:#fff;font-family:inherit;width:100%;"/>
       <div id="hdr-search-results" style="display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;background:#252535;border:1px solid rgba(255,255,255,0.10);border-radius:12px;overflow:hidden;z-index:600;box-shadow:0 16px 48px rgba(0,0,0,0.6);"></div>
     </div>
@@ -10988,6 +10989,27 @@ window.addEventListener('load', () => {
     {l:'Instrumentos',i:'🔍',p:'instruments'},{l:'Wiki & Ajuda',i:'ℹ️',p:'wiki'},
     {l:'Integração MT5',i:'🔗',p:'mt5integration'},{l:'Configurações',i:'⚙️',p:'settings'}
   ];
+  // Expose globally so oninput can call it
+  window.doSearch = function(val) {
+    var res = document.getElementById('hdr-search-results');
+    if (!res) return;
+    var q = (val||'').trim().toLowerCase();
+    if (!q) { res.style.display='none'; res.innerHTML=''; return; }
+    var m = pages.filter(function(p){ return p.l.toLowerCase().indexOf(q) >= 0; });
+    if (!m.length) {
+      res.innerHTML = '<div style="padding:10px 14px;font-size:12px;color:rgba(255,255,255,0.35);">Nenhum resultado</div>';
+      res.style.display = 'block'; return;
+    }
+    res.innerHTML = m.map(function(p){
+      return '<div onclick="showPage(\'' + p.p + '\');document.getElementById(\'hdr-search-input\').value=\'\';document.getElementById(\'hdr-search-results\').style.display=\'none\';" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.75);border-radius:6px;" onmouseover="this.style.background=\'rgba(255,255,255,0.07)\'" onmouseout="this.style.background=\'transparent\'"><span style="font-size:16px;">' + p.i + '</span><span>' + p.l + '</span></div>';
+    }).join('');
+    res.style.display = 'block';
+    // Close on outside click (use addEventListener, not onclick)
+    if(!window._searchClickBound){
+      window._searchClickBound=true;
+      document.addEventListener('click',function(e){ if(!e.target.closest('#hdr-search-wrap')){var r=document.getElementById('hdr-search-results');if(r)r.style.display='none';} });
+    }
+  };
   // Run immediately (DOM already loaded when initSearch is called from launchApp)
   (function attach(){
     var inp=document.getElementById('hdr-search-input');
@@ -11008,45 +11030,55 @@ window.addEventListener('load', () => {
       }).join('');
       res.style.display='block';
     });
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('#hdr-search-wrap'))res.style.display='none';
-    });
+    if(!window._searchClickBound2){
+      window._searchClickBound2=true;
+      document.addEventListener('click',function(e){ if(!e.target.closest('#hdr-search-wrap')){var r=document.getElementById('hdr-search-results');if(r)r.style.display='none';} });
+    }
   })();
 })();
 <\/script>
 
-<div id="profileDropdown" style="display:none;position:fixed;top:58px;right:12px;width:280px;z-index:9999;border-radius:16px;background:#111113;border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 40px rgba(0,0,0,0.6);overflow:hidden;" class="profile-dropdown-card">
-  <div style="padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div id="pd-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#E8833A,#A855F7);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">JR</div>
-      <div style="flex:1;min-width:0;">
-        <div id="pd-name" style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Trader</div>
-        <div id="pd-email" style="font-size:11px;color:rgba(255,255,255,0.40);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;">—</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;">
-          <div id="pd-status-dot" class="pd-meta-dot pending" style="width:6px;height:6px;border-radius:50%;background:#888;flex-shrink:0;"></div>
-          <span id="pd-status-text" style="font-size:10px;color:rgba(255,255,255,0.35);">Modo local</span>
-          <span id="pd-since" style="font-size:10px;color:rgba(255,255,255,0.25);margin-left:4px;"></span>
+<div id="profileDropdown" onclick="event.stopPropagation()" style="display:none;position:fixed;top:62px;right:16px;width:300px;z-index:99999;border-radius:20px;background:#111113;border:1px solid rgba(255,255,255,0.09);box-shadow:0 20px 60px rgba(0,0,0,0.8);overflow:hidden;">
+  <!-- Header do card -->
+  <div style="padding:24px 20px 18px;background:linear-gradient(135deg,rgba(0,135,90,0.12),rgba(124,92,252,0.08));border-bottom:1px solid rgba(255,255,255,0.06);">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div id="pd-avatar-lg" style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#7C5CF8,#4ECDC4);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;border:3px solid rgba(255,255,255,0.12);flex-shrink:0;">EJ</div>
+      <div style="text-align:center;">
+        <div id="pd-name" style="font-size:16px;font-weight:700;color:#fff;">Emerson Jesus</div>
+        <div id="pd-email" style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:3px;">—</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;">
+          <span id="pd-plan-badge" style="font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(0,245,160,0.2);color:#00F5A0;background:rgba(0,245,160,0.08);font-weight:600;">✦ PLANO GRATUITO</span>
         </div>
       </div>
-      <span id="pd-plan-badge" style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,245,160,0.2);color:var(--green);background:rgba(0,245,160,0.08);white-space:nowrap;">✦ Gratuito</span>
     </div>
-    <div id="pd-session-time" style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.25);"></div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;">
+      <div id="pd-status-dot" style="width:7px;height:7px;border-radius:50%;background:#00875A;flex-shrink:0;box-shadow:0 0 6px #00875A;"></div>
+      <span id="pd-status-text" style="font-size:11px;color:rgba(255,255,255,0.40);">Conta ativa</span>
+      <span id="pd-since" style="font-size:11px;color:rgba(255,255,255,0.25);margin-left:4px;"></span>
+    </div>
   </div>
-  <div style="padding:10px 10px;">
-    <div style="font-size:10px;color:rgba(255,255,255,0.25);padding:4px 8px 6px;text-transform:uppercase;letter-spacing:0.8px;">Uso do mês</div>
-    <div style="padding:0 8px 10px;display:flex;align-items:center;gap:8px;">
-      <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div id="pd-usage-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#00875A,#00F5A0);border-radius:4px;transition:width 0.4s;"></div></div>
-      <span id="pd-usage-val" style="font-size:11px;color:rgba(255,255,255,0.45);white-space:nowrap;">0 trades</span>
+  <!-- Uso do mês -->
+  <div id="pd-usage-wrap" style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-size:11px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.8px;">Trades este mês</span>
+      <span id="pd-usage-val" style="font-size:11px;color:rgba(255,255,255,0.50);">0 trades</span>
     </div>
-    <button onclick="showPage('settings')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
-      ⚙️ <span>Configurações</span>
+    <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+      <div id="pd-usage-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#00875A,#00F5A0);border-radius:4px;transition:width 0.4s;"></div>
+    </div>
+    <div id="pd-session-time" style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.22);text-align:center;"></div>
+  </div>
+  <!-- Menu de ações -->
+  <div style="padding:8px;">
+    <button onclick="closeDropdowns();showPage('settings')" style="width:100%;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;border:none;background:transparent;color:rgba(255,255,255,0.70);cursor:pointer;font-size:13px;text-align:left;font-family:inherit;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:18px;">⚙️</span><div><div style="font-weight:500;">Configurações</div><div style="font-size:11px;color:rgba(255,255,255,0.30);margin-top:1px;">Preferências da conta</div></div>
     </button>
-    <button onclick="showPage('wiki')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
-      ❓ <span>Wiki & Ajuda</span>
+    <button onclick="closeDropdowns();showPage('wiki')" style="width:100%;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;border:none;background:transparent;color:rgba(255,255,255,0.70);cursor:pointer;font-size:13px;text-align:left;font-family:inherit;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:18px;">❓</span><div><div style="font-weight:500;">Wiki & Ajuda</div><div style="font-size:11px;color:rgba(255,255,255,0.30);margin-top:1px;">Documentação e suporte</div></div>
     </button>
-    <div style="height:1px;background:rgba(255,255,255,0.06);margin:6px 0;"></div>
-    <button onclick="doLogout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:#FF6B6B;cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='transparent'">
-      🚪 <span>Sair</span>
+    <div style="height:1px;background:rgba(255,255,255,0.05);margin:6px 0;"></div>
+    <button onclick="doLogout()" style="width:100%;display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;border:none;background:transparent;color:#FF6B6B;cursor:pointer;font-size:13px;text-align:left;font-family:inherit;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='transparent'">
+      <span style="font-size:18px;">🚪</span><div><div style="font-weight:500;">Encerrar sessão</div><div style="font-size:11px;color:rgba(255,107,107,0.50);margin-top:1px;">Sair da conta</div></div>
     </button>
   </div>
 </div>
