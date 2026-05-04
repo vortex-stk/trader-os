@@ -2488,8 +2488,11 @@ header{background:#0C0C0E!important;border-bottom:1px solid rgba(255,255,255,0.0
 /* Cards — todas as páginas */
 .db-kpi-card,.db-equity-card,.db-perf-card,.db-bottom-card,#dash-health-row>div,
 .card,.cfg-card,.an-card,.risk-card,.cal-kpi-card,.wiki-item,.wiki-cat,
-.prop-card,.calc-card,.instr-card,.mt5-card,
-[class*="-card"],[class*="-panel"],[class*="-box"],[class*="-wrap"]:not(.cal-wrap):not(.hdr-search-wrap){
+.prop-card,.calc-card,.instr-card,.mt5-card,.metas-goal-card,
+.rep-card,.imp-card,.tbl-card,.share-card,.health-card,
+.db-health-card,.db-insight-card,.insight-card,.health-wrap,
+.an-heatmap-wrap,.an-strat-list,.an-topbar,
+.risk-card,.risk-top,.metas-kpi-row>div{
   background:#111113!important;border:1px solid rgba(255,255,255,0.05)!important;
   box-shadow:0 4px 20px rgba(0,0,0,0.5)!important;
 }
@@ -2543,6 +2546,10 @@ input:focus,select:focus,textarea:focus{border-color:rgba(0,135,90,0.55)!importa
 [data-theme="light"] .period-chip.active{background:#00875A!important;border-color:#00875A!important;color:#fff!important;}
 [data-theme="light"] .btn-add{background:#00875A!important;color:#fff!important;}
 [data-theme="light"] .modal,[data-theme="light"] .profile-dropdown{background:#fff!important;border-color:rgba(0,0,0,0.09)!important;}
+/* Search bar */
+#hdr-search-wrap{background:rgba(255,255,255,0.06)!important;border:1px solid rgba(255,255,255,0.08)!important;}
+#hdr-search-input{background:transparent!important;border:none!important;box-shadow:none!important;}
+#hdr-search-results{background:#1A1A1C!important;border:1px solid rgba(255,255,255,0.08)!important;}
 /* ████ FIM ████ */
 </style>
 </head>
@@ -2802,7 +2809,7 @@ input:focus,select:focus,textarea:focus{border-color:rgba(0,135,90,0.55)!importa
   <!-- HEALTH SCORE + INSIGHTS -->
   <div id="dash-health-row" style="display:grid;grid-template-columns:280px 1fr;gap:14px;margin-bottom:14px"></div>
 
-  <!-- 5 KPI CARDS -->\n  <div class="db-kpi-row" id="kpi-grid"></div>
+  <!-- 5 KPI CARDS -->  <div class="db-kpi-row" id="kpi-grid"></div>
 
   <!-- EQUITY + PERFORMANCE SIDE -->
   <div class="db-main-grid">
