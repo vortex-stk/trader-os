@@ -7758,44 +7758,7 @@ function exportDashboardPDF() {
   +topPairs.map(function(e){var p=e[0],d=e[1];return '<tr><td style="font-weight:700">'+p+'</td><td style="color:'+(d.pnl>=0?'#00875A':'#CC2244')+';font-weight:700">'+(d.pnl>=0?'+':'')+'R$'+d.pnl.toFixed(2)+'</td><td>'+d.c+'</td><td>'+(d.c?(d.w/d.c*100).toFixed(0)+'%':'—')+'</td></tr>';}).join('')+'</table>'
   +'<div class="sec">📋 Histórico Completo</div><table><tr><th>Data</th><th>Par</th><th>P&L</th><th>Direção</th><th>Sessão</th><th>Setup</th><th>R:R</th></tr>'+tradeRows+'</table>'
   +'<div class="ft"><span>TRADER OS · Relatório Completo</span><span>'+acct.name+' · '+all.length+' ops · '+now.toLocaleDateString('pt-BR')+'</span><span>Emerson Jesus</span></div>'
-  +'
-<div id="profileDropdown" style="display:none;position:fixed;top:58px;right:12px;width:280px;z-index:9999;border-radius:16px;background:#111113;border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 40px rgba(0,0,0,0.6);overflow:hidden;" class="profile-dropdown-card">
-  <div style="padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div id="pd-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#E8833A,#A855F7);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">JR</div>
-      <div style="flex:1;min-width:0;">
-        <div id="pd-name" style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Trader</div>
-        <div id="pd-email" style="font-size:11px;color:rgba(255,255,255,0.40);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;">—</div>
-        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;">
-          <div id="pd-status-dot" class="pd-meta-dot pending" style="width:6px;height:6px;border-radius:50%;background:#888;flex-shrink:0;"></div>
-          <span id="pd-status-text" style="font-size:10px;color:rgba(255,255,255,0.35);">Modo local</span>
-          <span id="pd-since" style="font-size:10px;color:rgba(255,255,255,0.25);margin-left:4px;"></span>
-        </div>
-      </div>
-      <span id="pd-plan-badge" style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,245,160,0.2);color:var(--green);background:rgba(0,245,160,0.08);white-space:nowrap;">✦ Gratuito</span>
-    </div>
-    <div id="pd-session-time" style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.25);"></div>
-  </div>
-  <div style="padding:10px 10px;">
-    <div style="font-size:10px;color:rgba(255,255,255,0.25);padding:4px 8px 6px;text-transform:uppercase;letter-spacing:0.8px;">Uso do mês</div>
-    <div style="padding:0 8px 10px;display:flex;align-items:center;gap:8px;">
-      <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div id="pd-usage-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#00875A,#00F5A0);border-radius:4px;transition:width 0.4s;"></div></div>
-      <span id="pd-usage-val" style="font-size:11px;color:rgba(255,255,255,0.45);white-space:nowrap;">0 trades</span>
-    </div>
-    <button onclick="showPage('settings')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
-      ⚙️ <span>Configurações</span>
-    </button>
-    <button onclick="showPage('wiki')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
-      ❓ <span>Wiki & Ajuda</span>
-    </button>
-    <div style="height:1px;background:rgba(255,255,255,0.06);margin:6px 0;"></div>
-    <button onclick="doLogout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:#FF6B6B;cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='transparent'">
-      🚪 <span>Sair</span>
-    </button>
-  </div>
-</div>
-
-</body></html>';
+  +'</body></html>';
 
   var w=window.open('','_blank');
   if(!w){toast('Popup bloqueado',true);return;}
@@ -11046,5 +11009,41 @@ window.addEventListener('load', () => {
   });
 })();
 <\/script>
+
+<div id="profileDropdown" style="display:none;position:fixed;top:58px;right:12px;width:280px;z-index:9999;border-radius:16px;background:#111113;border:1px solid rgba(255,255,255,0.08);box-shadow:0 16px 40px rgba(0,0,0,0.6);overflow:hidden;" class="profile-dropdown-card">
+  <div style="padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.06);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="pd-avatar-lg" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#E8833A,#A855F7);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;flex-shrink:0;">JR</div>
+      <div style="flex:1;min-width:0;">
+        <div id="pd-name" style="font-size:14px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Trader</div>
+        <div id="pd-email" style="font-size:11px;color:rgba(255,255,255,0.40);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;">—</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:5px;">
+          <div id="pd-status-dot" class="pd-meta-dot pending" style="width:6px;height:6px;border-radius:50%;background:#888;flex-shrink:0;"></div>
+          <span id="pd-status-text" style="font-size:10px;color:rgba(255,255,255,0.35);">Modo local</span>
+          <span id="pd-since" style="font-size:10px;color:rgba(255,255,255,0.25);margin-left:4px;"></span>
+        </div>
+      </div>
+      <span id="pd-plan-badge" style="font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,245,160,0.2);color:var(--green);background:rgba(0,245,160,0.08);white-space:nowrap;">✦ Gratuito</span>
+    </div>
+    <div id="pd-session-time" style="margin-top:10px;font-size:10px;color:rgba(255,255,255,0.25);"></div>
+  </div>
+  <div style="padding:10px 10px;">
+    <div style="font-size:10px;color:rgba(255,255,255,0.25);padding:4px 8px 6px;text-transform:uppercase;letter-spacing:0.8px;">Uso do mês</div>
+    <div style="padding:0 8px 10px;display:flex;align-items:center;gap:8px;">
+      <div style="flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;"><div id="pd-usage-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#00875A,#00F5A0);border-radius:4px;transition:width 0.4s;"></div></div>
+      <span id="pd-usage-val" style="font-size:11px;color:rgba(255,255,255,0.45);white-space:nowrap;">0 trades</span>
+    </div>
+    <button onclick="showPage('settings')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+      ⚙️ <span>Configurações</span>
+    </button>
+    <button onclick="showPage('wiki')" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.65);cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='transparent'">
+      ❓ <span>Wiki & Ajuda</span>
+    </button>
+    <div style="height:1px;background:rgba(255,255,255,0.06);margin:6px 0;"></div>
+    <button onclick="doLogout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:none;background:transparent;color:#FF6B6B;cursor:pointer;font-size:13px;text-align:left;" onmouseover="this.style.background='rgba(255,107,107,0.08)'" onmouseout="this.style.background='transparent'">
+      🚪 <span>Sair</span>
+    </button>
+  </div>
+</div>
 </body>
 </html>
